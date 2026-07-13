@@ -1,0 +1,30 @@
+# Agent charters live locally, not in the repo (mirrors the spintax-js convention).
+CLAUDE.md
+AGENTS.md
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.python-version
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local corpus checkout / fixture sync (see spec §6 Q4)
+/fixtures-local/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
