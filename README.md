@@ -1,8 +1,8 @@
 # spintax-core (Python)
 
-> **Status: P0 — the corpus runs, the engine is empty.** Every public entry point is declared and
-> raises `NotImplementedError`, so the shared golden corpus reports 160 *expected failures* rather
-> than skipping. Nothing is published yet.
+> **Status: P1 in progress — the validator is being built.** The shared golden corpus runs from
+> commit one and reports what is not built yet as *expected failures*, so the remaining work is a
+> number on every test run. Nothing is published yet.
 
 A framework-agnostic **[Spintax](https://spintax.net) engine** for Python — parse, render,
 validate, extract, analyze, and neutralize spintax templates. MIT, zero runtime dependencies.
@@ -46,11 +46,15 @@ SPINTAX_FIXTURES=../spintax-js/packages/conformance/fixtures pytest
 ```
 
 Without the fixtures the suite **fails** rather than passing an empty run — a green suite that
-tested nothing is the most expensive kind of green. Today the expected output is:
+tested nothing is the most expensive kind of green. The shape of the output is:
 
 ```
-2 passed, 7 skipped, 160 xfailed
+N passed, M xfailed, 0 skipped
 ```
+
+The two numbers are the milestone tracker: `passed` grows as the engine does, `xfailed` is what
+the corpus still expects and the engine cannot yet do. A **skip** should never appear — it would
+mean a case is being neither asserted nor counted.
 
 The xfails are the whole cross-engine contract, waiting on P1–P3. As milestones land, cases turn
 into real passes with no change to the runner.

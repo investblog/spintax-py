@@ -1,6 +1,8 @@
 # P1 — parser, validator, extract
 
-Status: **planned 2026-07-19**, not started. Governing contract: [`spec-python-port.md`](spec-python-port.md).
+Status: **in progress.** Planned 2026-07-19; steps 2 and 5 partly landed (brackets, directive
+shape, uniqueness, `#include`-in-a-`#def`, permutation config). `validate()` is deliberately not
+wired yet — see below. Governing contract: [`spec-python-port.md`](spec-python-port.md).
 
 P0 left the corpus running against an empty engine: **7 passed, 168 xfailed, 0 skipped**. P1's
 progress metric is that number moving — every step below turns a named set of xfails into passes,
@@ -115,6 +117,17 @@ Local tests are mandatory for these; a green corpus says nothing about any of th
 | `known_variables` | no such field in the fixture schema |
 | `max_depth` | only the circular-include outcome is pinned |
 | `parse` itself | no fixtures; only observable through other ops |
+
+## Why `validate()` is not wired yet
+
+The corpus reports by **op**: while `validate` raises `NotImplementedError` every one of its 40
+cases is an xfail, which reads as "not built". Wire a half-finished validator and those cases run
+for real — the ones whose codes exist pass, the rest **fail** — and the suite goes red for work
+that was never claimed to be done. Red would stop meaning "something broke".
+
+So the checks are proved by their own tests first, and the public entry point flips exactly once,
+when all seventeen codes exist. That is the same reason the reference suite lights up by op
+rather than by code.
 
 ## Definition of done
 

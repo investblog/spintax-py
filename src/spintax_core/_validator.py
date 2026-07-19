@@ -18,13 +18,20 @@ from ._source import Source
 # Only these four keys are accepted inside a `[<…>]` config block.
 _KNOWN_CONFIG_KEYS = frozenset({"minsize", "maxsize", "sep", "lastsep"})
 
+# `\w`, `\d` and `\b` are Unicode-aware in Python and ASCII-only in JavaScript, so each one is
+# spelled out. Deliberately left alone: `\s`, which is Unicode in both — narrowing it (which
+# `re.ASCII` would have done for the whole pattern) would be a divergence of its own.
+_W = _directives.ASCII_WORD
+
 _CONFIG_PREFIX_RE = re.compile(r"\[<([^>]*?)>")
-_LOOKS_LIKE_CONFIG_RE = re.compile(r"\w+\s*=")
-_CONFIG_KEY_RE = re.compile(r"(\w+)\s*=")
+_LOOKS_LIKE_CONFIG_RE = re.compile(_W + r"+\s*=")
+_CONFIG_KEY_RE = re.compile("(" + _W + r"+)\s*=")
 _MINSIZE_RE = re.compile(r"minsize\s*=\s*([^;>\s]+)", re.IGNORECASE)
 _MAXSIZE_RE = re.compile(r"maxsize\s*=\s*([^;>\s]+)", re.IGNORECASE)
-_DIGITS_RE = re.compile(r"^\d+$")
-_INCLUDE_IN_VALUE_RE = re.compile(r"#include\b")
+_DIGITS_RE = re.compile(r"^[0-9]+$")
+# JS ends the word at any non-ASCII-word character, so `#includeя` matches there; Python's `\b`
+# would treat the Cyrillic letter as part of the word and miss it.
+_INCLUDE_IN_VALUE_RE = re.compile(r"#include(?!" + _W + ")")
 
 
 class Finding:

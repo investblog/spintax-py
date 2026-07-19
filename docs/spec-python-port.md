@@ -192,6 +192,13 @@ them today, so an implementation can be wrong about them with the suite fully gr
   schema grows the field (which is the real fix — the same gap exists for TS and PHP).
 - **`max_depth` and `include_resolver` behaviour beyond the circular case.** The corpus asserts
   that a too-deep or circular include resolves to `""`; it does not pin the budget itself.
+- **Non-ASCII identifiers, anywhere.** No fixture contains one, so nothing pins whether
+  `#set %имя% = X` is a directive or a malformed line. It is not a hypothetical gap: JavaScript's
+  `\w` is ASCII-only even under the `u` flag, while PCRE's `/u` enables UCP and makes PHP's `\w`
+  Unicode-aware — so **TS and PHP already disagree**, on the very first item this spec marks
+  parity-REQUIRED. This port follows TS, the stricter of the two, because a narrower accepted
+  syntax can be widened later without breaking a template that already works. Covered locally in
+  `tests/test_ascii_parity.py`; the family-level decision is still open.
 - **`line` / `column` on every diagnostic.** **Zero** fixtures assert a position, so the corpus is
   green whatever the numbers say — while the public `Diagnostic` type promises them and editor
   integrations depend on them. Track positions in the parser from the start (retrofitting means

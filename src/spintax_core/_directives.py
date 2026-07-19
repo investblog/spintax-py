@@ -16,11 +16,16 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-#: The shared grammar, character for character with the other engines: line-anchored,
-#: optional indent, `%name%` of word characters, `=`, then the value to end of line.
-#: An empty value is legal — `#set %x% =` defines an empty string, it is not malformed.
+#: JavaScript's `\w` is ASCII-only — always, `u` flag included — while Python's matches any
+#: Unicode letter. Spelling the class out keeps the accepted syntax identical to the reference
+#: instead of silently widening it. See `tests/test_ascii_parity.py`.
+ASCII_WORD = "[A-Za-z0-9_]"
+
+#: The shared grammar: line-anchored, optional indent, `%name%` of ASCII word characters, `=`,
+#: then the value to end of line. An empty value is legal — `#set %x% =` defines an empty
+#: string, it is not malformed.
 DIRECTIVE_RE = re.compile(
-    r"^[ \t]*#(set|def)[ \t]+%(\w+)%[ \t]*=[ \t]*(.*?)[ \t]*\r?$",
+    r"^[ \t]*#(set|def)[ \t]+%(" + ASCII_WORD + r"+)%[ \t]*=[ \t]*(.*?)[ \t]*\r?$",
     re.MULTILINE,
 )
 

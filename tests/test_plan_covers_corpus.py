@@ -33,14 +33,27 @@ def _expected_codes() -> set[str]:
     }
 
 
-def test_plan_names_every_diagnostic_code() -> None:
+def _counted_steps(plan: str) -> list[str]:
+    """The `### … — N codes` sections. A code owned by no such step is unscheduled."""
+    return [s for s in re.split(r"^### ", plan, flags=re.M)[1:] if re.search(r"—\s*\d+\s*codes?", s)]
+
+
+def test_every_diagnostic_code_is_owned_by_a_counted_step() -> None:
+    """Not merely *mentioned* somewhere in the plan — owned by a step that schedules it.
+
+    The first version of this test searched the whole document, which is weaker than
+    the promise it makes: a new code named in a TODO or in passing prose would satisfy
+    it while no step had agreed to implement it, and the definition of done would still
+    be unreachable.
+    """
     if corpus_dir() is None:
         pytest.skip("corpus absent; test_corpus_is_present reports it")
     plan = PLAN.read_text(encoding="utf-8")
-    missing = sorted(code for code in _expected_codes() if code not in plan)
+    owned = {code for step in _counted_steps(plan) for code in _expected_codes() if f"`{code}`" in step}
+    missing = sorted(_expected_codes() - owned)
     assert not missing, (
-        f"{PLAN.name} does not mention: {', '.join(missing)}. "
-        "Every diagnostic the corpus expects needs a step that owns it."
+        f"no counted step in {PLAN.name} owns: {', '.join(missing)}. "
+        "Mentioning a code is not scheduling it."
     )
 
 
