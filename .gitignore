@@ -20,8 +20,10 @@ venv/
 .coverage
 htmlcov/
 
-# Local corpus checkout / fixture sync (see spec §6 Q4)
+# Local corpus checkout / fixture sync (see spec §6 Q4). `.corpus/` is where CI
+# puts it and where the test fallback looks; never commit the fixtures here.
 /fixtures-local/
+/.corpus/
 
 # Editors / OS
 .vscode/

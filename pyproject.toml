@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "spintax-core"
+version = "0.0.0"
+description = "Spintax engine for Python — enumerations, permutations, variables, conditionals, plural agreement, includes. Zero dependencies."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "301st" }]
+keywords = ["spintax", "text-spinning", "content-spinning", "spinner", "template-variations"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Text Processing :: Markup",
+  "Typing :: Typed",
+]
+# Zero RUNTIME dependencies is a hard rule (spec §7). Build and dev tools are fine.
+dependencies = []
+
+[project.urls]
+Homepage = "https://spintax.net"
+Source = "https://github.com/investblog/spintax-py"
+Issues = "https://github.com/investblog/spintax-py/issues"
+
+[dependency-groups]
+dev = ["pytest>=8", "mypy>=1.11", "ruff>=0.6"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/spintax_core"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Report xfails explicitly: an unimplemented engine must be *visible*, never silent.
+addopts = "-ra"
+
+[tool.mypy]
+strict = true
+files = ["src", "tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

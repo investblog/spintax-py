@@ -1,6 +1,8 @@
 # spintax-core (Python)
 
-> **Status: DRAFT / pre-code.** Scaffolding and a spec only — no engine code yet, nothing published.
+> **Status: P0 — the corpus runs, the engine is empty.** Every public entry point is declared and
+> raises `NotImplementedError`, so the shared golden corpus reports 160 *expected failures* rather
+> than skipping. Nothing is published yet.
 
 A framework-agnostic **[Spintax](https://spintax.net) engine** for Python — parse, render,
 validate, extract, analyze, and neutralize spintax templates. MIT, zero runtime dependencies.
@@ -10,8 +12,9 @@ transcription of the others. It is held to the same behavior contract by a **sha
 of language-neutral fixtures, which already gates the TypeScript engine and the PHP one.
 
 - **Spec:** [`docs/spec-python-port.md`](docs/spec-python-port.md) — read it before writing any
-  code. It records the parity contract, the API surface, and six open questions that must be
-  answered first (two of them, corpus access and Unicode handling in post-process, are blocking).
+  code. It records the parity contract, the API surface, and the open questions. Corpus access
+  (Q4) is decided; Unicode in post-process (Q5) is a known trap with a verified stdlib answer,
+  and lands with P2.
 - **Sibling engines:** [`@spintax/core`](https://www.npmjs.com/package/@spintax/core) (TypeScript,
   MIT, published) · [Spintax for WordPress](https://wordpress.org/plugins/spintax/) (PHP, GPL, the
   origin).
@@ -29,3 +32,26 @@ commercial adoption; this one is MIT and maintained.
 ---
 
 Part of the [301.st](https://301.st) toolset. Product home: [spintax.net](https://spintax.net).
+
+## Development
+
+The test suite **is** the shared golden corpus — the same JSON fixtures the TypeScript and PHP
+engines are tested against, read from a checkout rather than vendored here. A copy would drift,
+and a drifting contract is not a contract.
+
+```sh
+git clone https://github.com/investblog/spintax-js ../spintax-js   # once
+python -m venv .venv && .venv/bin/pip install -e . pytest
+SPINTAX_FIXTURES=../spintax-js/packages/conformance/fixtures pytest
+```
+
+Without the fixtures the suite **fails** rather than passing an empty run — a green suite that
+tested nothing is the most expensive kind of green. Today the expected output is:
+
+```
+2 passed, 7 skipped, 160 xfailed
+```
+
+The 7 skips are cases the corpus marks as asserted by another engine; the 160 xfails are the
+whole cross-engine contract, waiting on P1–P3. As milestones land, cases turn into real passes
+with no change to the runner.
