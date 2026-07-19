@@ -104,6 +104,27 @@ def analyze(input: str | Ast, **opts) -> Analysis: ...  # extract + validate + c
 def neutralize(value: str) -> str: ...                  # text-safe shielding of untrusted values
 ```
 
+### 4.1 The RNG seam — required, not an implementation detail
+
+```python
+Rng = Callable[[int, int], int]          # (min, max) -> int; a bounded value, NOT an index
+
+def make_rng(seed: int | str | None) -> Rng: ...
+def render_with(input: str | Ast, rng: Rng, **opts: object) -> str: ...
+```
+
+**`render_with` is the only renderer**; `render` must be a thin wrapper that builds an `Rng` and
+delegates to it. This is a contract, not a convenience:
+
+- The corpus injects a choice source — 19 fixtures carry an explicit `rng` (`first` / `last` / a
+  sequence) and the reference harness defaults the rest to `first`. Without the seam those cases
+  cannot run at all, and the remaining ones become coin flips.
+- The seam is what makes `#set` vs `#def` observable. The semantics differ only in **how many
+  draws** a template takes, so under a fixed strategy both render identically. A sequence RNG is
+  the discriminator; `{a|a|a}` proves nothing under either.
+- One renderer, not two. A harness-only path beside the real one is how stage order ends up
+  written in five places (see §5.1).
+
 Invariants carried over from the TS engine:
 
 - **`render` is lenient** — it never raises on malformed markup; a bad block is emitted verbatim
@@ -127,7 +148,7 @@ Invariants carried over from the TS engine:
 - **P3 — extract + neutralize + analyze + docs.** API surface complete.
 - **P4 — publish `0.1.0` to PyPI.** Claim `spintax-core` early (see Q1) but publish only here.
 
-## 5.1 What the other three ports paid for
+### 5.1 What the other three ports paid for
 
 Four lessons the TS, PHP and OpenCart ports learned the expensive way. They are here because
 each one is invisible until it has already cost something.
@@ -157,6 +178,29 @@ a SQL check scoped to a library while the admin controller sat outside it (shipp
 own docblock recommended the pattern it was meant to ban, and this runner's RNG wiring, which was
 wrong while the suite reported an unchanged, reassuring 160 xfails. The habit that catches it:
 before believing a green, break the thing on purpose and watch the check go red.
+
+### 5.2 Surfaces the corpus does NOT gate (know these before trusting a green)
+
+The corpus is the acceptance gate, and it is not total. Two API surfaces have no fixture behind
+them today, so an implementation can be wrong about them with the suite fully green:
+
+- **`known_variables`.** `validate()` accepts it to suppress `variable.undefined` for names the
+  host supplies at render time, but the fixture schema has no `knownVariables` field, so no case
+  exercises it. Break the suppression and nothing goes red. Cover it with local tests until the
+  schema grows the field (which is the real fix — the same gap exists for TS and PHP).
+- **`max_depth` and `include_resolver` behaviour beyond the circular case.** The corpus asserts
+  that a too-deep or circular include resolves to `""`; it does not pin the budget itself.
+
+Recorded rather than silently trusted: a gate you believe is total, and is not, is worse than one
+you know the edges of.
+
+### 5.3 Implementation notes that are contract, not style
+
+- **`definition.duplicate-name` requires preserving directive *occurrences* before any map is
+  built.** The obvious implementation — fold directives into a `dict[str, str]` and validate the
+  dict — has already lost duplicates once in the PHP pass, because the second assignment silently
+  overwrites the first and there is nothing left to report. Collect occurrences first, diagnose,
+  then collapse.
 
 ## 6. Open questions — decide these BEFORE writing code
 
@@ -237,7 +281,9 @@ corpus already wired, never blind.*
 ### Q6 — `#include` resolution
 Stays **synchronous and host-injected** (`Callable[[str], str | None]`), same as TS. Async sources
 use the two-phase pattern: `extract().includes` → host prefetches → sync map resolver. The circular
-guard and scope isolation (a child inherits global+runtime vars, **not** the parent's `#set` locals)
+guard and scope isolation (a child inherits global+runtime vars, **not** the parent's local
+`#set` **or** `#def` definitions — both are template-local, and naming only one invites the
+leak that already had to be fixed once in the plugin)
 live in the engine; the fetch does not. *No `async def render`. Not now, probably not ever.*
 
 ## 7. Conventions

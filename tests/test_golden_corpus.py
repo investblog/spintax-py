@@ -21,6 +21,9 @@ from rng_strategy import rng_from_strategy
 
 import spintax_core as engine
 
+#: This engine's id in a fixture's `engines` list. Absent list = every engine.
+ENGINE_ID = "py"
+
 _CASES = load_cases()
 
 
@@ -123,9 +126,9 @@ def _assert_validate(case: dict[str, Any], actual: list[engine.Diagnostic]) -> N
 
 
 def _assert_extract(case: dict[str, Any], actual: engine.Extraction) -> None:
-    # Order-normalized, and only the keys the fixture states are compared — the
-    # corpus predates `defs`, so a strict whole-object equality would be wrong.
-    for key in ("refs", "sets", "includes"):
+    # Order-normalized, and only the keys the fixture states are compared: most
+    # fixtures assert a subset, so whole-object equality would be wrong.
+    for key in ("refs", "sets", "defs", "includes"):
         if key in case["expect"]:
             assert sorted(getattr(actual, key)) == sorted(case["expect"][key]), key
 
@@ -156,11 +159,14 @@ def _assert_rng(case: dict[str, Any], actual: str) -> None:
 @pytest.mark.parametrize("case", _CASES, ids=_ids(_CASES))
 def test_corpus_case(case: dict[str, Any]) -> None:
     # `engines` names the engines that assert a case; absent means all of them.
-    # The schema's enum is ["ts", "php"] — there is no "py" yet — so any explicit
-    # list excludes this engine. Reported as a skip with a reason, never dropped.
+    # Skip only when this engine is not among them — an earlier version skipped ANY
+    # tagged case, which silently excused the neutralize round-trips (tagged for TS
+    # because the PHP plugin entity-encodes and never decodes). Python follows the
+    # TS contract there, so those cases must run: without them the only neutralize
+    # coverage was "plain text is unchanged", which a no-op implementation passes.
     engines = case.get("engines")
-    if engines is not None:
-        pytest.skip(f"case is asserted by {engines} only")
+    if engines is not None and ENGINE_ID not in engines:
+        pytest.skip(f"case is asserted by {engines}, not {ENGINE_ID!r}")
 
     try:
         actual = _run(case)
