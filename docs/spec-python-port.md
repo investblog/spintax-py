@@ -141,11 +141,13 @@ Invariants carried over from the TS engine:
 - **P0 — fixture access + corpus runner.** Q4 is decided (env var + CI checkout); stand up a pytest
   runner over the shared fixtures, green on an empty engine — every fixture reported as *expected
   failure*, none silently skipped. **Before any engine code.**
-- **P1 — parser + validator.** Full syntax surface; `validate.json` green (verdicts are the
-  strictest gate).
+- **P1 — parser + validator + `extract`.** Full syntax surface; `validate.json` green (verdicts
+  are the strictest gate). Two boundaries corrected by reading the fixtures — see
+  [`plan-p1.md`](plan-p1.md): plural **arity** validation is P1 (14 cases carry a locale), and
+  `extract` moves here from P3 because the parser has already built its index.
 - **P2 — renderer + post-process.** Seeded render; deterministic render + post-process fixtures
   green; RNG fixtures pass structural invariants only.
-- **P3 — extract + neutralize + analyze + docs.** API surface complete.
+- **P3 — neutralize + analyze + docs.** API surface complete (`extract` landed in P1).
 - **P4 — publish `0.1.0` to PyPI.** Claim `spintax-core` early (see Q1) but publish only here.
 
 ### 5.1 What the other three ports paid for
@@ -190,6 +192,10 @@ them today, so an implementation can be wrong about them with the suite fully gr
   schema grows the field (which is the real fix — the same gap exists for TS and PHP).
 - **`max_depth` and `include_resolver` behaviour beyond the circular case.** The corpus asserts
   that a too-deep or circular include resolves to `""`; it does not pin the budget itself.
+- **`line` / `column` on every diagnostic.** **Zero** fixtures assert a position, so the corpus is
+  green whatever the numbers say — while the public `Diagnostic` type promises them and editor
+  integrations depend on them. Track positions in the parser from the start (retrofitting means
+  touching every construct twice) and cover them locally.
 
 Recorded rather than silently trusted: a gate you believe is total, and is not, is worse than one
 you know the edges of.
