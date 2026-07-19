@@ -37,7 +37,7 @@ after it and invisible on its own. Cover it with local tests; do not expect the 
 Position tracking is built in **here** or not at all: every node carries line/column from the
 start. Retrofitting positions after the tree exists means touching every construct twice.
 
-### 2. Structural diagnostics — 7 codes
+### 2. Structural diagnostics — 8 codes
 
 `bracket.unclosed`, `bracket.mismatched`, `bracket.unexpected-closing`, `set.malformed`,
 `def.malformed`, `permutation.minsize-not-integer`, `permutation.maxsize-not-integer`,
@@ -53,7 +53,7 @@ the only one that must not flip a verdict to invalid).
 `known_variables` suppression is implemented here and **is not gated by the corpus** — the fixture
 schema has no such field. It needs local tests or it can break silently.
 
-### 4. Locale and arity — 1 code, 14 cases touched
+### 4. Plural diagnostics — 2 codes, 14 cases touched
 
 `normalize_base_lang` (`sr-Latn` → `sr`, `pt-BR` → `pt`; three-letter tags are *not* mapped) plus
 the arity table: 3 forms for `ru`/`uk`/`be`/`sr`/`hr`/`bs`, 2 for everything else — including
@@ -61,9 +61,18 @@ the arity table: 3 forms for `ru`/`uk`/`be`/`sr`/`hr`/`bs`, 2 for everything els
 
 Then `plural.arity`. Note an empty or absent locale **skips** the arity check entirely.
 
-### 5. Definition bookkeeping — 2 codes
+`plural.nested-brackets` lands here too, and needs no locale: a form slot must be plain text, so
+`{plural 1: {a|b}|c}` is rejected structurally. Keep it distinct from step 6 — this one is about
+brackets *inside a form*, that one about a count that only becomes bracketed after expansion.
 
-`definition.duplicate-name` and `def.include-in-value`.
+### 5. Definitions and includes — 3 codes
+
+`definition.duplicate-name`, `def.include-in-value`, and `include.unknown-target`.
+
+The include check is the only diagnostic that depends on caller-supplied data: it fires only when
+`known_includes` is non-empty, so with no list every target is assumed to exist. Two fixtures
+cover it, and one of them is a *valid* verdict — a circular include is a runtime outcome, not a
+static error.
 
 Read spec §5.3 before writing this: duplicate detection requires keeping directive **occurrences**
 until after the diagnostic runs. Folding directives into a `dict[str, str]` first destroys the

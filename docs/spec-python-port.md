@@ -1,6 +1,6 @@
 # Spintax Python engine — `spintax-core` (spec draft)
 
-Status: **ACTIVE — P0 in progress.** Idea captured 2026-07-13; revised 2026-07-19 for engine 3.0.0
+Status: **ACTIVE — P0 complete, P1 planned** ([`plan-p1.md`](plan-p1.md)). Idea captured 2026-07-13; revised 2026-07-19 for engine 3.0.0
 (`#def`, `#set` reverted to macro, BCS plurals). Q4 is answered; the remaining open questions are
 non-blocking.
 Owner: 301st
@@ -183,7 +183,7 @@ before believing a green, break the thing on purpose and watch the check go red.
 
 ### 5.2 Surfaces the corpus does NOT gate (know these before trusting a green)
 
-The corpus is the acceptance gate, and it is not total. Two API surfaces have no fixture behind
+The corpus is the acceptance gate, and it is not total. Three surfaces have no fixture behind
 them today, so an implementation can be wrong about them with the suite fully green:
 
 - **`known_variables`.** `validate()` accepts it to suppress `variable.undefined` for names the

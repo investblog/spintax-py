@@ -32,9 +32,17 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          pip install -e . pytest
+          pip install -e . pytest ruff mypy
 
       - name: Golden corpus
         env:
           SPINTAX_FIXTURES: ${{ github.workspace }}/.corpus/packages/conformance/fixtures
         run: pytest -q
+
+      # Gated, not merely runnable: the plan's definition of done names both, and a
+      # check nobody runs is a check that does not exist.
+      - name: Lint
+        run: ruff check .
+
+      - name: Types
+        run: mypy

@@ -6,7 +6,7 @@ this module from the very first commit, so each fixture is reported as an
 *expected failure* rather than being skipped — the count of what is not yet built
 is visible on every test run, and a fixture can never be quietly forgotten.
 
-Milestones fill these in: P1 parse/validate, P2 render, P3 extract/analyze/neutralize.
+Milestones fill these in: P1 parse/validate/extract, P2 render, P3 analyze/neutralize.
 See ``docs/spec-python-port.md``.
 """
 
@@ -163,7 +163,7 @@ def validate(
 
 def extract(input: str | Ast) -> Extraction:
     """List variable references, ``#set`` / ``#def`` names, and ``#include`` targets."""
-    raise NotImplementedError("extract: P3")
+    raise NotImplementedError("extract: P1")
 
 
 def analyze(
