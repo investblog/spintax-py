@@ -52,6 +52,11 @@ tested nothing is the most expensive kind of green. Today the expected output is
 2 passed, 7 skipped, 160 xfailed
 ```
 
-The 7 skips are cases the corpus marks as asserted by another engine; the 160 xfails are the
-whole cross-engine contract, waiting on P1–P3. As milestones land, cases turn into real passes
-with no change to the runner.
+The xfails are the whole cross-engine contract, waiting on P1–P3. As milestones land, cases turn
+into real passes with no change to the runner.
+
+> **If you mutate a source file to check that a test catches it, delete `__pycache__` first.**
+> Python invalidates bytecode on (mtime, size). A mutation that preserves both — swapping `.*?`
+> for `.+?`, say — leaves the stale `.pyc` in place, so the *next* run still imports the mutated
+> module after you have restored the file. That produced a failure pointing at correct code, and
+> the obvious response to it would have been to break the code for real.
