@@ -1,6 +1,8 @@
 # Spintax Python engine — `spintax-core` (spec draft)
 
-Status: **DRAFT / pre-code.** Idea captured 2026-07-13; nothing is scheduled.
+Status: **ACTIVE — P0 in progress.** Idea captured 2026-07-13; revised 2026-07-19 for engine 3.0.0
+(`#def`, `#set` reverted to macro, BCS plurals). Q4 is answered; the remaining open questions are
+non-blocking.
 Owner: 301st
 Canonical location: this file, `W:\projects\spintax-py\docs\spec-python-port.md`.
 
@@ -48,7 +50,14 @@ WP-free PHPUnit runner against the real plugin engine.
 - validation verdicts (valid ⇔ no `severity: "error"`; unresolved `%var%` is a **warning**)
 - plural grammar buckets (locale-sensitive)
 - `{?…}` truthiness
-- `#set` collapse-once semantics
+- **directive semantics**: `#set` is a **macro** — re-substituted, and any spintax inside it
+  re-rolled, at every reference; `#def` resolves **once per render** and holds that result
+  everywhere. (Engine 3.0.0 reverted `#set` to macro expansion and moved roll-once to `#def`.
+  The pre-3.0.0 draft of this spec listed "`#set` collapse-once" here — that behaviour no longer
+  exists under that name, and porting it would have reproduced a retracted contract.)
+- **`#def` constraints**: `#include` inside a `#def` value is a validation error; a name belongs to
+  a single `#set` or `#def`; a `{plural}` count that resolves through a `#set` macro still holding
+  spintax is an error, not a silent empty render
 - the **post-process pipeline** (shielding / spacing / capitalization)
 
 **Allowed to diverge:** RNG selection results, internal architecture, diagnostic message strings,
@@ -76,7 +85,7 @@ def render(
     *,
     context: Mapping[str, str] | None = None,
     seed: int | str | None = None,          # omit ⇒ nondeterministic
-    locale: str | None = None,              # plural buckets, e.g. "ru" (3-form)
+    locale: str | None = None,              # plural buckets; 3-form: ru/uk/be + sr/hr/bs
     include_resolver: Callable[[str], str | None] | None = None,   # host-injected, SYNC
     post_process: bool = True,              # default ON, like the TS engine
     max_depth: int = 20,
@@ -90,7 +99,7 @@ def validate(
     known_variables: Sequence[str] | None = None,
 ) -> list[Diagnostic]: ...
 
-def extract(input: str | Ast) -> Extraction: ...        # refs / sets / includes
+def extract(input: str | Ast) -> Extraction: ...        # refs / sets / defs / includes
 def analyze(input: str | Ast, **opts) -> Analysis: ...  # extract + validate + constructs census
 def neutralize(value: str) -> str: ...                  # text-safe shielding of untrusted values
 ```
@@ -108,8 +117,9 @@ Invariants carried over from the TS engine:
 
 ## 5. Milestones (corpus-first, mirroring what worked for TS)
 
-- **P0 — fixture access + corpus runner.** Decide §6 Q4, stand up a pytest runner over the shared
-  fixtures, green on an empty engine. **Before any engine code.**
+- **P0 — fixture access + corpus runner.** Q4 is decided (env var + CI checkout); stand up a pytest
+  runner over the shared fixtures, green on an empty engine — every fixture reported as *expected
+  failure*, none silently skipped. **Before any engine code.**
 - **P1 — parser + validator.** Full syntax surface; `validate.json` green (verdicts are the
   strictest gate).
 - **P2 — renderer + post-process.** Seeded render; deterministic render + post-process fixtures
@@ -146,19 +156,37 @@ implementation detail.*
 > *independent draws, not distinct results*. A low-cardinality template will repeat across seeds.
 > N-unique-variants is a **host** job (dedupe + cap retries), not an engine promise.
 
-### Q4 — how does this repo get the golden corpus? ⚠ blocking for P0
-The fixtures live in `spintax-js` (`packages/conformance/fixtures/*.json`) and are currently read
-**by local path**. A third engine is the forcing function for spec **Q3** in the TS repo. Options:
+### Q4 — how does this repo get the golden corpus? ✅ ANSWERED 2026-07-19
+**Decided: env var locally, `actions/checkout` of the corpus repo in CI. Never vendor it.**
 
-1. **Env var + local path**, mirroring the existing PHP runner (`SPINTAX_PLUGIN_SRC` precedent) —
-   fastest, works today, but is dev-machine-bound.
-2. **Publish `@spintax/conformance`** (npm) and vendor a synced copy here — awkward for a Python
-   repo to consume npm.
-3. **Publish a `spintax-conformance` package on PyPI** carrying the same fixtures — cleanest for
-   Python, but forks the distribution of the corpus.
+This was marked blocking, and it was — until `spintax-php` solved it in production. Its CI checks
+out `investblog/spintax-js` into `.corpus` and points `SPINTAX_FIXTURES` at
+`.corpus/packages/conformance/fixtures`; the runner reads that env var and skips with an
+actionable message when it is unset. So the pattern is not a proposal here, it is a second
+non-JS engine already living on it, and copying a proven recipe beats inventing a third.
 
-*Recommendation: start with (1) to unblock P0, and treat (2)/(3) as the real fix before publishing
-`0.1.0` — a published engine whose acceptance suite only runs on one laptop is not a parity gate.*
+The publish-a-fixtures-package options are dropped rather than deferred. Both fork the
+distribution of the corpus, and the objection that killed them is written into the PHP runner:
+*a copy would drift, and a drifting contract is not a contract.* A checkout is always the file
+the other engines are tested against; a package is a snapshot of it that ages silently.
+
+Concretely for this repo:
+
+```yaml
+- uses: actions/checkout@v4
+  with:
+    repository: investblog/spintax-js
+    path: .corpus
+# then, on the test step:
+#   SPINTAX_FIXTURES: ${{ github.workspace }}/.corpus/packages/conformance/fixtures
+```
+
+Locally: `SPINTAX_FIXTURES=/path/to/spintax-js/packages/conformance/fixtures pytest`.
+
+The one residual weakness, inherited knowingly: the corpus is pinned to whatever the default
+branch of `spintax-js` holds at run time, so an upstream fixture change turns this suite red
+without a commit here. That is the intended failure mode — it is how a contract announces that
+the engines have diverged.
 
 ### Q5 — Unicode in post-process ⚠ real trap, already verified
 The TS post-process leans on `\p{L}` / `\p{N}` with the `u` flag. **Python's stdlib `re` does NOT
