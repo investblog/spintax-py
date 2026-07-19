@@ -127,6 +127,37 @@ Invariants carried over from the TS engine:
 - **P3 — extract + neutralize + analyze + docs.** API surface complete.
 - **P4 — publish `0.1.0` to PyPI.** Claim `spintax-core` early (see Q1) but publish only here.
 
+## 5.1 What the other three ports paid for
+
+Four lessons the TS, PHP and OpenCart ports learned the expensive way. They are here because
+each one is invisible until it has already cost something.
+
+**Corpus-first works, and it is why the family has not drifted.** The TS engine was built against
+the shared corpus from M0. That ordering is not ceremony — it is the reason three engines still
+agree. P0 exists for this reason and must stay ahead of P1.
+
+**But a green corpus does not certify a renderer.** The PHP `GoldenCorpusTest` reproduces the
+pipeline by hand, so what it attests to is the primitives *and that replica* — not the shipped
+orchestration. Stage order is already written down in four places (the plugin, the package, that
+replica, the OpenCart orchestrator); a fifth would rot like the others. **So this port must not
+hand-compose stages in its test harness.** The runner calls `render_with` — the engine's own and
+only pipeline, which `render` also delegates to. If a stage order ever needs asserting, assert it
+through the public entry point, never by re-implementing it beside the engine.
+
+**A seeded RNG is the only thing that distinguishes `#set` from `#def`.** The semantics differ
+solely in *how many draws* a template takes: a macro re-rolls per reference, a definition rolls
+once. Under a fixed `first` strategy both render identically, and `{a|a|a}` proves nothing under
+either. This is why `render_with` takes an injected `Rng` at all, and why the sequence strategy is
+load-bearing rather than a convenience — see `tests/test_rng_strategy.py`, which pins it while the
+engine is still empty.
+
+**A verification narrower than its claim is worse than none** — it converts an unknown into a
+wrong answer. In the session that produced this milestone the same mistake happened three times:
+a SQL check scoped to a library while the admin controller sat outside it (shipped), a lint whose
+own docblock recommended the pattern it was meant to ban, and this runner's RNG wiring, which was
+wrong while the suite reported an unchanged, reassuring 160 xfails. The habit that catches it:
+before believing a green, break the thing on purpose and watch the check go red.
+
 ## 6. Open questions — decide these BEFORE writing code
 
 ### Q1 — package name and import name

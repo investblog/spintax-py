@@ -17,6 +17,7 @@ from typing import Any
 
 import pytest
 from conftest import corpus_dir, corpus_help, load_cases
+from rng_strategy import rng_from_strategy
 
 import spintax_core as engine
 
@@ -51,33 +52,53 @@ def test_corpus_size_is_sane() -> None:
 # ── the engine's own opinion of each case ──────────────────────────────────
 
 
+def _render_opts(case: dict[str, Any]) -> dict[str, Any]:
+    """The pipeline options a fixture carries. Deliberately NOT seed — a deterministic
+    case is fixed by its `rng` strategy, not by seeding a real PRNG."""
+    context = dict(case.get("context") or {})
+    for key in case.get("neutralizeContext") or []:
+        if key in context:
+            context[key] = engine.neutralize(context[key])
+    opts: dict[str, Any] = {}
+    if context:
+        opts["context"] = context
+    if case.get("locale") is not None:
+        opts["locale"] = case["locale"]
+    if case.get("postProcess") is not None:
+        opts["post_process"] = case["postProcess"]
+    return opts
+
+
+def _render(case: dict[str, Any]) -> str:
+    """Render through the engine's own pipeline with the fixture's choice source.
+
+    An omitted `rng` defaults to `"first"`, matching the reference harness. That is
+    only sound because such fixtures do not select — single option, or a
+    non-selecting plural/conditional/variable. A real PRNG here would make every
+    deterministic fixture a coin flip.
+    """
+    if case.get("kind") == "rng":
+        rng = engine.make_rng(case.get("seed"))
+    else:
+        rng = rng_from_strategy(case.get("rng") or "first")
+    return engine.render_with(case["template"], rng, **_render_opts(case))
+
+
 def _run(case: dict[str, Any]) -> Any:
     """Dispatch one case to the engine. Raises NotImplementedError while empty."""
     op = case["op"]
-    template = case["template"]
-
     if op == "validate":
         return engine.validate(
-            template,
+            case["template"],
             locale=case.get("locale"),
             known_includes=case.get("knownIncludes"),
         )
     if op == "extract":
-        return engine.extract(template)
+        return engine.extract(case["template"])
     if op == "neutralize":
-        return engine.neutralize(template)
+        return engine.neutralize(case["template"])
     if op == "render":
-        context = dict(case.get("context") or {})
-        for key in case.get("neutralizeContext") or []:
-            if key in context:
-                context[key] = engine.neutralize(context[key])
-        return engine.render(
-            template,
-            context=context or None,
-            seed=case.get("seed"),
-            locale=case.get("locale"),
-            post_process=case.get("postProcess", True),
-        )
+        return _render(case)
     raise AssertionError(f"unknown op {op!r} in case {case['id']!r}")
 
 
@@ -112,21 +133,24 @@ def _assert_extract(case: dict[str, Any], actual: engine.Extraction) -> None:
 def _assert_rng(case: dict[str, Any], actual: str) -> None:
     expect = case["expect"]
 
-    # `reproducible` is required by the schema and is the only cross-engine promise
-    # here: same seed, same output, within this engine.
-    again = _run(case)
-    assert actual == again, "same seed produced different output"
+    # `reproducible` is the only promise here, and it is within-engine: a fresh RNG
+    # from the same seed must reproduce the output. Never an exact cross-engine gate.
+    assert actual == _render(case), "same seed produced different output"
 
     if "oneOf" in expect:
         assert actual in expect["oneOf"], f"{actual!r} not in {expect['oneOf']!r}"
     if "subsetOf" in expect or "sizeRange" in expect:
         sep = expect.get("separator", " ")
-        parts = [p for p in actual.split(sep) if p != ""]
+        tokens = [] if actual == "" else actual.split(sep)
         if "subsetOf" in expect:
-            assert set(parts) <= set(expect["subsetOf"]), f"{parts!r} ⊄ {expect['subsetOf']!r}"
+            assert set(tokens) <= set(expect["subsetOf"]), f"{tokens!r} not drawn from set"
+            # A permutation draws WITHOUT replacement, so tokens are distinct. Together
+            # with subsetOf + an exhaustive sizeRange this is what rejects a broken
+            # shuffle that repeats or drops an element ("a a a" passes subsetOf alone).
+            assert len(set(tokens)) == len(tokens), f"repeated element in {tokens!r}"
         if "sizeRange" in expect:
             lo, hi = expect["sizeRange"]
-            assert lo <= len(parts) <= hi, f"{len(parts)} elements, expected {lo}..{hi}"
+            assert lo <= len(tokens) <= hi, f"{len(tokens)} elements, expected {lo}..{hi}"
 
 
 @pytest.mark.parametrize("case", _CASES, ids=_ids(_CASES))

@@ -21,15 +21,22 @@ __all__ = [
     "Ast",
     "Diagnostic",
     "Extraction",
+    "Rng",
     "analyze",
     "extract",
+    "make_rng",
     "neutralize",
     "parse",
     "render",
+    "render_with",
     "validate",
 ]
 
 Severity = Literal["error", "warning"]
+
+#: An injected source of choice. Signature is ``(min, max) -> int`` — a bounded
+#: integer, **not** a choice index — matching the seam the other engines expose.
+Rng = Callable[[int, int], int]
 
 
 class Ast:
@@ -85,6 +92,37 @@ def parse(src: str) -> Ast:
     raise NotImplementedError("parse: P1")
 
 
+def make_rng(seed: int | str | None) -> Rng:
+    """Build the seeded PRNG. Same seed ⇒ same sequence, within this engine only.
+
+    Cross-engine sequence parity is a deliberate non-goal (spec §3).
+    """
+    raise NotImplementedError("make_rng: P2")
+
+
+def render_with(
+    input: str | Ast,
+    rng: Rng,
+    *,
+    context: Mapping[str, str] | None = None,
+    locale: str | None = None,
+    include_resolver: Callable[[str], str | None] | None = None,
+    post_process: bool = True,
+    max_depth: int = 20,
+) -> str:
+    """Render with an explicitly injected choice source.
+
+    This is the **only** renderer. ``render`` is a thin wrapper that builds an
+    ``Rng`` and calls this, so the corpus and real callers exercise one pipeline
+    rather than two that can drift apart. The seam exists because the corpus
+    needs to control *how many draws* a template takes: with a fixed ``first``
+    strategy, `#set` (a macro, re-rolled per reference) and `#def` (rolled once)
+    produce identical output and the distinction is untestable. A sequence RNG is
+    what makes the difference observable.
+    """
+    raise NotImplementedError("render_with: P2")
+
+
 def render(
     input: str | Ast,
     *,
@@ -101,7 +139,15 @@ def render(
     verbatim in fullwidth braces, and a too-deep or circular ``#include`` resolves
     to an empty string.
     """
-    raise NotImplementedError("render: P2")
+    return render_with(
+        input,
+        make_rng(seed),
+        context=context,
+        locale=locale,
+        include_resolver=include_resolver,
+        post_process=post_process,
+        max_depth=max_depth,
+    )
 
 
 def validate(
