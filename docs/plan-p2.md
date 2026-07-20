@@ -1,6 +1,6 @@
 # P2 — parser, renderer, post-process
 
-Status: **active**. Governing contract: [`spec-python-port.md`](spec-python-port.md).
+Status: **COMPLETE** — all 168 corpus fixtures pass, 0 xfailed, 0 skipped. Governing contract: [`spec-python-port.md`](spec-python-port.md).
 Previous: [`plan-p1.md`](plan-p1.md) — `validate()` and `extract()` are done and green.
 
 P1 left the suite at **180 passed, 126 xfailed, 0 skipped**. That xfail count is P2's progress
@@ -122,9 +122,24 @@ Resolved by the renderer as a post-tree string pass (the plugin resolves include
 so includes stay literal in the tree. Carries the depth and cycle guard: too deep or circular
 resolves to an empty string, never an exception.
 
-### 7. Post-process — 39 cases
+### 7. Post-process — 39 cases ✅
 
-The largest fixture block and the one with a language-level obstacle of its own; see below.
+Done, and the fixtures were the smaller half of the verification. 39 cases is a spot check
+of a dozen interacting rules whose order matters, so the pass was differentially fuzzed
+against the reference on 1922 inputs. That found two divergences the corpus is blind to:
+
+- **A mistranslated `` — 64 of 1922.** JavaScript's word boundary needs a TRANSITION;
+  rendering it as "no word character before" invents boundaries wherever the next
+  character is also non-word, which — JavaScript's word set being ASCII — is every
+  Cyrillic or accented letter. `приме.com` was shielded as a domain here and left alone
+  there, so the spacing and capitalization passes skipped text the reference rewrites.
+- **A broadened `\p{Ll}` — 1 of 1922.** Matching any letter and filtering for lowercase in
+  the callback reads as equivalent and is not: the broadened match still CONSUMES its
+  region, so reaching an uppercase letter through an HTML tag swallows a lowercase one
+  further in. Found *after* that reasoning had been written into a docstring as safe.
+
+Both fixed; 1922/1922 now identical. A curated 614-case slice is frozen as
+`tests/data/postprocess_parity.json`.
 
 ## Decision: no cross-engine sequence parity
 

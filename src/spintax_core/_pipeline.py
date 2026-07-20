@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 
-from . import _neutralize, _parser, _render
+from . import _neutralize, _parser, _postprocess, _render
 from ._ast import Ast, ParsedAst, is_parsed_ast
 from ._errors import AstVersionError
 from ._render import PluralIssue, RenderCtx
@@ -53,15 +53,11 @@ def render_with(
     if post_process:
         # Runs on the still-shielded form: neutralize sentinels are inert to it, which is
         # what lets the cosmetic pass reflow text without seeing a shielded brace as markup.
-        out = _post_process(out)
+        out = _postprocess.post_process(out)
 
     # Not conditional, and not cosmetic. `post_process=False` skips the pass above and
     # never this one — leaving it out would emit private-use code points to the caller.
     return _neutralize.safety_restore(out)
-
-
-def _post_process(text: str) -> str:
-    raise NotImplementedError("post_process: P2 step 7")
 
 
 def _resolve_ast(source: str | Ast) -> ParsedAst:

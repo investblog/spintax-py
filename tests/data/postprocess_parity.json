@@ -1,0 +1,2462 @@
+{
+ "reference_version": "0.3.0",
+ "note": "Generated — do not hand-edit.",
+ "cases": [
+  {
+   "template": "see https://example.com/a?b=1 now",
+   "text": "See https://example.com/a?b=1 now"
+  },
+  {
+   "template": "see https://example.com/a.",
+   "text": "See https://example.com/a."
+  },
+  {
+   "template": "see https://example.com/a. next",
+   "text": "See https://example.com/a. Next"
+  },
+  {
+   "template": "write to mailto:contact@example.com now",
+   "text": "Write to mailto:contact@example.com now"
+  },
+  {
+   "template": "call tel:+1-555-0100 now",
+   "text": "Call tel:+1-555-0100 now"
+  },
+  {
+   "template": "mail me at user@example.com.",
+   "text": "Mail me at user@example.com."
+  },
+  {
+   "template": "visit example.com. then",
+   "text": "Visit example.com. Then"
+  },
+  {
+   "template": "visit sub.example.co.uk now",
+   "text": "Visit sub.example.co.uk now"
+  },
+  {
+   "template": "visit xn--80ak6aa92e.com now",
+   "text": "Visit xn--80ak6aa92e.com now"
+  },
+  {
+   "template": "visit пример.рф now",
+   "text": "Visit пример. Рф now"
+  },
+  {
+   "template": "3.14 is pi",
+   "text": "3.14 is pi"
+  },
+  {
+   "template": "version 1.2.3 shipped",
+   "text": "Version 1.2.3 shipped"
+  },
+  {
+   "template": "1.5 and 2.75 and 10.0",
+   "text": "1.5 and 2.75 and 10.0"
+  },
+  {
+   "template": "a.b.c.d",
+   "text": "a.b.c.d"
+  },
+  {
+   "template": "и т.д. далее",
+   "text": "И т. Д. Далее"
+  },
+  {
+   "template": "и т. д. далее",
+   "text": "И т. Д. Далее"
+  },
+  {
+   "template": "см. стр. 5",
+   "text": "см. стр. 5"
+  },
+  {
+   "template": "Mr. Smith and Dr. Jones",
+   "text": "Mr. Smith and Dr. Jones"
+  },
+  {
+   "template": "etc. and vs. and No. 5",
+   "text": "etc. and vs. and No. 5"
+  },
+  {
+   "template": "г. Москва, ул. Ленина",
+   "text": "г. Москва, ул. Ленина"
+  },
+  {
+   "template": "Inc. Ltd. Co.",
+   "text": "Inc. Ltd. Co."
+  },
+  {
+   "template": "hello ,world",
+   "text": "Hello, world"
+  },
+  {
+   "template": "hello , world",
+   "text": "Hello, world"
+  },
+  {
+   "template": "a,b,c",
+   "text": "A, b, c"
+  },
+  {
+   "template": "a;b:c",
+   "text": "A; b: c"
+  },
+  {
+   "template": "wait...what",
+   "text": "Wait... What"
+  },
+  {
+   "template": "Wow!!!",
+   "text": "Wow!!!"
+  },
+  {
+   "template": "really?!yes",
+   "text": "Really?! Yes"
+  },
+  {
+   "template": "1,5 and 1,50",
+   "text": "1,5 and 1,50"
+  },
+  {
+   "template": "end .",
+   "text": "End."
+  },
+  {
+   "template": "end !",
+   "text": "End!"
+  },
+  {
+   "template": "a ,b ;c :d !e ?f .g",
+   "text": "A, b; c: d! E? F. G"
+  },
+  {
+   "template": "tag<b>x</b>,y",
+   "text": "Tag<b>x</b>, y"
+  },
+  {
+   "template": "hello world",
+   "text": "Hello world"
+  },
+  {
+   "template": "hello. world",
+   "text": "Hello. World"
+  },
+  {
+   "template": "hello! world",
+   "text": "Hello! World"
+  },
+  {
+   "template": "hello? world",
+   "text": "Hello? World"
+  },
+  {
+   "template": "hello… world",
+   "text": "Hello… World"
+  },
+  {
+   "template": "<p>hello</p><p>world</p>",
+   "text": "<p>Hello</p><p>World</p>"
+  },
+  {
+   "template": "<div>x</div>y",
+   "text": "<div>X</div>Y"
+  },
+  {
+   "template": "<li>a</li><li>b</li>",
+   "text": "<li>A</li><li>B</li>"
+  },
+  {
+   "template": "line one\nline two",
+   "text": "Line one\nLine two"
+  },
+  {
+   "template": "<b>bold</b> start",
+   "text": "<b>Bold</b> start"
+  },
+  {
+   "template": "ß first",
+   "text": "SS first"
+  },
+  {
+   "template": "ĸ first",
+   "text": "ĸ first"
+  },
+  {
+   "template": "ǳ first",
+   "text": "Ǳ first"
+  },
+  {
+   "template": "ǅ first",
+   "text": "ǅ first"
+  },
+  {
+   "template": "¿cómo estás?",
+   "text": "¿Cómo estás?"
+  },
+  {
+   "template": "¿ cómo estás ?",
+   "text": "¿Cómo estás?"
+  },
+  {
+   "template": "¡¿Qué haces?!",
+   "text": "¡¿Qué haces?!"
+  },
+  {
+   "template": "¡ hola !",
+   "text": "¡Hola!"
+  },
+  {
+   "template": "<p>¿<a href=\"/x\">necesitas ayuda</a>?</p>",
+   "text": "<p>¿<a href=\"/x\">Necesitas ayuda</a>?</p>"
+  },
+  {
+   "template": "hola. ¿qué tal?",
+   "text": "Hola. ¿Qué tal?"
+  },
+  {
+   "template": "elige. (a) primero",
+   "text": "Elige. (a) primero"
+  },
+  {
+   "template": "  a    b  ",
+   "text": "A b"
+  },
+  {
+   "template": "\ta\t\tb\t",
+   "text": "A b"
+  },
+  {
+   "template": "\n\nleading",
+   "text": "Leading"
+  },
+  {
+   "template": "trailing\n\n",
+   "text": "Trailing"
+  },
+  {
+   "template": " x ",
+   "text": "X"
+  },
+  {
+   "template": "² is a superscript",
+   "text": "² is a superscript"
+  },
+  {
+   "template": "½ of it",
+   "text": "½ of it"
+  },
+  {
+   "template": "Ⅷ roman",
+   "text": "Ⅷ roman"
+  },
+  {
+   "template": "² . x",
+   "text": "². X"
+  },
+  {
+   "template": "{a|a} and {b|b}",
+   "text": "A and b"
+  },
+  {
+   "template": "#set %x% = hello\n%x% world",
+   "text": "Hello world"
+  },
+  {
+   "template": "{plural 1: a|b|c}",
+   "text": "｛plural 1: a|b|c｝"
+  },
+  {
+   "template": "{plural 1: a|b|c} and more",
+   "text": "｛plural 1: a|b|c｝ and more"
+  },
+  {
+   "template": "[a|b|c] end",
+   "text": "B c a end"
+  },
+  {
+   "template": "<h1>title</h1>body",
+   "text": "<h1>Title</h1>Body"
+  },
+  {
+   "template": "<td>cell</td>next",
+   "text": "<td>Cell</td>Next"
+  },
+  {
+   "template": "a<br/>b",
+   "text": "A<br/>b"
+  },
+  {
+   "template": "<blockquote>quote</blockquote>after",
+   "text": "<blockquote>Quote</blockquote>After"
+  },
+  {
+   "template": "start.word",
+   "text": "start.word"
+  },
+  {
+   "template": "start.ünicode",
+   "text": "start.ünicode"
+  },
+  {
+   "template": "start.ß",
+   "text": "Start. SS"
+  },
+  {
+   "template": "start.1x",
+   "text": "Start.1x"
+  },
+  {
+   "template": "start.<i>x</i>",
+   "text": "Start.<i>X</i>"
+  },
+  {
+   "template": "start. word",
+   "text": "Start. Word"
+  },
+  {
+   "template": "start. ünicode",
+   "text": "Start. Ünicode"
+  },
+  {
+   "template": "start. ß",
+   "text": "Start. SS"
+  },
+  {
+   "template": "start. 1x",
+   "text": "Start. 1x"
+  },
+  {
+   "template": "start. <i>x</i>",
+   "text": "Start. <i>X</i>"
+  },
+  {
+   "template": "start.  word",
+   "text": "Start. Word"
+  },
+  {
+   "template": "start.  ünicode",
+   "text": "Start. Ünicode"
+  },
+  {
+   "template": "start.  ß",
+   "text": "Start. SS"
+  },
+  {
+   "template": "start.  1x",
+   "text": "Start. 1x"
+  },
+  {
+   "template": "start.  <i>x</i>",
+   "text": "Start. <i>X</i>"
+  },
+  {
+   "template": "start.<b>word",
+   "text": "Start.<b>Word"
+  },
+  {
+   "template": "start.<b>ünicode",
+   "text": "Start.<b>Ünicode"
+  },
+  {
+   "template": "start.<b>ß",
+   "text": "Start.<b>SS"
+  },
+  {
+   "template": "start.<b>1x",
+   "text": "Start.<b>1x"
+  },
+  {
+   "template": "start.<b><i>x</i>",
+   "text": "Start.<b><i>X</i>"
+  },
+  {
+   "template": "start.<p>word",
+   "text": "Start.<p>Word"
+  },
+  {
+   "template": "start.<p>ünicode",
+   "text": "Start.<p>Ünicode"
+  },
+  {
+   "template": "start.<p>ß",
+   "text": "Start.<p>SS"
+  },
+  {
+   "template": "start.<p>1x",
+   "text": "Start.<p>1x"
+  },
+  {
+   "template": "start.<p><i>x</i>",
+   "text": "Start.<p><i>X</i>"
+  },
+  {
+   "template": "start.¿word",
+   "text": "Start. ¿Word"
+  },
+  {
+   "template": "start.¿ünicode",
+   "text": "Start. ¿Ünicode"
+  },
+  {
+   "template": "start.¿ß",
+   "text": "Start. ¿SS"
+  },
+  {
+   "template": "start.¿1x",
+   "text": "Start. ¿1x"
+  },
+  {
+   "template": "start.¿<i>x</i>",
+   "text": "Start. ¿<i>X</i>"
+  },
+  {
+   "template": "start.¡word",
+   "text": "Start. ¡Word"
+  },
+  {
+   "template": "start.¡ünicode",
+   "text": "Start. ¡Ünicode"
+  },
+  {
+   "template": "start.¡ß",
+   "text": "Start. ¡SS"
+  },
+  {
+   "template": "start.¡1x",
+   "text": "Start. ¡1x"
+  },
+  {
+   "template": "start.¡<i>x</i>",
+   "text": "Start. ¡<i>X</i>"
+  },
+  {
+   "template": "start.¿<b>word",
+   "text": "Start. ¿<b>Word"
+  },
+  {
+   "template": "start.¿<b>ünicode",
+   "text": "Start. ¿<b>Ünicode"
+  },
+  {
+   "template": "start.¿<b>ß",
+   "text": "Start. ¿<b>SS"
+  },
+  {
+   "template": "start.¿<b>1x",
+   "text": "Start. ¿<b>1x"
+  },
+  {
+   "template": "start.¿<b><i>x</i>",
+   "text": "Start. ¿<b><i>X</i>"
+  },
+  {
+   "template": "start. ¿ word",
+   "text": "Start. ¿Word"
+  },
+  {
+   "template": "start. ¿ ünicode",
+   "text": "Start. ¿Ünicode"
+  },
+  {
+   "template": "start. ¿ ß",
+   "text": "Start. ¿SS"
+  },
+  {
+   "template": "start. ¿ 1x",
+   "text": "Start. ¿1x"
+  },
+  {
+   "template": "start. ¿ <i>x</i>",
+   "text": "Start. ¿<i>X</i>"
+  },
+  {
+   "template": "start.<b> ¿word",
+   "text": "Start.<b> ¿Word"
+  },
+  {
+   "template": "start.<b> ¿ünicode",
+   "text": "Start.<b> ¿Ünicode"
+  },
+  {
+   "template": "start.<b> ¿ß",
+   "text": "Start.<b> ¿SS"
+  },
+  {
+   "template": "start.<b> ¿1x",
+   "text": "Start.<b> ¿1x"
+  },
+  {
+   "template": "start.<b> ¿<i>x</i>",
+   "text": "Start.<b> ¿<i>X</i>"
+  },
+  {
+   "template": "start!word",
+   "text": "Start! Word"
+  },
+  {
+   "template": "start!ünicode",
+   "text": "Start! Ünicode"
+  },
+  {
+   "template": "start!ß",
+   "text": "Start! SS"
+  },
+  {
+   "template": "start!1x",
+   "text": "Start!1x"
+  },
+  {
+   "template": "start!<i>x</i>",
+   "text": "Start!<i>X</i>"
+  },
+  {
+   "template": "start! word",
+   "text": "Start! Word"
+  },
+  {
+   "template": "start! ünicode",
+   "text": "Start! Ünicode"
+  },
+  {
+   "template": "start! ß",
+   "text": "Start! SS"
+  },
+  {
+   "template": "start! 1x",
+   "text": "Start! 1x"
+  },
+  {
+   "template": "start! <i>x</i>",
+   "text": "Start! <i>X</i>"
+  },
+  {
+   "template": "start!  word",
+   "text": "Start! Word"
+  },
+  {
+   "template": "start!  ünicode",
+   "text": "Start! Ünicode"
+  },
+  {
+   "template": "start!  ß",
+   "text": "Start! SS"
+  },
+  {
+   "template": "start!  1x",
+   "text": "Start! 1x"
+  },
+  {
+   "template": "start!  <i>x</i>",
+   "text": "Start! <i>X</i>"
+  },
+  {
+   "template": "start!<b>word",
+   "text": "Start!<b>Word"
+  },
+  {
+   "template": "start!<b>ünicode",
+   "text": "Start!<b>Ünicode"
+  },
+  {
+   "template": "start!<b>ß",
+   "text": "Start!<b>SS"
+  },
+  {
+   "template": "start!<b>1x",
+   "text": "Start!<b>1x"
+  },
+  {
+   "template": "start!<b><i>x</i>",
+   "text": "Start!<b><i>X</i>"
+  },
+  {
+   "template": "start!<p>word",
+   "text": "Start!<p>Word"
+  },
+  {
+   "template": "start!<p>ünicode",
+   "text": "Start!<p>Ünicode"
+  },
+  {
+   "template": "start!<p>ß",
+   "text": "Start!<p>SS"
+  },
+  {
+   "template": "start!<p>1x",
+   "text": "Start!<p>1x"
+  },
+  {
+   "template": "start!<p><i>x</i>",
+   "text": "Start!<p><i>X</i>"
+  },
+  {
+   "template": "start!¿word",
+   "text": "Start! ¿Word"
+  },
+  {
+   "template": "start!¿ünicode",
+   "text": "Start! ¿Ünicode"
+  },
+  {
+   "template": "start!¿ß",
+   "text": "Start! ¿SS"
+  },
+  {
+   "template": "start!¿1x",
+   "text": "Start! ¿1x"
+  },
+  {
+   "template": "start!¿<i>x</i>",
+   "text": "Start! ¿<i>X</i>"
+  },
+  {
+   "template": "start!¡word",
+   "text": "Start! ¡Word"
+  },
+  {
+   "template": "start!¡ünicode",
+   "text": "Start! ¡Ünicode"
+  },
+  {
+   "template": "start!¡ß",
+   "text": "Start! ¡SS"
+  },
+  {
+   "template": "start!¡1x",
+   "text": "Start! ¡1x"
+  },
+  {
+   "template": "start!¡<i>x</i>",
+   "text": "Start! ¡<i>X</i>"
+  },
+  {
+   "template": "start!¿<b>word",
+   "text": "Start! ¿<b>Word"
+  },
+  {
+   "template": "start!¿<b>ünicode",
+   "text": "Start! ¿<b>Ünicode"
+  },
+  {
+   "template": "start!¿<b>ß",
+   "text": "Start! ¿<b>SS"
+  },
+  {
+   "template": "start!¿<b>1x",
+   "text": "Start! ¿<b>1x"
+  },
+  {
+   "template": "start!¿<b><i>x</i>",
+   "text": "Start! ¿<b><i>X</i>"
+  },
+  {
+   "template": "start! ¿ word",
+   "text": "Start! ¿Word"
+  },
+  {
+   "template": "start! ¿ ünicode",
+   "text": "Start! ¿Ünicode"
+  },
+  {
+   "template": "start! ¿ ß",
+   "text": "Start! ¿SS"
+  },
+  {
+   "template": "start! ¿ 1x",
+   "text": "Start! ¿1x"
+  },
+  {
+   "template": "start! ¿ <i>x</i>",
+   "text": "Start! ¿<i>X</i>"
+  },
+  {
+   "template": "start!<b> ¿word",
+   "text": "Start!<b> ¿Word"
+  },
+  {
+   "template": "start!<b> ¿ünicode",
+   "text": "Start!<b> ¿Ünicode"
+  },
+  {
+   "template": "start!<b> ¿ß",
+   "text": "Start!<b> ¿SS"
+  },
+  {
+   "template": "start!<b> ¿1x",
+   "text": "Start!<b> ¿1x"
+  },
+  {
+   "template": "start!<b> ¿<i>x</i>",
+   "text": "Start!<b> ¿<i>X</i>"
+  },
+  {
+   "template": "start?word",
+   "text": "Start? Word"
+  },
+  {
+   "template": "start?ünicode",
+   "text": "Start? Ünicode"
+  },
+  {
+   "template": "start?ß",
+   "text": "Start? SS"
+  },
+  {
+   "template": "start?1x",
+   "text": "Start?1x"
+  },
+  {
+   "template": "start?<i>x</i>",
+   "text": "Start?<i>X</i>"
+  },
+  {
+   "template": "start? word",
+   "text": "Start? Word"
+  },
+  {
+   "template": "start? ünicode",
+   "text": "Start? Ünicode"
+  },
+  {
+   "template": "start? ß",
+   "text": "Start? SS"
+  },
+  {
+   "template": "start? 1x",
+   "text": "Start? 1x"
+  },
+  {
+   "template": "start? <i>x</i>",
+   "text": "Start? <i>X</i>"
+  },
+  {
+   "template": "start?  word",
+   "text": "Start? Word"
+  },
+  {
+   "template": "start?  ünicode",
+   "text": "Start? Ünicode"
+  },
+  {
+   "template": "start?  ß",
+   "text": "Start? SS"
+  },
+  {
+   "template": "start?  1x",
+   "text": "Start? 1x"
+  },
+  {
+   "template": "start?  <i>x</i>",
+   "text": "Start? <i>X</i>"
+  },
+  {
+   "template": "start?<b>word",
+   "text": "Start?<b>Word"
+  },
+  {
+   "template": "start?<b>ünicode",
+   "text": "Start?<b>Ünicode"
+  },
+  {
+   "template": "start?<b>ß",
+   "text": "Start?<b>SS"
+  },
+  {
+   "template": "start?<b>1x",
+   "text": "Start?<b>1x"
+  },
+  {
+   "template": "start?<b><i>x</i>",
+   "text": "Start?<b><i>X</i>"
+  },
+  {
+   "template": "start?<p>word",
+   "text": "Start?<p>Word"
+  },
+  {
+   "template": "start?<p>ünicode",
+   "text": "Start?<p>Ünicode"
+  },
+  {
+   "template": "start?<p>ß",
+   "text": "Start?<p>SS"
+  },
+  {
+   "template": "start?<p>1x",
+   "text": "Start?<p>1x"
+  },
+  {
+   "template": "start?<p><i>x</i>",
+   "text": "Start?<p><i>X</i>"
+  },
+  {
+   "template": "start?¿word",
+   "text": "Start? ¿Word"
+  },
+  {
+   "template": "start?¿ünicode",
+   "text": "Start? ¿Ünicode"
+  },
+  {
+   "template": "start?¿ß",
+   "text": "Start? ¿SS"
+  },
+  {
+   "template": "start?¿1x",
+   "text": "Start? ¿1x"
+  },
+  {
+   "template": "start?¿<i>x</i>",
+   "text": "Start? ¿<i>X</i>"
+  },
+  {
+   "template": "start?¡word",
+   "text": "Start? ¡Word"
+  },
+  {
+   "template": "start?¡ünicode",
+   "text": "Start? ¡Ünicode"
+  },
+  {
+   "template": "start?¡ß",
+   "text": "Start? ¡SS"
+  },
+  {
+   "template": "start?¡1x",
+   "text": "Start? ¡1x"
+  },
+  {
+   "template": "start?¡<i>x</i>",
+   "text": "Start? ¡<i>X</i>"
+  },
+  {
+   "template": "start?¿<b>word",
+   "text": "Start? ¿<b>Word"
+  },
+  {
+   "template": "start?¿<b>ünicode",
+   "text": "Start? ¿<b>Ünicode"
+  },
+  {
+   "template": "start?¿<b>ß",
+   "text": "Start? ¿<b>SS"
+  },
+  {
+   "template": "start?¿<b>1x",
+   "text": "Start? ¿<b>1x"
+  },
+  {
+   "template": "start?¿<b><i>x</i>",
+   "text": "Start? ¿<b><i>X</i>"
+  },
+  {
+   "template": "start? ¿ word",
+   "text": "Start? ¿Word"
+  },
+  {
+   "template": "start? ¿ ünicode",
+   "text": "Start? ¿Ünicode"
+  },
+  {
+   "template": "start? ¿ ß",
+   "text": "Start? ¿SS"
+  },
+  {
+   "template": "start? ¿ 1x",
+   "text": "Start? ¿1x"
+  },
+  {
+   "template": "start? ¿ <i>x</i>",
+   "text": "Start? ¿<i>X</i>"
+  },
+  {
+   "template": "start?<b> ¿word",
+   "text": "Start?<b> ¿Word"
+  },
+  {
+   "template": "start?<b> ¿ünicode",
+   "text": "Start?<b> ¿Ünicode"
+  },
+  {
+   "template": "start?<b> ¿ß",
+   "text": "Start?<b> ¿SS"
+  },
+  {
+   "template": "start?<b> ¿1x",
+   "text": "Start?<b> ¿1x"
+  },
+  {
+   "template": "start?<b> ¿<i>x</i>",
+   "text": "Start?<b> ¿<i>X</i>"
+  },
+  {
+   "template": "start…word",
+   "text": "Start…Word"
+  },
+  {
+   "template": "start…ünicode",
+   "text": "Start…Ünicode"
+  },
+  {
+   "template": "start…ß",
+   "text": "Start…SS"
+  },
+  {
+   "template": "start…1x",
+   "text": "Start…1x"
+  },
+  {
+   "template": "start…<i>x</i>",
+   "text": "Start…<i>X</i>"
+  },
+  {
+   "template": "start… word",
+   "text": "Start… Word"
+  },
+  {
+   "template": "start… ünicode",
+   "text": "Start… Ünicode"
+  },
+  {
+   "template": "start… ß",
+   "text": "Start… SS"
+  },
+  {
+   "template": "start… 1x",
+   "text": "Start… 1x"
+  },
+  {
+   "template": "start… <i>x</i>",
+   "text": "Start… <i>X</i>"
+  },
+  {
+   "template": "start…  word",
+   "text": "Start… Word"
+  },
+  {
+   "template": "start…  ünicode",
+   "text": "Start… Ünicode"
+  },
+  {
+   "template": "start…  ß",
+   "text": "Start… SS"
+  },
+  {
+   "template": "start…  1x",
+   "text": "Start… 1x"
+  },
+  {
+   "template": "start…  <i>x</i>",
+   "text": "Start… <i>X</i>"
+  },
+  {
+   "template": "start…<b>word",
+   "text": "Start…<b>Word"
+  },
+  {
+   "template": "start…<b>ünicode",
+   "text": "Start…<b>Ünicode"
+  },
+  {
+   "template": "start…<b>ß",
+   "text": "Start…<b>SS"
+  },
+  {
+   "template": "start…<b>1x",
+   "text": "Start…<b>1x"
+  },
+  {
+   "template": "start…<b><i>x</i>",
+   "text": "Start…<b><i>X</i>"
+  },
+  {
+   "template": "start…<p>word",
+   "text": "Start…<p>Word"
+  },
+  {
+   "template": "start…<p>ünicode",
+   "text": "Start…<p>Ünicode"
+  },
+  {
+   "template": "start…<p>ß",
+   "text": "Start…<p>SS"
+  },
+  {
+   "template": "start…<p>1x",
+   "text": "Start…<p>1x"
+  },
+  {
+   "template": "start…<p><i>x</i>",
+   "text": "Start…<p><i>X</i>"
+  },
+  {
+   "template": "start…¿word",
+   "text": "Start…¿Word"
+  },
+  {
+   "template": "start…¿ünicode",
+   "text": "Start…¿Ünicode"
+  },
+  {
+   "template": "start…¿ß",
+   "text": "Start…¿SS"
+  },
+  {
+   "template": "start…¿1x",
+   "text": "Start…¿1x"
+  },
+  {
+   "template": "start…¿<i>x</i>",
+   "text": "Start…¿<i>X</i>"
+  },
+  {
+   "template": "start…¡word",
+   "text": "Start…¡Word"
+  },
+  {
+   "template": "start…¡ünicode",
+   "text": "Start…¡Ünicode"
+  },
+  {
+   "template": "start…¡ß",
+   "text": "Start…¡SS"
+  },
+  {
+   "template": "start…¡1x",
+   "text": "Start…¡1x"
+  },
+  {
+   "template": "start…¡<i>x</i>",
+   "text": "Start…¡<i>X</i>"
+  },
+  {
+   "template": "start…¿<b>word",
+   "text": "Start…¿<b>Word"
+  },
+  {
+   "template": "start…¿<b>ünicode",
+   "text": "Start…¿<b>Ünicode"
+  },
+  {
+   "template": "start…¿<b>ß",
+   "text": "Start…¿<b>SS"
+  },
+  {
+   "template": "start…¿<b>1x",
+   "text": "Start…¿<b>1x"
+  },
+  {
+   "template": "start…¿<b><i>x</i>",
+   "text": "Start…¿<b><i>X</i>"
+  },
+  {
+   "template": "start… ¿ word",
+   "text": "Start… ¿Word"
+  },
+  {
+   "template": "start… ¿ ünicode",
+   "text": "Start… ¿Ünicode"
+  },
+  {
+   "template": "start… ¿ ß",
+   "text": "Start… ¿SS"
+  },
+  {
+   "template": "start… ¿ 1x",
+   "text": "Start… ¿1x"
+  },
+  {
+   "template": "start… ¿ <i>x</i>",
+   "text": "Start… ¿<i>X</i>"
+  },
+  {
+   "template": "start…<b> ¿word",
+   "text": "Start…<b> ¿Word"
+  },
+  {
+   "template": "start…<b> ¿ünicode",
+   "text": "Start…<b> ¿Ünicode"
+  },
+  {
+   "template": "start…<b> ¿ß",
+   "text": "Start…<b> ¿SS"
+  },
+  {
+   "template": "start…<b> ¿1x",
+   "text": "Start…<b> ¿1x"
+  },
+  {
+   "template": "start…<b> ¿<i>x</i>",
+   "text": "Start…<b> ¿<i>X</i>"
+  },
+  {
+   "template": "start!!word",
+   "text": "Start!! Word"
+  },
+  {
+   "template": "start!!ünicode",
+   "text": "Start!! Ünicode"
+  },
+  {
+   "template": "start!!ß",
+   "text": "Start!! SS"
+  },
+  {
+   "template": "start!!1x",
+   "text": "Start!!1x"
+  },
+  {
+   "template": "start!!<i>x</i>",
+   "text": "Start!!<i>X</i>"
+  },
+  {
+   "template": "start!! word",
+   "text": "Start!! Word"
+  },
+  {
+   "template": "start!! ünicode",
+   "text": "Start!! Ünicode"
+  },
+  {
+   "template": "start!! ß",
+   "text": "Start!! SS"
+  },
+  {
+   "template": "start!! 1x",
+   "text": "Start!! 1x"
+  },
+  {
+   "template": "start!! <i>x</i>",
+   "text": "Start!! <i>X</i>"
+  },
+  {
+   "template": "start!!  word",
+   "text": "Start!! Word"
+  },
+  {
+   "template": "start!!  ünicode",
+   "text": "Start!! Ünicode"
+  },
+  {
+   "template": "start!!  ß",
+   "text": "Start!! SS"
+  },
+  {
+   "template": "start!!  1x",
+   "text": "Start!! 1x"
+  },
+  {
+   "template": "start!!  <i>x</i>",
+   "text": "Start!! <i>X</i>"
+  },
+  {
+   "template": "start!!<b>word",
+   "text": "Start!!<b>Word"
+  },
+  {
+   "template": "start!!<b>ünicode",
+   "text": "Start!!<b>Ünicode"
+  },
+  {
+   "template": "start!!<b>ß",
+   "text": "Start!!<b>SS"
+  },
+  {
+   "template": "start!!<b>1x",
+   "text": "Start!!<b>1x"
+  },
+  {
+   "template": "start!!<b><i>x</i>",
+   "text": "Start!!<b><i>X</i>"
+  },
+  {
+   "template": "start!!<p>word",
+   "text": "Start!!<p>Word"
+  },
+  {
+   "template": "start!!<p>ünicode",
+   "text": "Start!!<p>Ünicode"
+  },
+  {
+   "template": "start!!<p>ß",
+   "text": "Start!!<p>SS"
+  },
+  {
+   "template": "start!!<p>1x",
+   "text": "Start!!<p>1x"
+  },
+  {
+   "template": "start!!<p><i>x</i>",
+   "text": "Start!!<p><i>X</i>"
+  },
+  {
+   "template": "start!!¿word",
+   "text": "Start!! ¿Word"
+  },
+  {
+   "template": "start!!¿ünicode",
+   "text": "Start!! ¿Ünicode"
+  },
+  {
+   "template": "start!!¿ß",
+   "text": "Start!! ¿SS"
+  },
+  {
+   "template": "start!!¿1x",
+   "text": "Start!! ¿1x"
+  },
+  {
+   "template": "start!!¿<i>x</i>",
+   "text": "Start!! ¿<i>X</i>"
+  },
+  {
+   "template": "start!!¡word",
+   "text": "Start!! ¡Word"
+  },
+  {
+   "template": "start!!¡ünicode",
+   "text": "Start!! ¡Ünicode"
+  },
+  {
+   "template": "start!!¡ß",
+   "text": "Start!! ¡SS"
+  },
+  {
+   "template": "start!!¡1x",
+   "text": "Start!! ¡1x"
+  },
+  {
+   "template": "start!!¡<i>x</i>",
+   "text": "Start!! ¡<i>X</i>"
+  },
+  {
+   "template": "start!!¿<b>word",
+   "text": "Start!! ¿<b>Word"
+  },
+  {
+   "template": "start!!¿<b>ünicode",
+   "text": "Start!! ¿<b>Ünicode"
+  },
+  {
+   "template": "start!!¿<b>ß",
+   "text": "Start!! ¿<b>SS"
+  },
+  {
+   "template": "start!!¿<b>1x",
+   "text": "Start!! ¿<b>1x"
+  },
+  {
+   "template": "start!!¿<b><i>x</i>",
+   "text": "Start!! ¿<b><i>X</i>"
+  },
+  {
+   "template": "start!! ¿ word",
+   "text": "Start!! ¿Word"
+  },
+  {
+   "template": "start!! ¿ ünicode",
+   "text": "Start!! ¿Ünicode"
+  },
+  {
+   "template": "start!! ¿ ß",
+   "text": "Start!! ¿SS"
+  },
+  {
+   "template": "start!! ¿ 1x",
+   "text": "Start!! ¿1x"
+  },
+  {
+   "template": "start!! ¿ <i>x</i>",
+   "text": "Start!! ¿<i>X</i>"
+  },
+  {
+   "template": "start!!<b> ¿word",
+   "text": "Start!!<b> ¿Word"
+  },
+  {
+   "template": "start!!<b> ¿ünicode",
+   "text": "Start!!<b> ¿Ünicode"
+  },
+  {
+   "template": "start!!<b> ¿ß",
+   "text": "Start!!<b> ¿SS"
+  },
+  {
+   "template": "start!!<b> ¿1x",
+   "text": "Start!!<b> ¿1x"
+  },
+  {
+   "template": "start!!<b> ¿<i>x</i>",
+   "text": "Start!!<b> ¿<i>X</i>"
+  },
+  {
+   "template": "start?!word",
+   "text": "Start?! Word"
+  },
+  {
+   "template": "start?!ünicode",
+   "text": "Start?! Ünicode"
+  },
+  {
+   "template": "start?!ß",
+   "text": "Start?! SS"
+  },
+  {
+   "template": "start?!1x",
+   "text": "Start?!1x"
+  },
+  {
+   "template": "start?!<i>x</i>",
+   "text": "Start?!<i>X</i>"
+  },
+  {
+   "template": "start?! word",
+   "text": "Start?! Word"
+  },
+  {
+   "template": "start?! ünicode",
+   "text": "Start?! Ünicode"
+  },
+  {
+   "template": "start?! ß",
+   "text": "Start?! SS"
+  },
+  {
+   "template": "start?! 1x",
+   "text": "Start?! 1x"
+  },
+  {
+   "template": "start?! <i>x</i>",
+   "text": "Start?! <i>X</i>"
+  },
+  {
+   "template": "start?!  word",
+   "text": "Start?! Word"
+  },
+  {
+   "template": "start?!  ünicode",
+   "text": "Start?! Ünicode"
+  },
+  {
+   "template": "start?!  ß",
+   "text": "Start?! SS"
+  },
+  {
+   "template": "start?!  1x",
+   "text": "Start?! 1x"
+  },
+  {
+   "template": "start?!  <i>x</i>",
+   "text": "Start?! <i>X</i>"
+  },
+  {
+   "template": "start?!<b>word",
+   "text": "Start?!<b>Word"
+  },
+  {
+   "template": "start?!<b>ünicode",
+   "text": "Start?!<b>Ünicode"
+  },
+  {
+   "template": "start?!<b>ß",
+   "text": "Start?!<b>SS"
+  },
+  {
+   "template": "start?!<b>1x",
+   "text": "Start?!<b>1x"
+  },
+  {
+   "template": "start?!<b><i>x</i>",
+   "text": "Start?!<b><i>X</i>"
+  },
+  {
+   "template": "start?!<p>word",
+   "text": "Start?!<p>Word"
+  },
+  {
+   "template": "start?!<p>ünicode",
+   "text": "Start?!<p>Ünicode"
+  },
+  {
+   "template": "start?!<p>ß",
+   "text": "Start?!<p>SS"
+  },
+  {
+   "template": "start?!<p>1x",
+   "text": "Start?!<p>1x"
+  },
+  {
+   "template": "start?!<p><i>x</i>",
+   "text": "Start?!<p><i>X</i>"
+  },
+  {
+   "template": "start?!¿word",
+   "text": "Start?! ¿Word"
+  },
+  {
+   "template": "start?!¿ünicode",
+   "text": "Start?! ¿Ünicode"
+  },
+  {
+   "template": "start?!¿ß",
+   "text": "Start?! ¿SS"
+  },
+  {
+   "template": "start?!¿1x",
+   "text": "Start?! ¿1x"
+  },
+  {
+   "template": "start?!¿<i>x</i>",
+   "text": "Start?! ¿<i>X</i>"
+  },
+  {
+   "template": "start?!¡word",
+   "text": "Start?! ¡Word"
+  },
+  {
+   "template": "start?!¡ünicode",
+   "text": "Start?! ¡Ünicode"
+  },
+  {
+   "template": "start?!¡ß",
+   "text": "Start?! ¡SS"
+  },
+  {
+   "template": "start?!¡1x",
+   "text": "Start?! ¡1x"
+  },
+  {
+   "template": "start?!¡<i>x</i>",
+   "text": "Start?! ¡<i>X</i>"
+  },
+  {
+   "template": "start?!¿<b>word",
+   "text": "Start?! ¿<b>Word"
+  },
+  {
+   "template": "start?!¿<b>ünicode",
+   "text": "Start?! ¿<b>Ünicode"
+  },
+  {
+   "template": "start?!¿<b>ß",
+   "text": "Start?! ¿<b>SS"
+  },
+  {
+   "template": "start?!¿<b>1x",
+   "text": "Start?! ¿<b>1x"
+  },
+  {
+   "template": "start?!¿<b><i>x</i>",
+   "text": "Start?! ¿<b><i>X</i>"
+  },
+  {
+   "template": "start?! ¿ word",
+   "text": "Start?! ¿Word"
+  },
+  {
+   "template": "start?! ¿ ünicode",
+   "text": "Start?! ¿Ünicode"
+  },
+  {
+   "template": "start?! ¿ ß",
+   "text": "Start?! ¿SS"
+  },
+  {
+   "template": "start?! ¿ 1x",
+   "text": "Start?! ¿1x"
+  },
+  {
+   "template": "start?! ¿ <i>x</i>",
+   "text": "Start?! ¿<i>X</i>"
+  },
+  {
+   "template": "start?!<b> ¿word",
+   "text": "Start?!<b> ¿Word"
+  },
+  {
+   "template": "start?!<b> ¿ünicode",
+   "text": "Start?!<b> ¿Ünicode"
+  },
+  {
+   "template": "start?!<b> ¿ß",
+   "text": "Start?!<b> ¿SS"
+  },
+  {
+   "template": "start?!<b> ¿1x",
+   "text": "Start?!<b> ¿1x"
+  },
+  {
+   "template": "start?!<b> ¿<i>x</i>",
+   "text": "Start?!<b> ¿<i>X</i>"
+  },
+  {
+   "template": "start...word",
+   "text": "Start... Word"
+  },
+  {
+   "template": "start...ünicode",
+   "text": "Start... Ünicode"
+  },
+  {
+   "template": "start...ß",
+   "text": "Start... SS"
+  },
+  {
+   "template": "start...1x",
+   "text": "Start...1x"
+  },
+  {
+   "template": "start...<i>x</i>",
+   "text": "Start...<i>X</i>"
+  },
+  {
+   "template": "start... word",
+   "text": "Start... Word"
+  },
+  {
+   "template": "start... ünicode",
+   "text": "Start... Ünicode"
+  },
+  {
+   "template": "start... ß",
+   "text": "Start... SS"
+  },
+  {
+   "template": "start... 1x",
+   "text": "Start... 1x"
+  },
+  {
+   "template": "start... <i>x</i>",
+   "text": "Start... <i>X</i>"
+  },
+  {
+   "template": "start...  word",
+   "text": "Start... Word"
+  },
+  {
+   "template": "start...  ünicode",
+   "text": "Start... Ünicode"
+  },
+  {
+   "template": "start...  ß",
+   "text": "Start... SS"
+  },
+  {
+   "template": "start...  1x",
+   "text": "Start... 1x"
+  },
+  {
+   "template": "start...  <i>x</i>",
+   "text": "Start... <i>X</i>"
+  },
+  {
+   "template": "start...<b>word",
+   "text": "Start...<b>Word"
+  },
+  {
+   "template": "start...<b>ünicode",
+   "text": "Start...<b>Ünicode"
+  },
+  {
+   "template": "start...<b>ß",
+   "text": "Start...<b>SS"
+  },
+  {
+   "template": "start...<b>1x",
+   "text": "Start...<b>1x"
+  },
+  {
+   "template": "start...<b><i>x</i>",
+   "text": "Start...<b><i>X</i>"
+  },
+  {
+   "template": "start...<p>word",
+   "text": "Start...<p>Word"
+  },
+  {
+   "template": "start...<p>ünicode",
+   "text": "Start...<p>Ünicode"
+  },
+  {
+   "template": "start...<p>ß",
+   "text": "Start...<p>SS"
+  },
+  {
+   "template": "start...<p>1x",
+   "text": "Start...<p>1x"
+  },
+  {
+   "template": "start...<p><i>x</i>",
+   "text": "Start...<p><i>X</i>"
+  },
+  {
+   "template": "start...¿word",
+   "text": "Start... ¿Word"
+  },
+  {
+   "template": "start...¿ünicode",
+   "text": "Start... ¿Ünicode"
+  },
+  {
+   "template": "start...¿ß",
+   "text": "Start... ¿SS"
+  },
+  {
+   "template": "start...¿1x",
+   "text": "Start... ¿1x"
+  },
+  {
+   "template": "start...¿<i>x</i>",
+   "text": "Start... ¿<i>X</i>"
+  },
+  {
+   "template": "start...¡word",
+   "text": "Start... ¡Word"
+  },
+  {
+   "template": "start...¡ünicode",
+   "text": "Start... ¡Ünicode"
+  },
+  {
+   "template": "start...¡ß",
+   "text": "Start... ¡SS"
+  },
+  {
+   "template": "start...¡1x",
+   "text": "Start... ¡1x"
+  },
+  {
+   "template": "start...¡<i>x</i>",
+   "text": "Start... ¡<i>X</i>"
+  },
+  {
+   "template": "start...¿<b>word",
+   "text": "Start... ¿<b>Word"
+  },
+  {
+   "template": "start...¿<b>ünicode",
+   "text": "Start... ¿<b>Ünicode"
+  },
+  {
+   "template": "start...¿<b>ß",
+   "text": "Start... ¿<b>SS"
+  },
+  {
+   "template": "start...¿<b>1x",
+   "text": "Start... ¿<b>1x"
+  },
+  {
+   "template": "start...¿<b><i>x</i>",
+   "text": "Start... ¿<b><i>X</i>"
+  },
+  {
+   "template": "start... ¿ word",
+   "text": "Start... ¿Word"
+  },
+  {
+   "template": "start... ¿ ünicode",
+   "text": "Start... ¿Ünicode"
+  },
+  {
+   "template": "start... ¿ ß",
+   "text": "Start... ¿SS"
+  },
+  {
+   "template": "start... ¿ 1x",
+   "text": "Start... ¿1x"
+  },
+  {
+   "template": "start... ¿ <i>x</i>",
+   "text": "Start... ¿<i>X</i>"
+  },
+  {
+   "template": "start...<b> ¿word",
+   "text": "Start...<b> ¿Word"
+  },
+  {
+   "template": "start...<b> ¿ünicode",
+   "text": "Start...<b> ¿Ünicode"
+  },
+  {
+   "template": "start...<b> ¿ß",
+   "text": "Start...<b> ¿SS"
+  },
+  {
+   "template": "@X.com>¡a.http://x.io34p¿aY>2примеZa2-X?4i/ib6",
+   "text": "@X.com>¡a. http://x.io34p¿aY>2примеZa2-X?4i/ib6"
+  },
+  {
+   "template": "\nß>примеb753\t 4;¿",
+   "text": "SS>примеb753 4; ¿"
+  },
+  {
+   "template": "7¡<:b\nYпримеcXX9/Za½!b6приме4:0приме",
+   "text": "7¡<: b\nYпримеcXX9/Za½! B6приме4:0приме"
+  },
+  {
+   "template": "  4.\t.com8cbc80;http://x.io\nX4,2;@ĸ\t>",
+   "text": "4.. Com8cbc80; http://x.io\nX4,2; @ĸ\t>"
+  },
+  {
+   "template": "¿½6c@>?¿9.9,4.comприме:¿>ĸ?60½http://x.iop,¡--приме…Y¡ĸ¡!3-@9",
+   "text": "¿½6c@>? ¿9.9, 4.comприме: ¿>ĸ?60½http://x.iop,¡--приме…Y¡ĸ¡!3-@9"
+  },
+  {
+   "template": "²-ĸ0-c010:¡3c05",
+   "text": "²-ĸ0-c010: ¡3c05"
+  },
+  {
+   "template": "½9\ti4¡…47Yp8925¿,\t82ĸii¡.Xp<:7.b",
+   "text": "½9\ti4¡…47Yp8925¿,\t82ĸii¡. Xp<:7. B"
+  },
+  {
+   "template": "-a¡6 0!-ĸ<!:ĸb5",
+   "text": "-a¡6 0! -ĸ<! : ĸb5"
+  },
+  {
+   "template": "-ba@:b6http://x.iopb!Z2.b!aYb6b;c8 ĸ½a¡ĸ",
+   "text": "-ba@: b6http://x.iopb!Z2.b!aYb6b;c8 ĸ½a¡ĸ"
+  },
+  {
+   "template": "Z,²?-4½2/>83@>http://x.io\tY7Y¡: !X1<ß97@",
+   "text": "Z, ²? -4½2/>83@>http://x.io\tY7Y¡: ! X1<ß97@"
+  },
+  {
+   "template": " b99http://x.io\n/pYp<0ß1 ĸ!c54http://x.io",
+   "text": "B99http://x.io\n/pYp<0ß1 ĸ! C54http://x.io"
+  },
+  {
+   "template": ",>приме-,c½…i¡\n2½5\t5…Za67 ;http://x.io",
+   "text": ", >приме-, c½…I¡2½5\t5…Za67; http://x.io"
+  },
+  {
+   "template": "/?,Y¿?920i;>\nXb,cb9@5",
+   "text": "/? , Y¿?920i; >\nXb, cb9@5"
+  },
+  {
+   "template": "?5a¡ ß.com:¡cY7…приме6,<…/9",
+   "text": "?5a¡ß. Com: ¡cY7…Приме6,<…/9"
+  },
+  {
+   "template": "bi-:4> \t8\n;7½ß7…¡приме:примеaYß,b.7a42http://x.io>9приме¿719 ",
+   "text": "Bi-:4> 8;7½ß7…¡Приме: примеaYß, b.7a42http://x.io>9приме¿719"
+  },
+  {
+   "template": "…Z…!¡ĸ3\nc:2½¿<413",
+   "text": "…Z…! ¡ĸ3\nC:2½¿<413"
+  },
+  {
+   "template": "ß2bb¿?",
+   "text": "SS2bb¿?"
+  },
+  {
+   "template": "ß1X.comĸc-",
+   "text": "SS1X.comĸc-"
+  },
+  {
+   "template": "?8¿?7приме4…4ß>Yhttp://x.io/¿http://x.ioYĸ7-примеc3.com½X2ß;примеb-0;@i5b",
+   "text": "?8¿?7приме4…4ß>Yhttp://x.io/¿http://x.ioYĸ7-примеc3.com½X2ß;примеb-0;@i5b"
+  },
+  {
+   "template": "²приме?½ ĸ.com;Y?¡2http://x.io½¡b/b-Za¿0¿¿,",
+   "text": "²приме? ½ ĸ. Com; Y? ¡2http://x.io½¡b/b-Za¿0¿¿,"
+  },
+  {
+   "template": "ß10…\n4<…aaip;7-?ß",
+   "text": "SS10…\n4<…Aaip;7-? SS"
+  },
+  {
+   "template": "b",
+   "text": "B"
+  },
+  {
+   "template": "-0:Z;5.5@4ba4a-?: 0!3 ",
+   "text": "-0: Z; 5.5@4ba4a-? : 0!3"
+  },
+  {
+   "template": "\np086½ примеZ?,b¡X-9",
+   "text": "P086½ примеZ? , b¡X-9"
+  },
+  {
+   "template": "1,1Z2ab/\tприме.com>½½/i.,/c.comc7> b!8282",
+   "text": "1,1Z2ab/\tприме. Com>½½/i. , /c.comc7> b!8282"
+  },
+  {
+   "template": "2¿!27\t3a¿2.com>.comприме2 ¿<Z!X½ĸ\ncbc9Y-:Y\n",
+   "text": "2¿!27\t3a¿2.com>. Comприме2 ¿<Z! X½ĸ\nCbc9Y-: Y"
+  },
+  {
+   "template": "?Y¿",
+   "text": "? Y¿"
+  },
+  {
+   "template": "Y81;…",
+   "text": "Y81; …"
+  },
+  {
+   "template": "½b0…b-X",
+   "text": "½b0…B-X"
+  },
+  {
+   "template": "приме½?c@².\n?/http://x.io.com3……приме?/9¡http://x.iohttp://x.ioß@71\t…aXhttp://x.io5\n…¿.comX",
+   "text": "Приме½? C@².? /http://x.io.com3……приме?/9¡http://x.iohttp://x.ioß@71\t…AXhttp://x.io5\n…¿. ComX"
+  },
+  {
+   "template": "ZYpY примеZ¡b¡ß½¡:6c…ß:½½7.com²@6",
+   "text": "ZYpY примеZ¡b¡ß½¡:6c…SS: ½½7.com²@6"
+  },
+  {
+   "template": "1-17\t½<X<-½http://x.iohttp://x.io10\tb<\n!.,\nb",
+   "text": "1-17\t½<X<-½http://x.iohttp://x.io10\tb<!. ,\nB"
+  },
+  {
+   "template": "c:@¡98\n²?ĸ@>bb0¡@c8-.com08приме?;/?ĸ",
+   "text": "C: @¡98\n²? ĸ@>bb0¡@c8-. Com08приме? ; /? ĸ"
+  },
+  {
+   "template": "bZßпримеY7½a9iahttp://x.io½;b 44?0Z¡\n;@X>0http://x.io3Y",
+   "text": "BZßпримеY7½a9iahttp://x.io½;b 44?0Z¡; @X>0http://x.io3Y"
+  },
+  {
+   "template": "7http://x.io0>",
+   "text": "7http://x.io0>"
+  },
+  {
+   "template": "8¿;¿p-,b",
+   "text": "8¿; ¿p-, b"
+  },
+  {
+   "template": "i",
+   "text": "I"
+  },
+  {
+   "template": "b.ibX ¡приме5b>\t!9b;c\t…p²¿5¿.5",
+   "text": "b.ibX ¡приме5b>!9b; c\t…P²¿5¿.5"
+  },
+  {
+   "template": "http://x.io.com\t²;http://x.io5a9,приме6²8.",
+   "text": "http://x.io.com\t²; http://x.io5a9,приме6²8."
+  },
+  {
+   "template": ",.combприме¡7>ß/2ß<2b>7приме90>ĸ?4?½p2b\n<",
+   "text": ", . Combприме¡7>ß/2ß<2b>7приме90>ĸ?4? ½p2b\n<"
+  },
+  {
+   "template": "<4>7:YпримеZ\niß http://x.io; bX<!0@?X5\nbпримеĸa.c11b½b@",
+   "text": "<4>7: YпримеZ\nIß http://x.io; bX<!0@? X5\nbпримеĸa.c11b½b@"
+  },
+  {
+   "template": "7;.com9.comß<1?…http://x.ioĸiприме:ß681:;Z.2¡i-\n/3bi²²",
+   "text": "7; . com9.comß<1? …http://x.ioĸiприме:ß681:;Z.2¡i-\n/3bi²²"
+  },
+  {
+   "template": "!!.com0",
+   "text": "!!. Com0"
+  },
+  {
+   "template": "!Yhttp://x.iohttp://x.io\t0;²²/¿48;bb",
+   "text": "! Yhttp://x.iohttp://x.io\t0; ²²/¿48; bb"
+  },
+  {
+   "template": "http://x.io\n<,!²0:1\t\n@<8c9@3@\tb0:",
+   "text": "http://x.io\n<, ! ²0:1\t\n@<8c9@3@\tb0:"
+  },
+  {
+   "template": "²474!b5 http://x.io…1…-:,>,\tc?Y!b2",
+   "text": "²474! B5 http://x.io…1…-: , >,\tc? Y! B2"
+  },
+  {
+   "template": "-\nciiXbĸZc¿9/2bbpb614X2b\t7307",
+   "text": "-\nCiiXbĸZc¿9/2bbpb614X2b\t7307"
+  },
+  {
+   "template": "ßXX3b ¿6/;b.com8ĸ.2²pbZ¿3@1приме²@cĸ",
+   "text": "SSXX3b ¿6/; b.com8ĸ.2²pbZ¿3@1приме²@cĸ"
+  },
+  {
+   "template": ":Y/,½http://x.io\t<9…Xic¿3?",
+   "text": ": Y/, ½http://x.io\t<9…Xic¿3?"
+  },
+  {
+   "template": "aприме?¿-bßY<",
+   "text": "Aприме? ¿-bßY<"
+  },
+  {
+   "template": ".,X.²ĸ\n…-¡48http://x.io8http://x.io2ab1\nZ.comY¿?000¿\t½?;Xa9<?1",
+   "text": ". , X. ²ĸ\n…-¡48http://x.io8http://x.io2ab1\nZ.comY¿?000¿½? ; Xa9<?1"
+  },
+  {
+   "template": "X,c¿2\t/",
+   "text": "X, c¿2\t/"
+  },
+  {
+   "template": "5@7…ß@p12p\t8Z-1>X½>1-¡…caZ,6-:",
+   "text": "5@7…SS@p12p\t8Z-1>X½>1-¡…CaZ,6-:"
+  },
+  {
+   "template": "b<0ßY92!bb…8<X@/4? X",
+   "text": "B<0ßY92! Bb…8<X@/4? X"
+  },
+  {
+   "template": "a9..com½84@./8?;Z½\n\t-c:\n:/¡приме-1…49",
+   "text": "A9.. Com½84@. /8? ; Z½\n\t-c: : /¡приме-1…49"
+  },
+  {
+   "template": "²9:\n½!…<c,/5ĸa¿ ß!:http://x.io…½9?\tß²6¿",
+   "text": "²9:\n½! …<c, /5ĸa¿ß! : http://x.io…½9?\tß²6¿"
+  },
+  {
+   "template": "!:.com?:примеĸhttp://x.iob¿-",
+   "text": "! : . Com? : примеĸhttp://x.iob¿-"
+  },
+  {
+   "template": "²212¿>²5\n.com69<Z/.comY467.comcaXhttp://x.io><chttp://x.io",
+   "text": "²212¿>²5. Com69<Z/. comY467.comcaXhttp://x.io><chttp://x.io"
+  },
+  {
+   "template": "i7приме",
+   "text": "I7приме"
+  },
+  {
+   "template": "Y@9.52.com4примеhttp://x.iohttp://x.iob .com",
+   "text": "Y@9.52.com4примеhttp://x.iohttp://x.iob. Com"
+  },
+  {
+   "template": "bba1 http://x.ioZhttp://x.ioY:5?X8.com",
+   "text": "Bba1 http://x.ioZhttp://x.ioY:5?X8.com"
+  },
+  {
+   "template": ":.com>@;a.comp",
+   "text": ": . Com>@; a.comp"
+  },
+  {
+   "template": "i3\thttp://x.io/.1 7Z49-<bp>Y¿XZ?2?8 p-@a0ß00приме.comb9\n",
+   "text": "I3\thttp://x.io/.1 7Z49-<bp>Y¿XZ?2?8 p-@a0ß00приме.comb9"
+  },
+  {
+   "template": "c ßĸ\t",
+   "text": "C ßĸ"
+  },
+  {
+   "template": "/-a4?549²,½,; 6ßc5aприме².com.comb>;@ĸahttp://x.io<80\nhttp://x.io  ",
+   "text": "/-a4?549², ½, ; 6ßc5aприме².com.comb>; @ĸahttp://x.io<80\nhttp://x.io"
+  },
+  {
+   "template": ",>X 3c.½@:приме",
+   "text": ", >X 3c. ½@: приме"
+  },
+  {
+   "template": ":-3",
+   "text": ": -3"
+  },
+  {
+   "template": "²>8X2c.com…i",
+   "text": "²>8X2c.com…I"
+  },
+  {
+   "template": "2@²ca!",
+   "text": "2@²ca!"
+  },
+  {
+   "template": "http://x.io01http://x.ioZ-bp<9a6  4b@X1/Z¡4-b,\t.7cYXZ61-c",
+   "text": "http://x.io01http://x.ioZ-bp<9a6 4b@X1/Z¡4-b, .7cYXZ61-c"
+  },
+  {
+   "template": "ĸ-.c@:http://x.iocp-8p½ ci9@Y².com\tY8\n9\tb\n",
+   "text": "ĸ-. C@: http://x.iocp-8p½ ci9@Y².com\tY8\n9\tb"
+  },
+  {
+   "template": "ĸ\thttp://x.iob4<ĸ…http://x.io½²¿0>",
+   "text": "ĸ\thttp://x.iob4<ĸ…http://x.io½²¿0>"
+  },
+  {
+   "template": "4\np2²²-6?.4Z.1;¿>@\n3.com0iприме@<7,7:4,",
+   "text": "4\nP2²²-6?.4Z.1; ¿>@\n3.com0iприме@<7,7:4,"
+  },
+  {
+   "template": ":1p/",
+   "text": ":1p/"
+  },
+  {
+   "template": "bac",
+   "text": "Bac"
+  },
+  {
+   "template": "ZXp²½2Z1примеb4½!7½aßb;32bX",
+   "text": "ZXp²½2Z1примеb4½!7½aßb;32bX"
+  },
+  {
+   "template": "7http://x.io18@,65.com:;,895@.com²@, b3:ibc\n!²",
+   "text": "7http://x.io18@,65.com:;,895@.com²@, b3: ibc! ²"
+  },
+  {
+   "template": "3 b93\t 86c72;?",
+   "text": "3 b93 86c72; ?"
+  },
+  {
+   "template": "2!¡ 4\tß\t?5@Z7Y:3@@Y\n",
+   "text": "2! ¡4\tß?5@Z7Y:3@@Y"
+  },
+  {
+   "template": "приме7http://x.io2/\t :²i070¡¡…Z8!>-4\n>",
+   "text": "Приме7http://x.io2/: ²i070¡¡…Z8! >-4\n>"
+  },
+  {
+   "template": "http://x.io97aĸ7>¿Z,ZiZaĸĸĸbi5Xb",
+   "text": "http://x.io97aĸ7>¿Z, ZiZaĸĸĸbi5Xb"
+  },
+  {
+   "template": "4>@/38b:962i;9 72.-188?:::,-p,Z! 3 9…b:",
+   "text": "4>@/38b:962i;9 72. -188? : : : , -p, Z! 3 9…B:"
+  },
+  {
+   "template": "¡приме@!p8 ?!>@.0",
+   "text": "¡Приме@! P8?! >@.0"
+  },
+  {
+   "template": "приме.com ::http://x.iop …¡!3 ½¿½\n>a,",
+   "text": "Приме. Com: : http://x.iop …¡!3 ½¿½\n>a,"
+  },
+  {
+   "template": "\n.0a,?4ß!1¿@.com:967,Z…8>5\t",
+   "text": ".0a, ?4ß!1¿@. Com:967, Z…8>5"
+  },
+  {
+   "template": ">примеß\t:",
+   "text": ">примеß:"
+  },
+  {
+   "template": "Z.\n<?>b?bß->",
+   "text": "Z.\n<? >B? Bß->"
+  },
+  {
+   "template": "\t/ba8¡²,",
+   "text": "/ba8¡²,"
+  },
+  {
+   "template": "iZb,37¡²²\np.comZ¿;/Z¿",
+   "text": "IZb,37¡²²\np.comZ¿; /Z¿"
+  },
+  {
+   "template": "приме<6!;ßc\n6Ya.com<,.…,;6<5,².b<\t@",
+   "text": "Приме<6! ; ßc\n6Ya.com<, . …, ;6<5, ². B<\t@"
+  },
+  {
+   "template": ";p>i0…\t-ßhttp://x.io7paa:@i;.com:,5a1a i6Z\tcp75/7",
+   "text": "; p>i0…\t-ßhttp://x.io7paa:@i;.com:,5a1a i6Z\tcp75/7"
+  },
+  {
+   "template": "½chttp://x.io\n1Y4ß<,1;²23примеZ3b,\n13http://x.iohttp://x.io@@¿,3ßßa620phttp://x.io",
+   "text": "½chttp://x.io\n1Y4ß<,1; ²23примеZ3b,\n13http://x.iohttp://x.io@@¿,3ßßa620phttp://x.io"
+  },
+  {
+   "template": "!\n6приме6p¿1²\n9Z36;c²/64i",
+   "text": "!\n6приме6p¿1²\n9Z36; c²/64i"
+  },
+  {
+   "template": "\n7<²http://x.io,><45Xbi/09?1<!Xb?4…2<приме /;a-ß¡ib",
+   "text": "7<²http://x.io, ><45Xbi/09?1<! Xb?4…2<приме /; a-ß¡ib"
+  },
+  {
+   "template": "!,15",
+   "text": "! ,15"
+  },
+  {
+   "template": "<ßb¡.comac:",
+   "text": "<ßb¡. Comac:"
+  },
+  {
+   "template": "X¡½.com2p9\n.com0phttp://x.io?½6¡Xhttp://x.io¿ß298Xß¿",
+   "text": "X¡½. Com2p9. Com0phttp://x.io?½6¡Xhttp://x.io¿ß298Xß¿"
+  },
+  {
+   "template": "-bphttp://x.io?6Y2¡…² 1приме2/0b½.com",
+   "text": "-bphttp://x.io?6Y2¡…² 1приме2/0b½.com"
+  },
+  {
+   "template": "Z2ĸ<http://x.io,3:8:>849.ß¡76ßß\n3Xhttp://x.io1",
+   "text": "Z2ĸ<http://x.io,3:8: >849. SS¡76ßß\n3Xhttp://x.io1"
+  },
+  {
+   "template": "\na\n",
+   "text": "A"
+  },
+  {
+   "template": "67@b/->c5примеhttp://x.ioc3,<<.0<²ĸY²/>\ta00приме@.com5…,¿3",
+   "text": "67@b/->c5примеhttp://x.ioc3,<<.0<²ĸY²/>\ta00приме@. Com5…, ¿3"
+  },
+  {
+   "template": "8b>;./34p?6приме",
+   "text": "8b>; . /34p?6приме"
+  },
+  {
+   "template": "b8<p5…\t78ß\n!5приме.com2\nhttp://x.io",
+   "text": "B8<p5…\t78ß! 5приме.com2\nhttp://x.io"
+  },
+  {
+   "template": "½http://x.io²\t>0.bĸ?@39b¡pĸa.<http://x.io",
+   "text": "½http://x.io²\t>0. Bĸ? @39b¡pĸa.<http://x.io"
+  },
+  {
+   "template": ";http://x.iohttp://x.io",
+   "text": "; http://x.iohttp://x.io"
+  },
+  {
+   "template": "\naccbc,i414…35b4a\nприме.com!²4ĸ:8pприме1::;X.com",
+   "text": "Accbc, i414…35b4a\nПриме. Com! ²4ĸ:8pприме1: : ; X.com"
+  },
+  {
+   "template": "?²\n9http://x.io.<p/6:…Xi",
+   "text": "? ²\n9http://x.io.<p/6: …Xi"
+  },
+  {
+   "template": "6;http://x.io54@http://x.io@>4\t8½-8Yßпримеß:Xp, c a.com¡3c6ĸ²/5/",
+   "text": "6; http://x.io54@http://x.io@>4\t8½-8Yßпримеß: Xp, c a.com¡3c6ĸ²/5/"
+  },
+  {
+   "template": "<Y@\ta76b79¿85½?;9¿-http://x.io9Y9:a7ĸ\ti@2",
+   "text": "<Y@\ta76b79¿85½? ;9¿-http://x.io9Y9:a7ĸ\ti@2"
+  },
+  {
+   "template": "/<58?pba603Y5!2http://x.io@Y6\n2a…c>@;…;a\t8b-@¿¿-ßi",
+   "text": "/<58? Pba603Y5!2http://x.io@Y6\n2a…C>@; …; a\t8b-@¿¿-ßi"
+  },
+  {
+   "template": "1paX<1:\t6ß.i@/-примеßĸ.p31.b@9…7ĸ…93c<3http://x.ioß5",
+   "text": "1paX<1:\t6ß. I@/-примеßĸ. P31. B@9…7ĸ…93c<3http://x.ioß5"
+  },
+  {
+   "template": "ia0X-35<\tпримеĸ2Xß-7b\n8-?,¡i8 Z-\n@²<6Y…",
+   "text": "Ia0X-35<\tпримеĸ2Xß-7b\n8-? , ¡i8 Z-\n@²<6Y…"
+  },
+  {
+   "template": "Zhttp://x.io\n…5a¡/:0- ½5Y?3:<;?",
+   "text": "Zhttp://x.io\n…5a¡/:0- ½5Y?3:<; ?"
+  },
+  {
+   "template": "?1-4YYпримеa:26.com8… 340¿40bi;:70?-http://x.io.",
+   "text": "?1-4YYпримеa: 26.com8… 340¿40bi; :70? -http://x.io."
+  },
+  {
+   "template": "@54.…",
+   "text": "@54. …"
+  },
+  {
+   "template": "¿c\t/¿,?-примеa:¡http://x.io¡ĸ",
+   "text": "¿C\t/¿, ? -примеa: ¡http://x.io¡ĸ"
+  },
+  {
+   "template": "@¡b4b\npĸ",
+   "text": "@¡b4b\nPĸ"
+  },
+  {
+   "template": "<0piZ97.comY89¿p\n.8ĸ²",
+   "text": "<0piZ97.comY89¿p.8ĸ²"
+  },
+  {
+   "template": "ß½ĸ<p>.?b8c <8.com4b pbZ6²cĸ5<7приме;b015",
+   "text": "SS½ĸ<p>.? B8c <8.com4b pbZ6²cĸ5<7приме; b015"
+  },
+  {
+   "template": "b¿http://x.io6.com",
+   "text": "B¿http://x.io6.com"
+  },
+  {
+   "template": "7a<8-b5:!¡?i>²0¡b0Yĸhttp://x.io¡83,2ßb8X²²",
+   "text": "7a<8-b5: ! ¡? I>²0¡b0Yĸhttp://x.io¡83,2ßb8X²²"
+  },
+  {
+   "template": "¡,ca",
+   "text": "¡, ca"
+  },
+  {
+   "template": "a>?6017ĸ0http://x.ioY½\tc?4X>p9<Z;",
+   "text": "A>?6017ĸ0http://x.ioY½\tc?4X>p9<Z;"
+  },
+  {
+   "template": "Zb…?chttp://x.io²>ßb,1i-cY…ißa?00b½4b",
+   "text": "Zb…? Chttp://x.io²>ßb,1i-cY…Ißa?00b½4b"
+  },
+  {
+   "template": "0p½bпримеhttp://x.io2 8примеZприме\nhttp://x.io7",
+   "text": "0p½bпримеhttp://x.io2 8примеZприме\nhttp://x.io7"
+  },
+  {
+   "template": ",.comcXприме-¿:6,3Y@\tp-:…i3…\thttp://x.io12¿5 ",
+   "text": ", . ComcXприме-¿:6,3Y@\tp-: …I3…\thttp://x.io12¿5"
+  },
+  {
+   "template": "\t9<@?<119\t86558http://x.io9Xa@7http://x.ioĸa;\t.comß2²\n",
+   "text": "9<@?<119\t86558http://x.io9Xa@7http://x.ioĸa; . Comß2²"
+  },
+  {
+   "template": "->< bi771.1/0ĸ>p¡²примеĸ7p1.comc…cX3a5ĸприме97b¿\t",
+   "text": "->< bi771.1/0ĸ>p¡²примеĸ7p1.comc…CX3a5ĸприме97b¿"
+  },
+  {
+   "template": ";>¡ĸ4Y?9:c/.:336/…\t:;½:Z:",
+   "text": "; >¡ĸ4Y?9: c/. :336/…: ; ½: Z:"
+  },
+  {
+   "template": "/pприме",
+   "text": "/pприме"
+  },
+  {
+   "template": "!8ßприме…c½XcZ½2p<b1.comß½ß:p",
+   "text": "!8ßприме…C½XcZ½2p<b1.comß½ß: p"
+  },
+  {
+   "template": "².¡3056@ß½6…bY¿.½1,2a;;9-4b2Z76!Z/4http://x.io\n½примеY",
+   "text": "². ¡3056@ß½6…BY¿. ½1,2a; ;9-4b2Z76! Z/4http://x.io\n½примеY"
+  },
+  {
+   "template": ";приме.comY: ?/4<",
+   "text": "; приме. ComY: ? /4<"
+  },
+  {
+   "template": "ĸY…!Z ¿5;b",
+   "text": "ĸY…! Z ¿5; b"
+  },
+  {
+   "template": "¡…",
+   "text": "¡…"
+  },
+  {
+   "template": ".com…½>7¡48a!.8/9b808X\thttp://x.io!²i:",
+   "text": ". Com…½>7¡48a!.8/9b808X\thttp://x.io!²i:"
+  },
+  {
+   "template": "5http://x.ioĸi2.приме8:a47c\n6aZ3.приме,:²…X69",
+   "text": "5http://x.ioĸi2.приме8:a47c\n6aZ3. Приме, : ²…X69"
+  },
+  {
+   "template": "3/8p\n<0.\n: Z½",
+   "text": "3/8p\n<0. : Z½"
+  },
+  {
+   "template": "@:70bX?1http://x.io6@.comp15.com9\n<9½@http://x.io3ia",
+   "text": "@:70bX?1http://x.io6@.comp15.com9\n<9½@http://x.io3ia"
+  },
+  {
+   "template": ".>6>ĸ²1Y/i3 ¡,i²½b66\thttp://x.io¡",
+   "text": ". >6>ĸ²1Y/i3 ¡, i²½b66\thttp://x.io¡"
+  },
+  {
+   "template": ">-cp@<¿!.comпримеhttp://x.io<Yb206ßi.comhttp://x.io2 cb…@>http://x.iob:367 <",
+   "text": ">-cp@<¿!. Comпримеhttp://x.io<Yb206ßi.comhttp://x.io2 cb…@>http://x.iob:367 <"
+  },
+  {
+   "template": "X½ĸ<6@/²bb<.pZ¿½Y>c\n/¿0ĸZ\t/",
+   "text": "X½ĸ<6@/²bb<. PZ¿½Y>c\n/¿0ĸZ\t/"
+  },
+  {
+   "template": "i;http://x.io:>,p7;/Y\n²",
+   "text": "I; http://x.io: >, p7; /Y\n²"
+  },
+  {
+   "template": "i>bприме</12b581…ĸi…2-<i58pi:http://x.io",
+   "text": "I>bприме</12b581…ĸi…2-<i58pi: http://x.io"
+  },
+  {
+   "template": "X¿-7 ½ ß35ĸ¡ приме>Zp?05примеiiZ½!>p3bb5приме19@ĸ.com/2",
+   "text": "X¿-7 ½ ß35ĸ¡приме>Zp?05примеiiZ½! >p3bb5приме19@ĸ.com/2"
+  },
+  {
+   "template": "½приме:>ß3<:;c@@05X¡>;;c08\n;?9²< ĸ0",
+   "text": "½приме: >ß3<: ; c@@05X¡>; ; c08; ?9²< ĸ0"
+  },
+  {
+   "template": "¡9/5?a",
+   "text": "¡9/5? A"
+  },
+  {
+   "template": "http://x.io6²bZhttp://x.iohttp://x.io:b!¿ib?½?",
+   "text": "http://x.io6²bZhttp://x.iohttp://x.io:b!¿ib?½?"
+  },
+  {
+   "template": "5c<7Yß7@1Z",
+   "text": "5c<7Yß7@1Z"
+  },
+  {
+   "template": "7p¡/http://x.ioX; p,приме3http://x.io-0.comприме7приме½:.¿9p: /<YпримеZ5-bi½http://x.io",
+   "text": "7p¡/http://x.ioX; p, приме3http://x.io-0.comприме7приме½:.¿9p: /<YпримеZ5-bi½http://x.io"
+  },
+  {
+   "template": ":Z…\n\n6 X15X¡,.:",
+   "text": ": Z…\n\n6 X15X¡, . :"
+  },
+  {
+   "template": "8>5…1",
+   "text": "8>5…1"
+  },
+  {
+   "template": "bßXĸ,Y1/c¿!3².comY0ß?… >!ĸ",
+   "text": "BßXĸ, Y1/c¿! 3².comY0ß? … >! ĸ"
+  },
+  {
+   "template": "-1pi\n89примеhttp://x.io¿¿!/ßĸ;0…b½a7i",
+   "text": "-1pi\n89примеhttp://x.io¿¿!/ßĸ;0…b½a7i"
+  },
+  {
+   "template": "ĸ 4 /²42ai<bĸ\n58ß<3\nhttp://x.io49",
+   "text": "ĸ 4 /²42ai<bĸ\n58ß<3\nhttp://x.io49"
+  },
+  {
+   "template": "ß!?¡!Y.a76;Y6:i,5>:<?p5",
+   "text": "SS!? ¡! Y.a76; Y6: i,5>:<? P5"
+  },
+  {
+   "template": "½½4p-a1bb>¡Yhttp://x.iob!².com@a@ß;@4Yhttp://x.ioc.com;- приме",
+   "text": "½½4p-a1bb>¡Yhttp://x.iob!².com@a@ß;@4Yhttp://x.ioc.com;- приме"
+  },
+  {
+   "template": ">9>ß!522ß:b,¡.com,½\t9ĸ4b>8Yhttp://x.iobпримеß..com.coma:,,:!",
+   "text": ">9>ß!522ß: b, ¡. Com, ½\t9ĸ4b>8Yhttp://x.iobпримеß..com.coma: , , : !"
+  },
+  {
+   "template": "3 :ß3b3",
+   "text": "3: ß3b3"
+  },
+  {
+   "template": "b:-2¡?@4¡ßhttp://x.io½8>¿ß\thttp://x.io38Yc",
+   "text": "B: -2¡? @4¡ßhttp://x.io½8>¿ß\thttp://x.io38Yc"
+  },
+  {
+   "template": ",9.coma5!860,\n6ĸ\t…20 \n",
+   "text": ", 9.coma5!860,\n6ĸ\t…20"
+  },
+  {
+   "template": "\tY\n58.com.6",
+   "text": "Y\n58.com.6"
+  },
+  {
+   "template": "@.coma26pa…-<3i:59Z.,ß2Xb70ZZ,¿a?p",
+   "text": "@. Coma26pa…-<3i:59Z. , ß2Xb70ZZ, ¿a? P"
+  },
+  {
+   "template": "  p<, p¿9:Z2\t.¿8/,ßc97>0a0X².Yc9b",
+   "text": "P<, p¿9: Z2. ¿8/, ßc97>0a0X².Yc9b"
+  },
+  {
+   "template": "-ßX<!c Y9<@\tприме42².comß01b<\nhttp://x.io4",
+   "text": "-ßX<! C Y9<@\tприме42².comß01b<\nhttp://x.io4"
+  },
+  {
+   "template": "\t²->",
+   "text": "²->"
+  },
+  {
+   "template": "5: ¿Xi¡8ß5ap!b\t;2@приме¿ß3<>приме56½@¿<7 приме\n0¿-…\t",
+   "text": "5: ¿Xi¡8ß5ap! B;2@приме¿ß3<>приме56½@¿<7 приме\n0¿-…"
+  },
+  {
+   "template": "http://x.io2ß9",
+   "text": "http://x.io2ß9"
+  },
+  {
+   "template": ".cc?@aca0ß½.coma7",
+   "text": ". Cc? @aca0ß½.coma7"
+  },
+  {
+   "template": "07Xip\n¡<,/",
+   "text": "07Xip\n¡<, /"
+  },
+  {
+   "template": "77¡bc50¿X\tX.!.chttp://x.io//http://x.ioß4>…@.com…a183",
+   "text": "77¡bc50¿X\tX.!. Chttp://x.io//http://x.ioß4>…@. Com…A183"
+  },
+  {
+   "template": "<",
+   "text": "<"
+  },
+  {
+   "template": "baYhttp://x.io;0½…bX33/http://x.io:Z54Y¡5",
+   "text": "BaYhttp://x.io;0½…bX33/http://x.io:Z54Y¡5"
+  },
+  {
+   "template": "9\n4b12b@8¿<@/5²c\nXXcp¡Z79½3bпримеp8;5Z",
+   "text": "9\n4b12b@8¿<@/5²c\nXXcp¡Z79½3bпримеp8;5Z"
+  },
+  {
+   "template": "1ĸ8/>9",
+   "text": "1ĸ8/>9"
+  },
+  {
+   "template": "!?²bbß:Zc²3/1:Z;",
+   "text": "!? ²bbß: Zc²3/1: Z;"
+  },
+  {
+   "template": "http://x.iop-a.-",
+   "text": "http://x.iop-a.-"
+  },
+  {
+   "template": "5>1\t½Z!@c\n\n:",
+   "text": "5>1\t½Z! @c:"
+  },
+  {
+   "template": ":",
+   "text": ":"
+  },
+  {
+   "template": ".b ",
+   "text": ". B"
+  },
+  {
+   "template": "¿:.<4c/pY!p¡>\nX?;\n6<…>Y!http://x.io",
+   "text": "¿: .<4c/pY! P¡>\nX? ;\n6<…>Y! http://x.io"
+  },
+  {
+   "template": ".<a/pY!p>\nX",
+   "text": ".<a/pY! P>\nX"
+  },
+  {
+   "template": "!<tag x>y! z</tag>A",
+   "text": "!<tag x>Y! Z</tag>A"
+  },
+  {
+   "template": " a ",
+   "text": "a"
+  },
+  {
+   "template": "﻿a﻿",
+   "text": "a"
+  },
+  {
+   "template": " a ",
+   "text": "a"
+  },
+  {
+   "template": "\u001c a \u001c",
+   "text": "\u001c a \u001c"
+  },
+  {
+   "template": "   x   ",
+   "text": "x"
+  },
+  {
+   "template": "a ,b",
+   "text": "A , b"
+  },
+  {
+   "template": "a .b",
+   "text": "A . B"
+  },
+  {
+   "template": "a  b",
+   "text": "A  b"
+  },
+  {
+   "template": "x, y",
+   "text": "X,  y"
+  },
+  {
+   "template": "¿ hola",
+   "text": "¿ hola"
+  },
+  {
+   "template": "a. b",
+   "text": "A.  b"
+  }
+ ]
+}
