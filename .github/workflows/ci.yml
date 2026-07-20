@@ -13,19 +13,19 @@ jobs:
         python: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The golden corpus is the cross-engine contract, shared with @spintax/core
       # (TypeScript) and the PHP engine. It is checked out rather than vendored: a
       # copy would drift, and a drifting contract is not a contract. Same pattern
       # spintax-php already runs in production.
       - name: Check out the golden corpus
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: investblog/spintax-js
           path: .corpus
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
 
@@ -58,9 +58,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
