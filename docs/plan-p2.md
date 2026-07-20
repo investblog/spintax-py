@@ -205,6 +205,23 @@ for a library. So: bake the constant, and carry a test that rebuilds it from the
 cannot answer locally — if a supported Python disagrees, a test says so by name instead of a
 superscript quietly becoming a letter.
 
+## Two places this port is deliberately MORE correct than the reference
+
+Found by differential fuzzing, both harmless, both recorded so a future "parity failure"
+report does not chase them:
+
+- **Plural counts above 2^53.** `{plural 10000000000000001: one|few|many}` in `ru` gives
+  `many` here and `one` there, because JavaScript's `Number.parseInt` rounds the count to
+  `1e16` while Python's `int` is exact. Matching the reference would mean deliberately
+  losing precision.
+- **`%constructor%` and `%__proto__%`.** The reference looks variables up in an object
+  literal, so `constructor` resolves to `Object` and throws, and `__proto__` renders
+  empty. A Python `dict` has no prototype, so both stay verbatim — which is also what a
+  reader of the template would expect.
+
+Neither is on §3's allowed-to-diverge list, and neither is worth adding to it as a
+promise; they are noted here as facts.
+
 ## What the corpus will not catch
 
 Carried forward from P1, because it stays true and P2 has more surface for it:

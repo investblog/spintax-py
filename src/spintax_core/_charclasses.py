@@ -42,6 +42,26 @@ JS_SPACE = (
 #: truthy under Python's `\S`, flipping which branch renders.
 JS_NOT_SPACE = "[^" + JS_SPACE[1:]
 
+#: What JavaScript calls a LineTerminator. Python's `re` knows only `\n`, which is why a
+#: line-anchored pattern needs the three constants below rather than `^`, `$` and `.`.
+JS_LINE_TERMINATORS = "\\n\\r\\u2028\\u2029"
+
+#: JavaScript's `^` under `/m`: start of input, or just after a terminator.
+JS_LINE_START = f"(?:\\A|(?<=[{JS_LINE_TERMINATORS}]))"
+
+#: JavaScript's `$` under `/m`: end of input, or just before a terminator. A LOOKAHEAD, so
+#: the terminator is not consumed — which is the whole point. Normalising terminators to
+#: `\n` on a scratch copy is fine for anchoring alone, and silently wrong as soon as the
+#: pattern also carries an explicit terminator class beside the anchor: the class then
+#: matches a rewritten U+2028 the reference's own class could never match, and eats a
+#: separator the reference leaves in place.
+JS_LINE_END = f"(?=\\Z|[{JS_LINE_TERMINATORS}])"
+
+#: JavaScript's `.` — anything that is not a LineTerminator. Python's `.` matches `\r`,
+#: U+2028 and U+2029 happily, so a value group written as `(.*?)` swallows past the end of
+#: its line.
+JS_DOT = f"[^{JS_LINE_TERMINATORS}]"
+
 #: PHP's `trim` charlist. Narrower than both Python's `str.strip()` (Unicode whitespace)
 #: and JavaScript's — it is exactly these five characters, including NUL and vertical tab.
 #: The plugin trims permutation config, element text, separators and plural forms, so

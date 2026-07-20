@@ -26,7 +26,7 @@ import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 
-from . import _neutralize, _parser, _plurals, _source
+from . import _neutralize, _parser, _plurals
 from ._ast import (
     ConditionalNode,
     EnumerationNode,
@@ -38,18 +38,32 @@ from ._ast import (
     PluralNode,
     VariableNode,
 )
-from ._charclasses import ASCII_DIGIT, ASCII_WORD, JS_NOT_SPACE, PHP_TRIM_CHARS
+from ._charclasses import (
+    ASCII_DIGIT,
+    ASCII_WORD,
+    JS_LINE_END,
+    JS_LINE_START,
+    JS_NOT_SPACE,
+    PHP_TRIM_CHARS,
+)
 from ._errors import IncludeResolverError
 from ._rng import Rng
 
 #: How many times a variable value may be re-expanded before the renderer stops.
 MAX_VARIABLE_DEPTH = 50
 
-#: Line-anchored `#include "ref"`. The inner whitespace class is ASCII on purpose — it is
-#: what PHP's `\s` matches under `/u`, and widening it to Unicode would make a NBSP after
-#: `#include` legal here and illegal in the plugin.
+#: Line-anchored `#include "ref"`. Two classes here are deliberately narrow:
+#:
+#: - the whitespace around the ref is ASCII, because that is what PHP's `\s` matches under
+#:   `/u`; widening it would make an NBSP after `#include` legal here and illegal in the
+#:   plugin;
+#: - the anchors are JavaScript's, spelled out, and the text is NOT normalised first.
+#:   Normalising terminators to `\n` before matching lets the trailing `[ \t\n\r\f\x0b]*`
+#:   swallow a rewritten U+2028 — a character the reference's own class cannot match, so
+#:   the reference leaves it in place. Measured: `#include "a" ` renders as
+#:   `"C "` there and used to render as `"C"` here.
 _INCLUDE_LINE_RE = re.compile(
-    r'^[ \t]*#include[ \t\n\r\f\x0b]+"([^"]+)"[ \t\n\r\f\x0b]*$', re.MULTILINE
+    JS_LINE_START + r'[ \t]*#include[ \t\n\r\f\x0b]+"([^"]+)"[ \t\n\r\f\x0b]*' + JS_LINE_END
 )
 
 _VARIABLE_RE = re.compile(f"%({ASCII_WORD}+)%")
@@ -107,6 +121,16 @@ class _Walk:
 
 
 def render_ast(ast: ParsedAst, ctx: RenderCtx) -> str:
+    text = _render_body(ast, ctx)
+    return _resolve_includes(text, ctx) if ctx.resolver else text
+
+
+def _render_body(ast: ParsedAst, ctx: RenderCtx) -> str:
+    """Everything except `#include` splicing: variables, `#def`, the tree walk.
+
+    Split out so include resolution can be a flat loop over rendered bodies rather than a
+    recursion through `render_ast`.
+    """
     base = build_vars(ast.set_defs, ctx.runtime_context)
     walk = _Walk(
         vars=base,
@@ -121,8 +145,7 @@ def render_ast(ast: ParsedAst, ctx: RenderCtx) -> str:
         rolled = roll_definitions(ast.def_defs, base, ctx.runtime_context, walk)
         walk = replace(walk, vars={**base, **rolled})
 
-    text = render_nodes(ast.nodes, walk)
-    return _resolve_includes(text, ctx) if ctx.resolver else text
+    return render_nodes(ast.nodes, walk)
 
 
 def build_vars(
@@ -568,6 +591,15 @@ def _pad_separator(sep: str) -> str:
     return sep
 
 
+@dataclass(slots=True)
+class _Splice:
+    """One text whose `#include` lines still have to be replaced, and where it goes."""
+
+    text: str
+    ctx: RenderCtx
+    out: list[str]
+
+
 def _resolve_includes(text: str, ctx: RenderCtx) -> str:
     """Replace each line-anchored `#include "ref"` with the resolved child template.
 
@@ -576,31 +608,72 @@ def _resolve_includes(text: str, ctx: RenderCtx) -> str:
     than raising — cycles are detected by the ref STRING, since the engine has no template
     identity beyond what the host supplies, so two aliases for one template are not seen
     as a cycle and simply recurse until `max_depth`.
-    """
-    # Matched on a copy whose line terminators are normalised, and rebuilt from the
-    # ORIGINAL. JavaScript's `m` ends a line at `\r`, U+2028 and U+2029 as well as `\n`;
-    # Python's ends it only at `\n`. The substitution is length-preserving, so every span
-    # found in the copy is the same span in the text the caller gets back.
-    scan = _source.normalize_terminators(text)
 
+    **Iterative, like everything else that follows nesting in this engine.** Include depth
+    is bounded by `max_depth`, which is a caller-supplied number with no ceiling, and the
+    recursive form raised `RecursionError` from `max_depth = 331` — breaking both the
+    lenient contract and the docstring paragraph directly above this one. The default of
+    20 is nowhere near it, so this only ever bit a caller who raised the budget.
+    """
+    root: list[str] = []
+    stack: list[_Splice] = [_Splice(text=text, ctx=ctx, out=root)]
+
+    while stack:
+        job = stack.pop()
+        cursor = 0
+        # Children are collected first, then pushed in reverse, so they splice in source
+        # order once the stack unwinds.
+        pending: list[_Splice] = []
+
+        for match in _INCLUDE_LINE_RE.finditer(job.text):
+            job.out.append(job.text[cursor : match.start()])
+            slot: list[str] = []
+            job.out.append(slot)  # type: ignore[arg-type]
+            child = _open_include(match.group(1), job.ctx)
+            if child is not None:
+                pending.append(_Splice(text=child[0], ctx=child[1], out=slot))
+            cursor = match.end()
+
+        job.out.append(job.text[cursor:])
+        stack.extend(reversed(pending))
+
+    return _flatten(root)
+
+
+def _flatten(parts: list[str]) -> str:
+    """Join a tree of nested slot lists, depth-first.
+
+    A slot is appended to its parent at the position the include occupied, and filled in
+    later — so the parent holds a list where a string will eventually be. Flattening at the
+    end is what keeps the order right without any of it living on the call stack.
+    """
     out: list[str] = []
-    cursor = 0
-    for match in _INCLUDE_LINE_RE.finditer(scan):
-        out.append(text[cursor : match.start()])
-        out.append(_render_one_include(match.group(1), ctx))
-        cursor = match.end()
-    out.append(text[cursor:])
+    stack: list[object] = [parts]
+    while stack:
+        item = stack.pop()
+        if isinstance(item, list):
+            stack.extend(reversed(item))
+        else:
+            out.append(str(item))
     return "".join(out)
 
 
-def _render_one_include(ref: str, ctx: RenderCtx) -> str:
+def _open_include(ref: str, ctx: RenderCtx) -> tuple[str, RenderCtx] | None:
+    """Resolve and render one include's BODY, without touching its own includes.
+
+    Returns the rendered child plus the context its includes must be spliced under, or
+    `None` when the include resolves to nothing — a cycle, a depth breach, or a resolver
+    that reported no such template.
+    """
     if ref in ctx.include_stack or len(ctx.include_stack) >= ctx.max_depth:
-        return ""
+        return None
     try:
         included = ctx.resolver(ref) if ctx.resolver else None
     except Exception as cause:  # noqa: BLE001 - re-raised as ours, with the original attached
         raise IncludeResolverError(f'include_resolver threw for "{ref}"') from cause
     if included is None:
-        return ""
-    child = replace(ctx, include_stack=(*ctx.include_stack, ref))
-    return render_ast(_parser.parse_template(_neutralize.strip_sentinels(included)), child)
+        return None
+
+    child_ctx = replace(ctx, include_stack=(*ctx.include_stack, ref))
+    ast = _parser.parse_template(_neutralize.strip_sentinels(included))
+    return _render_body(ast, child_ctx), child_ctx

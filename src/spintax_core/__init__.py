@@ -1,15 +1,21 @@
 """Spintax engine for Python — the public API surface.
 
-``analyze`` and ``render_with`` still raise
-``NotImplementedError``, with the milestone that will fill it in. That is
-deliberate: the golden-corpus suite runs against this module and reports each
-unbuilt entry point as an *expected failure* rather than skipping it, so the
-count of what is left is visible on every test run and a fixture can never be
-quietly forgotten.
+**Two things still raise ``NotImplementedError``, and one of them is on the default
+path.** ``analyze`` is not built (P3). The cosmetic post-process stage is not built
+either, so ``render(...)`` and ``render_with(...)`` raise unless you pass
+``post_process=False`` — the flag defaults to on. That is deliberate rather than
+convenient: the golden-corpus suite reports every unbuilt entry point as an *expected
+failure* rather than skipping it, so what is left is visible on every test run and no
+fixture can be quietly forgotten.
 
-Milestones fill these in: P1 validate/extract (done), P2 parse + rng + neutralize + render
-(in progress), P3 analyze. See `docs/plan-p2.md` for why neutralize moved out of P3.
-See ``docs/spec-python-port.md``.
+Note the interaction with the lenient contract below. "Never raises" is about template
+CONTENT, and it holds — malformed markup degrades. An unbuilt stage is a different thing,
+and it is a builtin ``NotImplementedError``, so it is NOT caught by ``except
+SpintaxError``. It goes away when P2 step 7 lands.
+
+Milestones: P1 validate/extract (done), P2 parse + rng + neutralize + render (post-process
+outstanding), P3 analyze. See ``docs/plan-p2.md`` for why neutralize moved out of P3, and
+``docs/spec-python-port.md`` for the contract.
 """
 
 from __future__ import annotations
@@ -21,12 +27,14 @@ from typing import Any, Literal
 from . import _extract, _neutralize, _parser, _pipeline, _validator
 from ._ast import Ast
 from ._errors import AstVersionError, IncludeResolverError, SpintaxError
+from ._render import PluralIssue
 from ._rng import Rng, make_rng as _make_rng
 
 # Both are public types that happen to be DEFINED in private modules. Without this,
 # `help()`, generated docs and every repr name `spintax_core._ast`, pointing users at a
 # module the API tells them not to touch.
 Ast.__module__ = __name__
+PluralIssue.__module__ = __name__
 
 __all__ = [
     "Analysis",
@@ -35,6 +43,7 @@ __all__ = [
     "Diagnostic",
     "Extraction",
     "IncludeResolverError",
+    "PluralIssue",
     "Rng",
     "SpintaxError",
     "analyze",
@@ -115,6 +124,7 @@ def render_with(
     include_resolver: Callable[[str], str | None] | None = None,
     post_process: bool = True,
     max_depth: int = 20,
+    on_plural_error: Callable[[PluralIssue], None] | None = None,
 ) -> str:
     """Render with an explicitly injected choice source.
 
@@ -134,6 +144,7 @@ def render_with(
         include_resolver=include_resolver,
         post_process=post_process,
         max_depth=max_depth,
+        on_plural_error=on_plural_error,
     )
 
 
@@ -146,12 +157,18 @@ def render(
     include_resolver: Callable[[str], str | None] | None = None,
     post_process: bool = True,
     max_depth: int = 20,
+    on_plural_error: Callable[[PluralIssue], None] | None = None,
 ) -> str:
     """Render to a single string.
 
     Lenient by contract: never raises on malformed markup — a bad block is emitted
     verbatim in fullwidth braces, and a too-deep or circular ``#include`` resolves
     to an empty string.
+
+    That promise is about the TEMPLATE. Two things can still raise, and neither is about
+    what the template says: a foreign ``Ast`` (``AstVersionError``), a host resolver that
+    threw (``IncludeResolverError``) — and, until P2 step 7 lands, the default
+    ``post_process=True`` path, which raises ``NotImplementedError``.
     """
     return render_with(
         input,
@@ -161,6 +178,7 @@ def render(
         include_resolver=include_resolver,
         post_process=post_process,
         max_depth=max_depth,
+        on_plural_error=on_plural_error,
     )
 
 
