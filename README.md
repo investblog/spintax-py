@@ -22,7 +22,7 @@ from spintax_core import render, validate, parse
 
 render("{Hello|Hi} there!")                        # "Hello there!" or "Hi there!"
 render("{Hello|Hi} there!", seed=42)               # same seed, same output, every time
-render("%greeting%, world", context={"greeting": "Hello"})   # "Hello, world"
+render("Hi %name%!", context={"name": "Sam"})      # "Hi Sam!"
 
 # Reuse a template: parse once, render many.
 ast = parse('[<sep=", ">fast|cheap|good]')
@@ -40,10 +40,9 @@ Syntax — enumerations `{a|b}`, permutations `[a|b]`, variables `%name%`, condi
 `{?VAR?yes|no}`, plural agreement `{plural 3: one|few|many}`, `#set` / `#def` / `#include` — is
 documented at **[spintax.net/docs](https://spintax.net/docs/)**.
 
-- **Spec:** [`docs/spec-python-port.md`](docs/spec-python-port.md) — read it before writing any
-  code. It records the parity contract, the API surface, and the open questions. Corpus access
-  (Q4) is decided; Unicode in post-process (Q5) is a known trap with a verified stdlib answer,
-  and lands with P2.
+- **Spec:** [`docs/spec-python-port.md`](docs/spec-python-port.md) — the parity contract, the API
+  surface, and the decisions behind the port (including where Python's regex dialect is wider than
+  JavaScript's and how each divergence was measured and pinned).
 - **Sibling engines:** [`@spintax/core`](https://www.npmjs.com/package/@spintax/core) (TypeScript,
   MIT, published) · [Spintax for WordPress](https://wordpress.org/plugins/spintax/) (PHP, GPL, the
   origin).
