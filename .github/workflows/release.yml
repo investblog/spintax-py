@@ -1,0 +1,103 @@
+name: Release
+
+# Tag-driven, and deliberately not automatic on push to main: a release is a decision, not
+# a side effect of merging. Tag `v0.1.0` and this builds, re-verifies and uploads.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  # The CI workflow already runs on every push, but a tag can be placed on any commit —
+  # including one CI never saw green. Re-running the gate here means the artifact that
+  # reaches PyPI is one that passed, rather than one that probably did.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check out the golden corpus
+        uses: actions/checkout@v7
+        with:
+          repository: investblog/spintax-js
+          path: .corpus
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e . pytest ruff mypy
+
+      - name: Test
+        env:
+          SPINTAX_FIXTURES: ${{ github.workspace }}/.corpus/packages/conformance/fixtures
+        run: pytest -q
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Types
+        run: mypy
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: pypi
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build
+        run: python -m build
+
+      # The same three checks the `package` job runs on every push. Repeated here because
+      # this is the last point at which a bad artifact can still be stopped.
+      - name: Distribution metadata
+        run: twine check dist/*
+
+      - name: The version being published matches the tag
+        run: |
+          python - <<'PY'
+          import glob, os, re, sys
+          tag = os.environ["GITHUB_REF_NAME"].lstrip("v")
+          names = [os.path.basename(p) for p in glob.glob("dist/*.whl")]
+          built = re.match(r"spintax_core-([^-]+)-", names[0]).group(1)
+          if built != tag:
+              sys.exit(f"tag says {tag!r} but the wheel is {built!r} — bump pyproject or retag")
+          print(f"tag and wheel agree on {built}")
+          PY
+
+      - name: The typing marker ships
+        run: |
+          python - <<'PY'
+          import glob, sys, tarfile, zipfile
+          wheel = zipfile.ZipFile(glob.glob("dist/*.whl")[0]).namelist()
+          sdist = tarfile.open(glob.glob("dist/*.tar.gz")[0]).getnames()
+          missing = [
+              kind
+              for kind, names in (("wheel", wheel), ("sdist", sdist))
+              if not any(n.endswith("py.typed") for n in names)
+          ]
+          if missing:
+              sys.exit(f"py.typed is absent from: {', '.join(missing)}")
+          print("py.typed ships in both the wheel and the sdist")
+          PY
+
+      - name: Upload to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*

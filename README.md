@@ -1,17 +1,44 @@
 # spintax-core (Python)
 
-> **Status: the engine is complete — all 168 shared-corpus fixtures pass, none skipped, none
-> expected to fail.** `parse`, `render`, `validate`, `extract`, `analyze` and `neutralize` all
-> work, on a `str` or on a parsed `Ast`. The corpus ran from commit one and reported what was
-> unbuilt as *expected failures*, so the remaining work was a number on every test run; that
-> number is now zero. **Nothing is published yet** — packaging and the first release are next.
-
 A framework-agnostic **[Spintax](https://spintax.net) engine** for Python — parse, render,
-validate, extract, analyze, and neutralize spintax templates. MIT, zero runtime dependencies.
+validate, extract, analyze, and neutralize spintax templates. MIT, zero runtime dependencies,
+Python 3.10+.
 
 This is the third engine in the Spintax family, and an **independent implementation** — not a
 transcription of the others. It is held to the same behavior contract by a **shared golden corpus**
-of language-neutral fixtures, which already gates the TypeScript engine and the PHP one.
+of language-neutral fixtures, which already gates the TypeScript engine and the PHP one. All 168
+of them pass here, none skipped, none expected to fail.
+
+## Install
+
+```bash
+pip install spintax-core
+```
+
+## Use
+
+```python
+from spintax_core import render, validate, parse
+
+render("{Hello|Hi} there!")                        # "Hello there!" or "Hi there!"
+render("{Hello|Hi} there!", seed=42)               # same seed, same output, every time
+render("%greeting%, world", context={"greeting": "Hello"})   # "Hello, world"
+
+# Reuse a template: parse once, render many.
+ast = parse('[<sep=", ">fast|cheap|good]')
+[render(ast) for _ in range(3)]
+# ['Cheap, fast, good', 'Good, cheap, fast', 'Cheap, good, fast']
+
+# Check a template before you ship it.
+[d.code for d in validate("{a|b")]                 # -> ['bracket.unclosed']
+```
+
+Rendering is **lenient**: malformed markup degrades rather than raising, so a template a
+non-programmer wrote cannot take a page down.
+
+Syntax — enumerations `{a|b}`, permutations `[a|b]`, variables `%name%`, conditionals
+`{?VAR?yes|no}`, plural agreement `{plural 3: one|few|many}`, `#set` / `#def` / `#include` — is
+documented at **[spintax.net/docs](https://spintax.net/docs/)**.
 
 - **Spec:** [`docs/spec-python-port.md`](docs/spec-python-port.md) — read it before writing any
   code. It records the parity contract, the API surface, and the open questions. Corpus access
