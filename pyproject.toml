@@ -8,13 +8,14 @@ version = "0.0.0"
 description = "Spintax engine for Python — enumerations, permutations, variables, conditionals, plural agreement, includes. Zero dependencies."
 readme = "README.md"
 requires-python = ">=3.10"
+# PEP 639 SPDX expression. Deliberately NOT paired with a `License ::` classifier:
+# declaring both is ambiguous, deprecated, and package indices may reject the upload.
 license = "MIT"
 authors = [{ name = "301st" }]
 keywords = ["spintax", "text-spinning", "content-spinning", "spinner", "template-variations"]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
