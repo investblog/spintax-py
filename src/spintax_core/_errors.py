@@ -22,10 +22,9 @@ from __future__ import annotations
 class SpintaxError(Exception):
     """Base class for every error this engine raises. Catch this to catch them all.
 
-    One caveat while P2 is unfinished: the reference makes its `NotImplementedError` a
-    subclass of this, and the port uses Python's builtin instead, so the unbuilt
-    post-process stage escapes `except SpintaxError`. That is today's most likely
-    exception by far, and it disappears when step 7 lands.
+    One deliberate gap: the reference makes its `NotImplementedError` a subclass of this,
+    and the port uses Python's builtin instead — shadowing a builtin to gain nothing is a
+    poor trade. Nothing in the engine raises it any more, so the gap is theoretical.
     """
 
 

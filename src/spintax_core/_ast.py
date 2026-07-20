@@ -23,6 +23,8 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import TypeGuard
 
+from ._errors import AstVersionError
+
 #: Bumped only on a breaking change to the node shape, independently of syntax version.
 #:
 #: 2 — `ParsedAst` gained `def_defs`. An `Ast` built by an older version carries no `#def`
@@ -153,6 +155,30 @@ def is_parsed_ast(value: object) -> TypeGuard[ParsedAst]:
     error rather than an `AttributeError` from inside a predicate.
     """
     return isinstance(value, ParsedAst) and getattr(value, "ast_version", None) == AST_VERSION
+
+
+def require_parsed(value: Ast) -> ParsedAst:
+    """Trust a handle, or refuse it loudly. The version guard, written once.
+
+    Every public entry point takes `str | Ast`, so every one of them needs this rule and
+    the same message for breaking it. Two copies would be two messages.
+    """
+    if is_parsed_ast(value):
+        return value
+    raise AstVersionError("Ast was not produced by this engine version.")
+
+
+def source_of(value: str | Ast) -> str:
+    """The template text behind a `str | Ast`.
+
+    `validate` and `extract` are raw-text scanners by design — a lenient tree cannot
+    represent an unbalanced bracket, so there is nothing in it for them to read. Handing
+    them an `Ast` therefore means handing them the source it was parsed from, which is why
+    `ParsedAst` carries it at all.
+    """
+    if isinstance(value, str):
+        return value
+    return require_parsed(value).source
 
 
 def walk(nodes: Sequence[Node], visit: Callable[[Node], None]) -> None:

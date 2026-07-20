@@ -16,8 +16,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 
 from . import _neutralize, _parser, _postprocess, _render
-from ._ast import Ast, ParsedAst, is_parsed_ast
-from ._errors import AstVersionError
+from ._ast import Ast, ParsedAst, require_parsed
 from ._render import PluralIssue, RenderCtx
 from ._rng import Rng
 
@@ -67,6 +66,4 @@ def _resolve_ast(source: str | Ast) -> ParsedAst:
         # introduce one. Otherwise the mandatory restore would rewrite a character the
         # author typed into a brace they never wrote.
         return _parser.parse_template(_neutralize.strip_sentinels(source))
-    if is_parsed_ast(source):
-        return source
-    raise AstVersionError("Ast was not produced by this engine version.")
+    return require_parsed(source)

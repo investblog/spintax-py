@@ -1,21 +1,17 @@
 """Spintax engine for Python — the public API surface.
 
-**Two things still raise ``NotImplementedError``, and one of them is on the default
-path.** ``analyze`` is not built (P3). The cosmetic post-process stage is not built
-either, so ``render(...)`` and ``render_with(...)`` raise unless you pass
-``post_process=False`` — the flag defaults to on. That is deliberate rather than
-convenient: the golden-corpus suite reports every unbuilt entry point as an *expected
-failure* rather than skipping it, so what is left is visible on every test run and no
-fixture can be quietly forgotten.
+Every entry point is built, and every one takes a ``str`` **or** a parsed ``Ast`` — parse
+once, reuse. The shared golden corpus runs green: 168 fixtures, none skipped, none
+expected to fail.
 
-Note the interaction with the lenient contract below. "Never raises" is about template
-CONTENT, and it holds — malformed markup degrades. An unbuilt stage is a different thing,
-and it is a builtin ``NotImplementedError``, so it is NOT caught by ``except
-SpintaxError``. It goes away when P2 step 7 lands.
+Two exceptions can still come out of this module, and neither is about what a template
+says. A handle from another engine version raises ``AstVersionError``; a host-supplied
+``include_resolver`` that throws is re-raised as ``IncludeResolverError`` rather than
+swallowed. Rendering itself is lenient by contract — malformed markup degrades, it does
+not raise.
 
-Milestones: P1 validate/extract (done), P2 parse + rng + neutralize + render (post-process
-outstanding), P3 analyze. See ``docs/plan-p2.md`` for why neutralize moved out of P3, and
-``docs/spec-python-port.md`` for the contract.
+See ``docs/spec-python-port.md`` for the contract and ``docs/plan-p2.md`` for why
+``neutralize`` moved out of P3.
 """
 
 from __future__ import annotations
@@ -24,8 +20,8 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-from . import _extract, _neutralize, _parser, _pipeline, _validator
-from ._ast import Ast
+from . import _analyze, _extract, _neutralize, _parser, _pipeline, _validator
+from ._ast import Ast, require_parsed, source_of
 from ._errors import AstVersionError, IncludeResolverError, SpintaxError
 from ._render import PluralIssue
 from ._rng import Rng, make_rng as _make_rng
@@ -166,9 +162,8 @@ def render(
     to an empty string.
 
     That promise is about the TEMPLATE. Two things can still raise, and neither is about
-    what the template says: a foreign ``Ast`` (``AstVersionError``), a host resolver that
-    threw (``IncludeResolverError``) — and, until P2 step 7 lands, the default
-    ``post_process=True`` path, which raises ``NotImplementedError``.
+    what the template says: a foreign ``Ast`` (``AstVersionError``) and a host resolver
+    that threw (``IncludeResolverError``).
     """
     return render_with(
         input,
@@ -190,8 +185,9 @@ def validate(
     known_variables: Sequence[str] | None = None,
 ) -> list[Diagnostic]:
     """Return diagnostics. Valid ⇔ no diagnostic with ``severity == "error"``."""
-    if not isinstance(input, str):
-        raise NotImplementedError("validate(Ast): P2 — pass the source string for now")
+    # A handle resolves to the text it was parsed from: these checks are raw-text by
+    # design, because a lenient tree cannot represent the problems they report.
+    src = source_of(input)
     # A bare `str` satisfies `Sequence[str]`, so `known_includes="hero"` type-checks and
     # then silently means the four slugs 'h', 'e', 'r', 'o'. The TypeScript signature
     # rejects it outright; here only a runtime check can.
@@ -199,7 +195,7 @@ def validate(
     _reject_bare_string("known_variables", known_variables)
 
     source, findings = _validator.run(
-        input,
+        src,
         locale=locale,
         known_includes=list(known_includes) if known_includes else None,
         known_variables=list(known_variables) if known_variables else None,
@@ -245,9 +241,7 @@ def validate(
 
 def extract(input: str | Ast) -> Extraction:
     """List variable references, ``#set`` / ``#def`` names, and ``#include`` targets."""
-    if not isinstance(input, str):
-        raise NotImplementedError("extract(Ast): P2 — pass the source string for now")
-    refs, sets, defs, includes = _extract.extract(input)
+    refs, sets, defs, includes = _extract.extract(source_of(input))
     return Extraction(refs=refs, sets=sets, defs=defs, includes=includes)
 
 
@@ -258,8 +252,25 @@ def analyze(
     known_includes: Sequence[str] | None = None,
     known_variables: Sequence[str] | None = None,
 ) -> Analysis:
-    """``extract`` + ``validate`` + a construct census, for tooling."""
-    raise NotImplementedError("analyze: P3")
+    """``extract`` + ``validate`` + a construct census, for tooling.
+
+    A string is parsed here so the census has a tree to walk; a handle is used as given,
+    which is the point of holding one.
+    """
+    ast = _parser.parse_template(input) if isinstance(input, str) else require_parsed(input)
+    extraction = extract(ast)
+    return Analysis(
+        extraction=extraction,
+        diagnostics=tuple(
+            validate(
+                ast,
+                locale=locale,
+                known_includes=known_includes,
+                known_variables=known_variables,
+            )
+        ),
+        constructs=_analyze.count_constructs(ast, len(extraction.includes)),
+    )
 
 
 def neutralize(value: str) -> str:

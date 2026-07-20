@@ -1,8 +1,10 @@
 # spintax-core (Python)
 
-> **Status: P1 done — `validate()` and `extract()` work; rendering is next.** The shared golden
-> corpus runs from commit one and reports what is not built yet as *expected failures*, so the
-> remaining work is a number on every test run. Nothing is published yet.
+> **Status: the engine is complete — all 168 shared-corpus fixtures pass, none skipped, none
+> expected to fail.** `parse`, `render`, `validate`, `extract`, `analyze` and `neutralize` all
+> work, on a `str` or on a parsed `Ast`. The corpus ran from commit one and reported what was
+> unbuilt as *expected failures*, so the remaining work was a number on every test run; that
+> number is now zero. **Nothing is published yet** — packaging and the first release are next.
 
 A framework-agnostic **[Spintax](https://spintax.net) engine** for Python — parse, render,
 validate, extract, analyze, and neutralize spintax templates. MIT, zero runtime dependencies.
