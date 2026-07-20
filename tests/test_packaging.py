@@ -12,16 +12,23 @@ their misuse will be caught, and it silently will not be.
 
 from __future__ import annotations
 
-import tomllib
+from importlib import metadata
 from pathlib import Path
 
 import spintax_core
 
-_PYPROJECT = Path(__file__).resolve().parent.parent / "pyproject.toml"
-
 
 def _classifiers() -> list[str]:
-    return tomllib.loads(_PYPROJECT.read_text(encoding="utf-8"))["project"]["classifiers"]
+    """Read the classifiers the DISTRIBUTION declares, not the ones pyproject.toml says.
+
+    Two reasons, and the first one bit: `tomllib` is stdlib only from 3.11, while this
+    package supports 3.10, so parsing the source file broke collection on the oldest
+    interpreter we promise to run on. The second is the better one — installed metadata
+    is what a consumer's tooling actually reads, so asserting against it tests the claim
+    that reaches users rather than the file it was written in.
+    """
+    raw = metadata.metadata("spintax-core").get_all("Classifier") or []
+    return [str(c) for c in raw]
 
 
 def test_the_marker_sits_beside_the_module_that_is_imported() -> None:
