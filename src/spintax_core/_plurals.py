@@ -7,6 +7,7 @@ so it lives on its own rather than inside either.
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 PREFIX = "{plural "
@@ -87,3 +88,36 @@ def arity(base_lang: str) -> int:
     not implemented — they are bucketed by the English rule rather than rejected.
     """
     return 3 if base_lang in _THREE_FORM else 2
+
+
+def plural_for(base_lang: str, n: int, forms: Sequence[str]) -> str:
+    """Pick the form for `n`.
+
+    The three-form rule is the Slavic one and its exceptions are the whole point: 1, 21,
+    31 take the first form but **11 does not**, and 2–4 take the second unless they sit
+    in the 12–14 band. Hence the `mod100` guards — a rule written on `mod10` alone gets
+    every teen wrong, which is the classic way to ship "11 товара".
+
+    The count is taken in absolute value, so -1 agrees like 1.
+    """
+    absolute = abs(n)
+    mod10 = absolute % 10
+    mod100 = absolute % 100
+
+    if base_lang in _THREE_FORM:
+        if mod10 == 1 and mod100 != 11:
+            return _at(forms, 0)
+        if 2 <= mod10 <= 4 and (mod100 < 12 or mod100 > 14):
+            return _at(forms, 1)
+        return _at(forms, 2)
+
+    return _at(forms, 0 if absolute == 1 else 1)
+
+
+def _at(forms: Sequence[str], index: int) -> str:
+    """Missing form reads as empty, matching the reference's `?? ''`.
+
+    Reachable only when arity was not checked first, which the renderer always does —
+    but the renderer is not the only caller this function could ever have.
+    """
+    return forms[index] if index < len(forms) else ""

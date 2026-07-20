@@ -18,8 +18,9 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-from . import _extract, _neutralize, _parser, _validator
+from . import _extract, _neutralize, _parser, _pipeline, _validator
 from ._ast import Ast
+from ._errors import AstVersionError, IncludeResolverError, SpintaxError
 from ._rng import Rng, make_rng as _make_rng
 
 # Both are public types that happen to be DEFINED in private modules. Without this,
@@ -29,10 +30,13 @@ Ast.__module__ = __name__
 
 __all__ = [
     "Analysis",
+    "AstVersionError",
     "Ast",
     "Diagnostic",
     "Extraction",
+    "IncludeResolverError",
     "Rng",
+    "SpintaxError",
     "analyze",
     "extract",
     "make_rng",
@@ -122,7 +126,15 @@ def render_with(
     produce identical output and the distinction is untestable. A sequence RNG is
     what makes the difference observable.
     """
-    raise NotImplementedError("render_with: P2")
+    return _pipeline.render_with(
+        input,
+        rng,
+        context=context,
+        locale=locale,
+        include_resolver=include_resolver,
+        post_process=post_process,
+        max_depth=max_depth,
+    )
 
 
 def render(

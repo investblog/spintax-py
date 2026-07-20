@@ -36,6 +36,12 @@ JS_SPACE = (
     "\\u2028\\u2029\\u202f\\u205f\\u3000\\ufeff]"
 )
 
+#: JavaScript's `\S`. Built by negating the class above rather than written out, because
+#: two hand-kept lists of the same characters drift. Conditional truthiness is decided
+#: with this — a variable holding only U+FEFF is falsy to the reference and would be
+#: truthy under Python's `\S`, flipping which branch renders.
+JS_NOT_SPACE = "[^" + JS_SPACE[1:]
+
 #: PHP's `trim` charlist. Narrower than both Python's `str.strip()` (Unicode whitespace)
 #: and JavaScript's — it is exactly these five characters, including NUL and vertical tab.
 #: The plugin trims permutation config, element text, separators and plural forms, so

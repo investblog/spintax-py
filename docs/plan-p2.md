@@ -80,6 +80,17 @@ out explicitly, both of which are the kind that look arbitrary until they break 
 Directives are not tree nodes. `_directives.py` already extracts them line-anchored, and that is
 where they stay.
 
+> **What actually happened at step 2: steps 2–6 landed together.** The skeleton was planned
+> narrow — literal, variable, enumeration — on the assumption that each further node type
+> would be its own increment. Reading `render.ts` showed the increments were not separable:
+> the node types share one `_Walk`, one draw-ordering contract and one variable map, and a
+> renderer that handled three of six would have had to be rewritten rather than extended for
+> the other three. So permutations, conditionals, plurals and `#include` shipped in the same
+> commit, and the counter moved from 125 xfails to 43 in one step instead of five.
+>
+> The prediction that held exactly was the *split*: 82 fixtures carry `postProcess: false`
+> and all 82 went green; the remaining 43 are precisely the ones that need step 7.
+
 ### 2. Walking skeleton — literal + variable + enumeration, wired end to end
 
 `render_with` assembled in one place, in the reference's order: strip sentinels → parse → walk →
@@ -130,7 +141,18 @@ What is promised instead: deterministic **within this engine** — same seed, sa
 across Python versions. The four `render-rng.json` cases assert structural invariants only, so they
 do not care either way; this is a choice about what to promise, not about passing the corpus.
 
-## Decision needed: the error classes
+## Decision made: the error classes mirror the reference
+
+`SpintaxError`, `AstVersionError` and `IncludeResolverError` ship in `_errors.py` and are
+exported. `NotImplementedError` is the one the reference defines that this port does not — Python
+has it built in, and shadowing a builtin to gain nothing is a poor trade.
+
+Nothing in the corpus forced this, so the deciding argument was the one below: the ecosystem's
+value is a single mental model across three engines, and a second vocabulary for the same two
+failures taxes exactly the person moving between them. Both are about the CALLER — a stale handle,
+a resolver that threw — never about a template, which stays lenient.
+
+## Original framing of that decision
 
 The reference exports `SpintaxError`, `IncludeResolverError`, `AstVersionError` and
 `NotImplementedError`. Our `__all__` has none of them, and `render_with` needs at least the version
