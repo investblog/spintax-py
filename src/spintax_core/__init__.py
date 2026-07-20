@@ -17,7 +17,9 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-from . import _extract, _validator
+from . import _extract, _neutralize, _validator
+from ._ast import Ast
+from ._rng import Rng, make_rng as _make_rng
 
 __all__ = [
     "Analysis",
@@ -36,21 +38,6 @@ __all__ = [
 ]
 
 Severity = Literal["error", "warning"]
-
-#: An injected source of choice. Signature is ``(min, max) -> int`` — a bounded
-#: integer, **not** a choice index — matching the seam the other engines expose.
-Rng = Callable[[int, int], int]
-
-
-class Ast:
-    """Opaque, versioned parse handle.
-
-    An in-memory performance handle, not a serialization format: do not persist it
-    across engine versions. Kept a class rather than an alias so the opacity is
-    enforced by the type checker instead of by a docstring.
-    """
-
-    __slots__ = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,9 +90,10 @@ def parse(src: str) -> Ast:
 def make_rng(seed: int | str | None) -> Rng:
     """Build the seeded PRNG. Same seed ⇒ same sequence, within this engine only.
 
-    Cross-engine sequence parity is a deliberate non-goal (spec §3).
+    Cross-engine sequence parity is a deliberate non-goal (spec §3) — see ``_rng`` for
+    why the reference's mulberry32 is not ported despite being fifteen lines.
     """
-    raise NotImplementedError("make_rng: P2")
+    return _make_rng(seed)
 
 
 def render_with(
@@ -244,4 +232,4 @@ def neutralize(value: str) -> str:
     Text-safe, not HTML escaping. Its safety restore is mandatory and survives
     ``post_process=False`` — that flag skips cosmetics only.
     """
-    raise NotImplementedError("neutralize: P3")
+    return _neutralize.neutralize(value)
