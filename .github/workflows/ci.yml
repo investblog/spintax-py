@@ -46,3 +46,60 @@ jobs:
 
       - name: Types
         run: mypy
+
+  # Everything above aims at the code. Nothing looked at the DISTRIBUTION, and that is
+  # where the last two publication blockers were hiding: a `Typing :: Typed` classifier
+  # with no marker behind it, and a licence declared twice. Neither shows up in ruff,
+  # mypy or pytest, and both would have reached PyPI.
+  #
+  # Its own job rather than a matrix step: a distribution does not vary by interpreter,
+  # so building it four times would only multiply the noise.
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine pyroma
+
+      - name: Build
+        run: python -m build
+
+      # Guards the PyPI project page: a README that stops rendering is invisible here
+      # and permanent there.
+      - name: Distribution metadata
+        run: twine check dist/*
+
+      # Pinned at the rating this tree already earns, so the check catches a regression
+      # instead of asking for a round number. The two missing points are one complaint —
+      # no `author-email` — and that is deliberate: @spintax/core and spintax/core both
+      # publish name plus https://301.st and no address, routing contact through Issues.
+      # Do not "fix" it to 10 by adding an inbox the other two packages do not expose.
+      - name: Packaging quality
+        run: pyroma -n 8 .
+
+      # tests/test_packaging.py checks the marker beside the IMPORTED module, which under
+      # `pip install -e .` is the source tree — it would stay green if packaging config
+      # ever excluded the file. Only a built artifact can answer whether it ships.
+      - name: The typing marker must ship, not merely exist in the tree
+        run: |
+          python - <<'PY'
+          import glob, sys, tarfile, zipfile
+          wheel = zipfile.ZipFile(glob.glob("dist/*.whl")[0]).namelist()
+          sdist = tarfile.open(glob.glob("dist/*.tar.gz")[0]).getnames()
+          missing = [
+              kind
+              for kind, names in (("wheel", wheel), ("sdist", sdist))
+              if not any(n.endswith("py.typed") for n in names)
+          ]
+          if missing:
+              sys.exit(f"py.typed is absent from: {', '.join(missing)}")
+          print("py.typed ships in both the wheel and the sdist")
+          PY
