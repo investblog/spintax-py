@@ -8,7 +8,10 @@ __pycache__/
 *.egg-info/
 .eggs/
 build/
-dist/
+# `dist*` rather than `dist`: a wheel built into `dist-review/` for a one-off
+# inspection slipped past a plain `dist/` and was committed (291ac13). The pattern
+# has to cover the directory names people actually type, not just the canonical one.
+dist*/
 .venv/
 venv/
 .python-version
