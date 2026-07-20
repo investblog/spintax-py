@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterator
 
-from . import _directives, _plurals, _source
+from . import _charclasses, _directives, _plurals, _source
 from ._source import Source
 
 # Only these four keys are accepted inside a `[<…>]` config block.
@@ -27,8 +27,8 @@ _W = _directives.ASCII_WORD
 #: U+001C–U+001F and U+0085; JavaScript's includes U+FEFF and excludes those five. Six
 #: characters, and U+FEFF is not exotic: it arrives by copy-paste. Leaving `\s` alone
 #: was therefore not neutrality, it was a fourth divergence sitting beside the three
-#: this file already fixed. Spelled out as JavaScript's set.
-_S = "[\\t\\n\\v\\f\\r \\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000\\ufeff]"
+#: this file already fixed.
+_S = _charclasses.JS_SPACE
 
 _CONFIG_PREFIX_RE = re.compile(r"\[<([^>]*?)>")
 #: Redundant with the key loop below — every path into a diagnostic already requires a

@@ -1,0 +1,4843 @@
+{
+ "reference_version": "0.3.0",
+ "note": "Generated — do not hand-edit. See generate_parser_parity.cjs.",
+ "cases": [
+  {
+   "template": "",
+   "ast": {
+    "astVersion": 2,
+    "source": "",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": []
+   }
+  },
+  {
+   "template": "plain text",
+   "ast": {
+    "astVersion": 2,
+    "source": "plain text",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "plain text"
+     }
+    ]
+   }
+  },
+  {
+   "template": "%var%",
+   "ast": {
+    "astVersion": 2,
+    "source": "%var%",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "variable",
+      "name": "var"
+     }
+    ]
+   }
+  },
+  {
+   "template": "%Var_1%",
+   "ast": {
+    "astVersion": 2,
+    "source": "%Var_1%",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "variable",
+      "name": "Var_1"
+     }
+    ]
+   }
+  },
+  {
+   "template": "% not a var %",
+   "ast": {
+    "astVersion": 2,
+    "source": "% not a var %",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "% not a var %"
+     }
+    ]
+   }
+  },
+  {
+   "template": "%unclosed",
+   "ast": {
+    "astVersion": 2,
+    "source": "%unclosed",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "%unclosed"
+     }
+    ]
+   }
+  },
+  {
+   "template": "100%",
+   "ast": {
+    "astVersion": 2,
+    "source": "100%",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "100%"
+     }
+    ]
+   }
+  },
+  {
+   "template": "a%b%c",
+   "ast": {
+    "astVersion": 2,
+    "source": "a%b%c",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "a"
+     },
+     {
+      "type": "variable",
+      "name": "b"
+     },
+     {
+      "type": "literal",
+      "value": "c"
+     }
+    ]
+   }
+  },
+  {
+   "template": "%%",
+   "ast": {
+    "astVersion": 2,
+    "source": "%%",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "%%"
+     }
+    ]
+   }
+  },
+  {
+   "template": "%a%%b%",
+   "ast": {
+    "astVersion": 2,
+    "source": "%a%%b%",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "variable",
+      "name": "a"
+     },
+     {
+      "type": "variable",
+      "name": "b"
+     }
+    ]
+   }
+  },
+  {
+   "template": "%1abc%",
+   "ast": {
+    "astVersion": 2,
+    "source": "%1abc%",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "variable",
+      "name": "1abc"
+     }
+    ]
+   }
+  },
+  {
+   "template": "%_leading%",
+   "ast": {
+    "astVersion": 2,
+    "source": "%_leading%",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "variable",
+      "name": "_leading"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a|b|c}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a|b|c}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "c"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       []
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{|}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{|}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [],
+       []
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{|a}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{|a}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [],
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a|}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a|}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ],
+       []
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{ a | b }",
+   "ast": {
+    "astVersion": 2,
+    "source": "{ a | b }",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": " a "
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": " b "
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "a{b|c}d",
+   "ast": {
+    "astVersion": 2,
+    "source": "a{b|c}d",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "a"
+     },
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "c"
+        }
+       ]
+      ]
+     },
+     {
+      "type": "literal",
+      "value": "d"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a|{b|c}}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a|{b|c}}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ],
+       [
+        {
+         "type": "enumeration",
+         "options": [
+          [
+           {
+            "type": "literal",
+            "value": "b"
+           }
+          ],
+          [
+           {
+            "type": "literal",
+            "value": "c"
+           }
+          ]
+         ]
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{{a|b}|c}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{{a|b}|c}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "enumeration",
+         "options": [
+          [
+           {
+            "type": "literal",
+            "value": "a"
+           }
+          ],
+          [
+           {
+            "type": "literal",
+            "value": "b"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "c"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a|b|}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a|b|}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ],
+       []
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a|b",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a|b",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "{a|b"
+     }
+    ]
+   }
+  },
+  {
+   "template": "a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "a|b}"
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a|b",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a|b",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "[a|b"
+     }
+    ]
+   }
+  },
+  {
+   "template": "a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "a|b]"
+     }
+    ]
+   }
+  },
+  {
+   "template": "}{",
+   "ast": {
+    "astVersion": 2,
+    "source": "}{",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "}{"
+     }
+    ]
+   }
+  },
+  {
+   "template": "][",
+   "ast": {
+    "astVersion": 2,
+    "source": "][",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "]["
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "{a|b]"
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "[a|b}"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{{a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{{a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "{"
+     },
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a|b}}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a|b}}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ]
+      ]
+     },
+     {
+      "type": "literal",
+      "value": "}"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{",
+   "ast": {
+    "astVersion": 2,
+    "source": "{",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "{"
+     }
+    ]
+   }
+  },
+  {
+   "template": "}",
+   "ast": {
+    "astVersion": 2,
+    "source": "}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "}"
+     }
+    ]
+   }
+  },
+  {
+   "template": "[",
+   "ast": {
+    "astVersion": 2,
+    "source": "[",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "["
+     }
+    ]
+   }
+  },
+  {
+   "template": "]",
+   "ast": {
+    "astVersion": 2,
+    "source": "]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "]"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a]|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a]|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a]|b"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a}|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a}|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ]
+      ]
+     },
+     {
+      "type": "literal",
+      "value": "|b}"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?V?a]|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?V?a]|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "V",
+      "inverted": false,
+      "then": [
+       {
+        "type": "literal",
+        "value": "a]"
+       }
+      ],
+      "else": [
+       {
+        "type": "literal",
+        "value": "b"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?V?a}|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?V?a}|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "V",
+      "inverted": false,
+      "then": [
+       {
+        "type": "literal",
+        "value": "a"
+       }
+      ],
+      "else": []
+     },
+     {
+      "type": "literal",
+      "value": "|b}"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?V?a[|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?V?a[|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "V",
+      "inverted": false,
+      "then": [
+       {
+        "type": "literal",
+        "value": "a[|b"
+       }
+      ],
+      "else": []
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a[|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a[|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a[|b"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?VAR?then|else}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?VAR?then|else}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "VAR",
+      "inverted": false,
+      "then": [
+       {
+        "type": "literal",
+        "value": "then"
+       }
+      ],
+      "else": [
+       {
+        "type": "literal",
+        "value": "else"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?!VAR?then}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?!VAR?then}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "VAR",
+      "inverted": true,
+      "then": [
+       {
+        "type": "literal",
+        "value": "then"
+       }
+      ],
+      "else": []
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?VAR?then}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?VAR?then}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "VAR",
+      "inverted": false,
+      "then": [
+       {
+        "type": "literal",
+        "value": "then"
+       }
+      ],
+      "else": []
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?VAR?}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?VAR?}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "VAR",
+      "inverted": false,
+      "then": [],
+      "else": []
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?VAR?|else}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?VAR?|else}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "VAR",
+      "inverted": false,
+      "then": [],
+      "else": [
+       {
+        "type": "literal",
+        "value": "else"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?_ok?a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?_ok?a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "_ok",
+      "inverted": false,
+      "then": [
+       {
+        "type": "literal",
+        "value": "a"
+       }
+      ],
+      "else": [
+       {
+        "type": "literal",
+        "value": "b"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?V1?a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?V1?a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "V1",
+      "inverted": false,
+      "then": [
+       {
+        "type": "literal",
+        "value": "a"
+       }
+      ],
+      "else": [
+       {
+        "type": "literal",
+        "value": "b"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?VAR}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?VAR}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "?VAR"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{??x|y}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{??x|y}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "??x"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "y"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?1BAD?x|y}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?1BAD?x|y}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "?1BAD?x"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "y"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?VAR|x}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?VAR|x}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "?VAR"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "x"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "?"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?!?a}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?!?a}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "?!?a"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?VAR?a|b|c}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?VAR?a|b|c}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "VAR",
+      "inverted": false,
+      "then": [
+       {
+        "type": "literal",
+        "value": "a"
+       }
+      ],
+      "else": [
+       {
+        "type": "literal",
+        "value": "b|c"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?A?{x|y}|z}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?A?{x|y}|z}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "A",
+      "inverted": false,
+      "then": [
+       {
+        "type": "enumeration",
+        "options": [
+         [
+          {
+           "type": "literal",
+           "value": "x"
+          }
+         ],
+         [
+          {
+           "type": "literal",
+           "value": "y"
+          }
+         ]
+        ]
+       }
+      ],
+      "else": [
+       {
+        "type": "literal",
+        "value": "z"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?A?a|{x|y}}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?A?a|{x|y}}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "A",
+      "inverted": false,
+      "then": [
+       {
+        "type": "literal",
+        "value": "a"
+       }
+      ],
+      "else": [
+       {
+        "type": "enumeration",
+        "options": [
+         [
+          {
+           "type": "literal",
+           "value": "x"
+          }
+         ],
+         [
+          {
+           "type": "literal",
+           "value": "y"
+          }
+         ]
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{plural 2: one|few|many}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{plural 2: one|few|many}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "plural",
+      "countRaw": "2",
+      "formsRaw": " one|few|many"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{plural %n%: a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{plural %n%: a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "plural",
+      "countRaw": "%n%",
+      "formsRaw": " a|b"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{plural 0: a|b|c}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{plural 0: a|b|c}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "plural",
+      "countRaw": "0",
+      "formsRaw": " a|b|c"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{plural 2 one|few}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{plural 2 one|few}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "plural 2 one"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "few"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{plural: a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{plural: a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "plural: a"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{plural 1: {a|b}|c}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{plural 1: {a|b}|c}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "plural",
+      "countRaw": "1",
+      "formsRaw": " {a|b}|c"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{plural 1: a:b|c}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{plural 1: a:b|c}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "plural",
+      "countRaw": "1",
+      "formsRaw": " a:b|c"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{plural : a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{plural : a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "plural",
+      "countRaw": "",
+      "formsRaw": " a|b"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{plural x: a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{plural x: a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "plural",
+      "countRaw": "x",
+      "formsRaw": " a|b"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{plural 1:}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{plural 1:}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "plural",
+      "countRaw": "1",
+      "formsRaw": ""
+     }
+    ]
+   }
+  },
+  {
+   "template": "{plural 1: a}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{plural 1: a}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "plural",
+      "countRaw": "1",
+      "formsRaw": " a"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{pluralx 1: a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{pluralx 1: a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "pluralx 1: a"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a|b|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a|b|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": []
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<sep=\", \">a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<sep=\", \">a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": ", ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<lastsep=\" and \">a|b|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<lastsep=\" and \">a|b|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": " and "
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<minsize=2 maxsize=3>a|b|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<minsize=2 maxsize=3>a|b|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": 2,
+       "maxsize": 3,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<minsize=2>a|b|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<minsize=2>a|b|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": 2,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<maxsize=1>a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<maxsize=1>a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": 1,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<, >a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<, >a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": ", ",
+       "lastsep": ", "
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[< >a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[< >a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": " "
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<>a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<>a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": "",
+       "lastsep": ""
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<sep=\"|\">a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<sep=\"|\">a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": "|",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<lastsep=\"|\">a|b|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<lastsep=\"|\">a|b|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": "|"
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<sep=\"a|b\">x|y]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<sep=\"a|b\">x|y]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": "a|b",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "x"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "y"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<MINSIZE=2 SEP=\", \">a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<MINSIZE=2 SEP=\", \">a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": 2,
+       "maxsize": null,
+       "sep": ", ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[< sep = \"x\" >a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[< sep = \"x\" >a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": "x",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<minsize=0>a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<minsize=0>a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": 0,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<minsize=99>a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<minsize=99>a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": 99,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<minsize=2 minsize=3>a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<minsize=2 minsize=3>a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": 2,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<sep=\", \" lastsep=\" and \">a|b|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<sep=\", \" lastsep=\" and \">a|b|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": ", ",
+       "lastsep": " and "
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<lastsep=\", \" sep=\" and \">a|b|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<lastsep=\", \" sep=\" and \">a|b|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " and ",
+       "lastsep": ", "
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<li>a|b</li>]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<li>a|b</li>]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "<li>a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b</li>"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<br/>a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<br/>a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "<br/>a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<div class=x>a|b</div>]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<div class=x>a|b</div>]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "<div class=x>a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b</div>"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<p>a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<p>a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": "p",
+       "lastsep": "p"
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a<, >b|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a<, >b|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a<, >b"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a<, >b<; >c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a<, >b<; >c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a<, >b<; >c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a</b>|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a</b>|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a</b>"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a<b class=x>|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a<b class=x>|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a<b class=x>"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a<br/>|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a<br/>|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a<br/>"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a<>b|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a<>b|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a<>b"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a<x>|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a<x>|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": "x"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a< >b|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a< >b|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a< >b"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[ a | b ]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[ a | b ]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[\ta|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[\ta|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[\u000ba|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[\u000ba|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[\u0000a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[\u0000a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[ a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[ a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": " a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[ a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[ a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": " a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[﻿a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[﻿a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "﻿a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[< sep=\"x\">a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[< sep=\"x\">a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": "x",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<minsize\u001c=2>a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<minsize\u001c=2>a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": "minsize\u001c=2",
+       "lastsep": "minsize\u001c=2"
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<minsize﻿=2>a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<minsize﻿=2>a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": 2,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<sep\u001c=\"x\">a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<sep\u001c=\"x\">a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": "sep\u001c=\"x\"",
+       "lastsep": "sep\u001c=\"x\""
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<sep﻿=\"x\">a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<sep﻿=\"x\">a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": "x",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<minsize=\u001c2>a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<minsize=\u001c2>a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<minsize=﻿2>a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<minsize=﻿2>a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": 2,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<div>a|b</div\u001c>]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<div>a|b</div\u001c>]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": "div",
+       "lastsep": "div"
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b</div\u001c>"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<div>a|b</div﻿>]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<div>a|b</div﻿>]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "<div>a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b</div﻿>"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a<\u001cx>b|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a<\u001cx>b|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a<\u001cx>b"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a<﻿x>b|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a<﻿x>b|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a<﻿x>b"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "%перем%",
+   "ast": {
+    "astVersion": 2,
+    "source": "%перем%",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "%перем%"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?перем?a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?перем?a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "?перем?a"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<minsize=٢>a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<minsize=٢>a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<ésep=\"x\">a|b]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<ésep=\"x\">a|b]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": "x",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "%café%",
+   "ast": {
+    "astVersion": 2,
+    "source": "%café%",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "%café%"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?café?a|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?café?a|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "?café?a"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "/# c #/text",
+   "ast": {
+    "astVersion": 2,
+    "source": "/# c #/text",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "text"
+     }
+    ]
+   }
+  },
+  {
+   "template": "a/#\nmulti\n#/b",
+   "ast": {
+    "astVersion": 2,
+    "source": "a/#\nmulti\n#/b",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "ab"
+     }
+    ]
+   }
+  },
+  {
+   "template": "/#a#/{x|y}/#b#/",
+   "ast": {
+    "astVersion": 2,
+    "source": "/#a#/{x|y}/#b#/",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "x"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "y"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "/# unterminated",
+   "ast": {
+    "astVersion": 2,
+    "source": "/# unterminated",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "/# unterminated"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a|/#c#/b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a|/#c#/b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "/##/",
+   "ast": {
+    "astVersion": 2,
+    "source": "/##/",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": []
+   }
+  },
+  {
+   "template": "/#/#nested#/#/",
+   "ast": {
+    "astVersion": 2,
+    "source": "/#/#nested#/#/",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "#/"
+     }
+    ]
+   }
+  },
+  {
+   "template": "#set %x% = 1\n%x%",
+   "ast": {
+    "astVersion": 2,
+    "source": "#set %x% = 1\n%x%",
+    "setDefs": {
+     "x": "1"
+    },
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "\n"
+     },
+     {
+      "type": "variable",
+      "name": "x"
+     }
+    ]
+   }
+  },
+  {
+   "template": "#def %y% = {a|b}\n%y%",
+   "ast": {
+    "astVersion": 2,
+    "source": "#def %y% = {a|b}\n%y%",
+    "setDefs": {},
+    "defDefs": {
+     "y": "{a|b}"
+    },
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "\n"
+     },
+     {
+      "type": "variable",
+      "name": "y"
+     }
+    ]
+   }
+  },
+  {
+   "template": "#set %x% = 1\n#set %x% = 2\n%x%",
+   "ast": {
+    "astVersion": 2,
+    "source": "#set %x% = 1\n#set %x% = 2\n%x%",
+    "setDefs": {
+     "x": "2"
+    },
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "\n\n"
+     },
+     {
+      "type": "variable",
+      "name": "x"
+     }
+    ]
+   }
+  },
+  {
+   "template": "#set %x% =\n%x%",
+   "ast": {
+    "astVersion": 2,
+    "source": "#set %x% =\n%x%",
+    "setDefs": {
+     "x": ""
+    },
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "\n"
+     },
+     {
+      "type": "variable",
+      "name": "x"
+     }
+    ]
+   }
+  },
+  {
+   "template": "  #set %x% = 1\n%x%",
+   "ast": {
+    "astVersion": 2,
+    "source": "  #set %x% = 1\n%x%",
+    "setDefs": {
+     "x": "1"
+    },
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "\n"
+     },
+     {
+      "type": "variable",
+      "name": "x"
+     }
+    ]
+   }
+  },
+  {
+   "template": "#set %X% = 1\n%x%",
+   "ast": {
+    "astVersion": 2,
+    "source": "#set %X% = 1\n%x%",
+    "setDefs": {
+     "x": "1"
+    },
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "\n"
+     },
+     {
+      "type": "variable",
+      "name": "x"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{#set %x% = 1\na|b}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{#set %x% = 1\na|b}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "#set "
+        },
+        {
+         "type": "variable",
+         "name": "x"
+        },
+        {
+         "type": "literal",
+         "value": " = 1\na"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "#set %x% = {a|b}\n%x%%x%",
+   "ast": {
+    "astVersion": 2,
+    "source": "#set %x% = {a|b}\n%x%%x%",
+    "setDefs": {
+     "x": "{a|b}"
+    },
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "\n"
+     },
+     {
+      "type": "variable",
+      "name": "x"
+     },
+     {
+      "type": "variable",
+      "name": "x"
+     }
+    ]
+   }
+  },
+  {
+   "template": "#def %a% = 1\n#set %b% = 2\n%a%%b%",
+   "ast": {
+    "astVersion": 2,
+    "source": "#def %a% = 1\n#set %b% = 2\n%a%%b%",
+    "setDefs": {
+     "b": "2"
+    },
+    "defDefs": {
+     "a": "1"
+    },
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "\n\n"
+     },
+     {
+      "type": "variable",
+      "name": "a"
+     },
+     {
+      "type": "variable",
+      "name": "b"
+     }
+    ]
+   }
+  },
+  {
+   "template": "#set %x% = A\r%x%",
+   "ast": {
+    "astVersion": 2,
+    "source": "#set %x% = A\r%x%",
+    "setDefs": {
+     "x": "A"
+    },
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "\r"
+     },
+     {
+      "type": "variable",
+      "name": "x"
+     }
+    ]
+   }
+  },
+  {
+   "template": "#set %x% = A\r\n%x%",
+   "ast": {
+    "astVersion": 2,
+    "source": "#set %x% = A\r\n%x%",
+    "setDefs": {
+     "x": "A"
+    },
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "\n"
+     },
+     {
+      "type": "variable",
+      "name": "x"
+     }
+    ]
+   }
+  },
+  {
+   "template": "#set %x% = A %x%",
+   "ast": {
+    "astVersion": 2,
+    "source": "#set %x% = A %x%",
+    "setDefs": {
+     "x": "A"
+    },
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": " "
+     },
+     {
+      "type": "variable",
+      "name": "x"
+     }
+    ]
+   }
+  },
+  {
+   "template": "a\rb",
+   "ast": {
+    "astVersion": 2,
+    "source": "a\rb",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "a\rb"
+     }
+    ]
+   }
+  },
+  {
+   "template": "a\r\nb",
+   "ast": {
+    "astVersion": 2,
+    "source": "a\r\nb",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "a\r\nb"
+     }
+    ]
+   }
+  },
+  {
+   "template": "a b",
+   "ast": {
+    "astVersion": 2,
+    "source": "a b",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "a b"
+     }
+    ]
+   }
+  },
+  {
+   "template": "a b",
+   "ast": {
+    "astVersion": 2,
+    "source": "a b",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "a b"
+     }
+    ]
+   }
+  },
+  {
+   "template": "a\n\n\n\nb",
+   "ast": {
+    "astVersion": 2,
+    "source": "a\n\n\n\nb",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "a\n\nb"
+     }
+    ]
+   }
+  },
+  {
+   "template": "a\n\nb",
+   "ast": {
+    "astVersion": 2,
+    "source": "a\n\nb",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "a\n\nb"
+     }
+    ]
+   }
+  },
+  {
+   "template": "#set %x% = 1\n\n\n\nb",
+   "ast": {
+    "astVersion": 2,
+    "source": "#set %x% = 1\n\n\n\nb",
+    "setDefs": {
+     "x": "1"
+    },
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "literal",
+      "value": "\n\nb"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a|[b|c]}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a|[b|c]}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ],
+       [
+        {
+         "type": "permutation",
+         "config": {
+          "minsize": null,
+          "maxsize": null,
+          "sep": " ",
+          "lastsep": null
+         },
+         "options": [
+          {
+           "nodes": [
+            {
+             "type": "literal",
+             "value": "b"
+            }
+           ],
+           "separator": null
+          },
+          {
+           "nodes": [
+            {
+             "type": "literal",
+             "value": "c"
+            }
+           ],
+           "separator": null
+          }
+         ]
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[{a|b}|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[{a|b}|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "enumeration",
+          "options": [
+           [
+            {
+             "type": "literal",
+             "value": "a"
+            }
+           ],
+           [
+            {
+             "type": "literal",
+             "value": "b"
+            }
+           ]
+          ]
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{?V?[a|b]|c}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{?V?[a|b]|c}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "conditional",
+      "name": "V",
+      "inverted": false,
+      "then": [
+       {
+        "type": "permutation",
+        "config": {
+         "minsize": null,
+         "maxsize": null,
+         "sep": " ",
+         "lastsep": null
+        },
+        "options": [
+         {
+          "nodes": [
+           {
+            "type": "literal",
+            "value": "a"
+           }
+          ],
+          "separator": null
+         },
+         {
+          "nodes": [
+           {
+            "type": "literal",
+            "value": "b"
+           }
+          ],
+          "separator": null
+         }
+        ]
+       }
+      ],
+      "else": [
+       {
+        "type": "literal",
+        "value": "c"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[<sep=\", \">{a|b}|c]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[<sep=\", \">{a|b}|c]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": ", ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "enumeration",
+          "options": [
+           [
+            {
+             "type": "literal",
+             "value": "a"
+            }
+           ],
+           [
+            {
+             "type": "literal",
+             "value": "b"
+            }
+           ]
+          ]
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "%v%{a|b}[c|d]",
+   "ast": {
+    "astVersion": 2,
+    "source": "%v%{a|b}[c|d]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "variable",
+      "name": "v"
+     },
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ]
+      ]
+     },
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "d"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{plural %n%: {a|b}|c}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{plural %n%: {a|b}|c}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "plural",
+      "countRaw": "%n%",
+      "formsRaw": " {a|b}|c"
+     }
+    ]
+   }
+  },
+  {
+   "template": "{a|b}{c|d}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{a|b}{c|d}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "a"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "b"
+        }
+       ]
+      ]
+     },
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "literal",
+         "value": "c"
+        }
+       ],
+       [
+        {
+         "type": "literal",
+         "value": "d"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[a|b][c|d]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[a|b][c|d]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "a"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "b"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     },
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "c"
+         }
+        ],
+        "separator": null
+       },
+       {
+        "nodes": [
+         {
+          "type": "literal",
+          "value": "d"
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "{{{a|b}}}",
+   "ast": {
+    "astVersion": 2,
+    "source": "{{{a|b}}}",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "enumeration",
+      "options": [
+       [
+        {
+         "type": "enumeration",
+         "options": [
+          [
+           {
+            "type": "enumeration",
+            "options": [
+             [
+              {
+               "type": "literal",
+               "value": "a"
+              }
+             ],
+             [
+              {
+               "type": "literal",
+               "value": "b"
+              }
+             ]
+            ]
+           }
+          ]
+         ]
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "template": "[[[a|b]]]",
+   "ast": {
+    "astVersion": 2,
+    "source": "[[[a|b]]]",
+    "setDefs": {},
+    "defDefs": {},
+    "nodes": [
+     {
+      "type": "permutation",
+      "config": {
+       "minsize": null,
+       "maxsize": null,
+       "sep": " ",
+       "lastsep": null
+      },
+      "options": [
+       {
+        "nodes": [
+         {
+          "type": "permutation",
+          "config": {
+           "minsize": null,
+           "maxsize": null,
+           "sep": " ",
+           "lastsep": null
+          },
+          "options": [
+           {
+            "nodes": [
+             {
+              "type": "permutation",
+              "config": {
+               "minsize": null,
+               "maxsize": null,
+               "sep": " ",
+               "lastsep": null
+              },
+              "options": [
+               {
+                "nodes": [
+                 {
+                  "type": "literal",
+                  "value": "a"
+                 }
+                ],
+                "separator": null
+               },
+               {
+                "nodes": [
+                 {
+                  "type": "literal",
+                  "value": "b"
+                 }
+                ],
+                "separator": null
+               }
+              ]
+             }
+            ],
+            "separator": null
+           }
+          ]
+         }
+        ],
+        "separator": null
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ]
+}

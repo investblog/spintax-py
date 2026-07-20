@@ -17,7 +17,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-from . import _extract, _neutralize, _validator
+from . import _extract, _neutralize, _parser, _validator
 from ._ast import Ast
 from ._rng import Rng, make_rng as _make_rng
 
@@ -84,7 +84,7 @@ def _reject_bare_string(param: str, value: Sequence[str] | None) -> None:
 
 def parse(src: str) -> Ast:
     """Parse once into a reusable handle."""
-    raise NotImplementedError("parse: P2")
+    return _parser.parse_template(src)
 
 
 def make_rng(seed: int | str | None) -> Rng:
