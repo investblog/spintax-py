@@ -1,8 +1,9 @@
 # Spintax Python engine — `spintax-core` (spec draft)
 
-Status: **ACTIVE — P0 and P1 complete** ([`plan-p1.md`](plan-p1.md)); **P2 in progress**
-([`plan-p2.md`](plan-p2.md)). `validate()` and
-`extract()` ship; `parse()` and rendering do not. Idea captured 2026-07-13; revised 2026-07-19 for engine 3.0.0
+Status: **ACTIVE — P0, P1 and P2 complete** ([`plan-p1.md`](plan-p1.md),
+[`plan-p2.md`](plan-p2.md)). **All 168 corpus fixtures pass**, 0 xfailed, 0 skipped.
+`validate()`, `extract()`, `parse()`, `neutralize()` and the full renderer ship; `analyze()`
+is the one entry point left (P3). Idea captured 2026-07-13; revised 2026-07-19 for engine 3.0.0
 (`#def`, `#set` reverted to macro, BCS plurals). Q4 is answered; the remaining open questions are
 non-blocking.
 Owner: 301st
@@ -155,6 +156,11 @@ Invariants carried over from the TS engine:
   first and last stages, and 7 of the 8 `neutralize.json` cases are `op: render` round-trips that
   cannot pass without the renderer anyway. P2 therefore closes all 126 remaining fixtures.
 - **P3 — analyze + docs.** API surface complete (`extract` landed in P1, `neutralize` in P2).
+  `analyze` is small — it composes `extract`, `validate` and a construct census over the tree,
+  all of which exist. **But there is no `analyze.json`**, so like `#include` it is entirely
+  ungated by the corpus and needs local tests measured against the reference. Note also that
+  the reference's census counts `setDefs` and not `defDefs`, which looks like an oversight left
+  from when `#def` was added; decide deliberately rather than copying it by reflex.
 - **P4 — publish `0.1.0` to PyPI.** Claim `spintax-core` early (see Q1) but publish only here.
 
 ### 5.1 What the other three ports paid for
