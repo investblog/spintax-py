@@ -18,8 +18,13 @@ So the assertion is not equality. It is the property that actually matters:
 Concretely — nothing the running `unicodedata` calls `Ll` may be missing from the table,
 and anything the table has in surplus must be **unassigned** here. Measured: 78 surplus
 code points on Python 3.10 and 6 on 3.11, every one of them `Cn`. They are letters added
-to Unicode after that interpreter's tables were cut, so no text on that interpreter can
-contain them.
+to Unicode after that interpreter's tables were cut.
+
+Surplus is tolerated because of what the tables are FOR, not because such characters
+cannot appear — `chr(0x2FE0)` is a perfectly ordinary Python string either way. It is
+tolerated because the table tracks the reference's Unicode version rather than Python's,
+so being a version ahead is the intended state; a newer letter classified as a letter is
+the answer the reference would give.
 
 If a character that IS assigned turns up on either side, that is real drift: regenerate the
 constants, read the diff, and say in the commit which Unicode version moved and what moved.

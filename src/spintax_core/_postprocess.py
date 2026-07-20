@@ -12,6 +12,13 @@ The shielding here uses `\\x00`, and neutralize uses the Private Use Area, preci
 the two cannot collide. This pass runs while neutralize sentinels are still in place, and
 must leave them alone; it must equally leave alone the fullwidth `｛…｝` a lenient plural
 emits, which is why that fallback widens its braces rather than keeping ASCII ones.
+
+**Cost.** This pass is O(n²) in the length of the text, inherited from the reference
+rather than introduced here — but Python's constant is roughly 25× larger, so it bites
+sooner. Measured on a pathological input of dotted labels (`"a."` repeated): 3.2 KB takes
+about 1 s here against 40 ms there, and 12.8 KB takes 15 s. Ordinary prose is nowhere
+near this; a host feeding the engine machine-generated text of that shape should cap the
+input or render with `post_process=False`.
 """
 
 from __future__ import annotations
@@ -25,6 +32,8 @@ from ._charclasses import (
     JS_LOWERCASE_LETTER,
     JS_SPACE,
     JS_WORD_BOUNDARY,
+    NOT_TURKIC,
+    js_ci_unicode,
 )
 
 #: Single-token abbreviations that would otherwise look like a sentence end. Multi-dot
@@ -57,13 +66,20 @@ _URL_RE = re.compile(f"(?:https?|ftp)://[^{_WS}<>\"')\\]]+", re.IGNORECASE)
 #: `mailto:` and `tel:` have no `//` authority, so `_URL_RE` misses them. Shielded before
 #: the email and domain passes, or the address is carved out from under its own prefix and
 #: the bare `mailto:` left behind — then the "space after a colon" rule splits it.
-_MAILTEL_RE = re.compile(f"(?:mailto|tel):[^{_WS}<>\"')\\]]+", re.IGNORECASE)
-_EMAIL_RE = re.compile(f"[a-z0-9._%+\\-]+@{_DOMAIN_PART}{_B}", re.IGNORECASE)
+_MAILTEL_RE = re.compile(
+    f"(?:{js_ci_unicode('mailto')}|tel):[^{_WS}<>\"')\\]]+", re.IGNORECASE
+)
+# `NOT_TURKIC` on the class, `js_ci` on the literals: under `re.IGNORECASE` an `[a-z]`
+# range accepts U+0130 and U+0131, which JavaScript's `/iu` never folds into it.
+_EMAIL_RE = re.compile(
+    f"(?:{NOT_TURKIC}[a-z0-9._%+\\-])+@{_DOMAIN_PART}{_B}", re.IGNORECASE
+)
 _DOMAIN_RE = re.compile(f"{_B}{_DOMAIN_PART}{_B}", re.IGNORECASE)
 _DECIMAL_RE = re.compile(f"{_B}{ASCII_DIGIT}+\\.{ASCII_DIGIT}+{_B}")
 _MULTI_ABBR_RE = re.compile(f"{_B}(?:(?:{JS_LETTER}){{1,2}}\\.{_S}*){{2,}}")
 _SINGLE_ABBR_RE = re.compile(
-    f"(?<!{JS_LETTER_OR_NUMBER})(?:{'|'.join(SINGLE_ABBREVS)})\\.(?={_S}|\\Z|<)",
+    f"(?<!{JS_LETTER_OR_NUMBER})"
+    f"(?:{'|'.join(js_ci_unicode(a) for a in SINGLE_ABBREVS)})\\.(?={_S}|\\Z|<)",
     re.IGNORECASE,
 )
 #: `\Z`, not `$`: the reference has no `m` flag, so it anchors at the very end.
@@ -110,13 +126,30 @@ _SPACE_AFTER_OPENER_RE = re.compile(f"([{SENTENCE_OPENERS}]){_S}+")
 #: match still CONSUMES its region, so reaching an uppercase letter through an HTML tag
 #: swallows a lowercase one further in that the narrow pattern would have capitalised.
 #: Found by differential fuzzing after that exact reasoning had been written down as safe.
-_CAP_FIRST_RE = re.compile(f"\\A({_LEAD})({JS_LOWERCASE_LETTER})")
-_CAP_AFTER_SENTENCE_RE = re.compile(f"([.!?…])({_LEAD})({JS_LOWERCASE_LETTER})")
-_CAP_AFTER_BLOCK_RE = re.compile(
-    f"(</?(?:p|h[1-6]|li|blockquote|div|td|th)[^>]*>{_LEAD})({JS_LOWERCASE_LETTER})",
-    re.IGNORECASE,
+#:
+#: **Held as strings and compiled on first use.** Each embeds the 7,800-character `Ll`
+#: class, and compiling the four costs 27 ms — 27 of the 31 ms this module took at import,
+#: on a package that imports in 130. A consumer using only `validate()` (an editor, a
+#: linter) never renders and should not pay for the cosmetic pass.
+_CAP_SOURCES = (
+    f"\\A({_LEAD})({JS_LOWERCASE_LETTER})",
+    f"([.!?…])({_LEAD})({JS_LOWERCASE_LETTER})",
+    f"(</?(?:p|h[1-6]|{js_ci_unicode('li')}|blockquote|{js_ci_unicode('div')}|td|th)"
+    f"[^>]*>{_LEAD})({JS_LOWERCASE_LETTER})",
+    f"(\\n{_LEAD})({JS_LOWERCASE_LETTER})",
 )
-_CAP_AFTER_BREAK_RE = re.compile(f"(\\n{_LEAD})({JS_LOWERCASE_LETTER})")
+_CAP_FLAGS = (0, 0, re.IGNORECASE, 0)
+_CAP_RULES: tuple[re.Pattern[str], ...] | None = None
+
+
+def _cap_rules() -> tuple[re.Pattern[str], ...]:
+    """The four capitalization patterns, compiled once, on the first render that needs them."""
+    global _CAP_RULES
+    if _CAP_RULES is None:
+        _CAP_RULES = tuple(
+            re.compile(src, flags) for src, flags in zip(_CAP_SOURCES, _CAP_FLAGS, strict=True)
+        )
+    return _CAP_RULES
 
 #: JavaScript's `String.prototype.trim`, which strips its own whitespace set — not
 #: Python's, and not the ASCII set used everywhere else in this file.
@@ -174,10 +207,13 @@ def post_process(text: str) -> str:
 
     # 8-11: capitalization — first letter, after sentence punctuation, after a block-level
     # tag, after a line break.
-    text = _CAP_FIRST_RE.sub(_capitalize, text, count=1)
-    text = _CAP_AFTER_SENTENCE_RE.sub(_capitalize, text)
-    text = _CAP_AFTER_BLOCK_RE.sub(_capitalize, text)
-    text = _CAP_AFTER_BREAK_RE.sub(_capitalize, text)
+    cap_first, cap_after_sentence, cap_after_block, cap_after_break = _cap_rules()
+    # `count=1` mirrors a JavaScript `replace` without `/g`. Redundant under the `\A`
+    # anchor, and kept because the anchor is what makes it redundant.
+    text = cap_first.sub(_capitalize, text, count=1)
+    text = cap_after_sentence.sub(_capitalize, text)
+    text = cap_after_block.sub(_capitalize, text)
+    text = cap_after_break.sub(_capitalize, text)
 
     # 12: restore, then trim.
     for key, value in placeholders.items():

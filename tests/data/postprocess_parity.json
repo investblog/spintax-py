@@ -2457,6 +2457,122 @@
   {
    "template": "a. b",
    "text": "A.  b"
+  },
+  {
+   "template": "a@b.com sent",
+   "text": "a@b.com sent"
+  },
+  {
+   "template": "http://x.com/mailto:a@b.com",
+   "text": "http://x.com/mailto:a@b.com"
+  },
+  {
+   "template": "Mr. т.д. x",
+   "text": "Mr. т.д. x"
+  },
+  {
+   "template": "ETC. hello",
+   "text": "ETC. hello"
+  },
+  {
+   "template": "zz<P>hello",
+   "text": "Zz<P>Hello"
+  },
+  {
+   "template": "a٣.١٤b",
+   "text": "A٣. ١٤b"
+  },
+  {
+   "template": "a,٣ b",
+   "text": "A, ٣ b"
+  },
+  {
+   "template": "etc.<p>x",
+   "text": "etc.<p>X"
+  },
+  {
+   "template": "(http://a.com).next",
+   "text": "(http://a.com). Next"
+  },
+  {
+   "template": "ınc. hello",
+   "text": "Inc. Hello"
+  },
+  {
+   "template": "İnc. hello",
+   "text": "İnc. Hello"
+  },
+  {
+   "template": "zzz<dıv>hello",
+   "text": "Zzz<dıv>hello"
+  },
+  {
+   "template": "zzz<dİv>hello",
+   "text": "Zzz<dİv>hello"
+  },
+  {
+   "template": "bobı@example.com sent",
+   "text": "Bobı@example.com sent"
+  },
+  {
+   "template": "maılto:a@b.com now",
+   "text": "Maılto: a@b.com now"
+  },
+  {
+   "template": "vısit example.com. then",
+   "text": "Vısit example.com. Then"
+  },
+  {
+   "template": "-No.ı",
+   "text": "-No. I"
+  },
+  {
+   "template": "ſtc. hello",
+   "text": "Stc. Hello"
+  },
+  {
+   "template": "vſ. hello",
+   "text": "vſ. hello"
+  },
+  {
+   "template": "Kg. hello",
+   "text": "Kg. Hello"
+  },
+  {
+   "template": "maİlto:a@b.com",
+   "text": "Maİlto: a@b.com"
+  },
+  {
+   "template": "x ſt. y",
+   "text": "X ſt. y"
+  },
+  {
+   "template": "[<mınsize=2>a|b|c]",
+   "text": "Bmınsize=2cmınsize=2a"
+  },
+  {
+   "template": "[<ſep=\"x\">a|b|c]",
+   "text": "Bſep=\"x\"cſep=\"x\"a"
+  },
+  {
+   "template": "[<laſtſep=\"x\">a|b|c]",
+   "text": "Blaſtſep=\"x\"claſtſep=\"x\"a"
+  },
+  {
+   "template": "[<MINSIZE=2>a|b|c]",
+   "text": "B c"
+  },
+  {
+   "template": "[<minsize=2>a|b|c]",
+   "text": "B c"
+  },
+  {
+   "template": "[<sep=\"x\">a|b|c]",
+   "text": "B x c x a"
+  },
+  {
+   "template": "[<lastsep=\"y\" sep=\"x\">a|b|c]",
+   "text": "B x c y a"
   }
  ]
 }

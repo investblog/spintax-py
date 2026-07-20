@@ -24,18 +24,81 @@ ASCII_WORD = "[A-Za-z0-9_]"
 #: would treat a preceding Unicode letter as a word character and find no boundary there.
 NOT_AFTER_WORD = "(?<![A-Za-z0-9_])"
 
-#: JavaScript's `\b` itself, which is NOT the same thing as `NOT_AFTER_WORD`.
+#: The dotted and dotless Turkish `i`. **Python's `re.IGNORECASE` folds both into ASCII
+#: `i`; JavaScript's `/iu` never does.**
 #:
-#: A boundary needs a TRANSITION: exactly one side must be an ASCII word character, with
+#: Python applies the Turkic-only (status `T`) case foldings of U+0130 and U+0131.
+#: JavaScript uses simple folding, which excludes them by design. Measured over every ASCII
+#: letter against both engines, the entire divergence set is these two characters — no
+#: more, and nothing in the other direction. `ſ` (U+017F) and `K` (U+212A) fold in BOTH,
+#: which is why the fix cannot simply be "drop IGNORECASE and spell out `[a-zA-Z]`": that
+#: would lose two characters the reference accepts while removing two it rejects.
+TURKIC_I = "İı"
+
+#: The same pair as a class that IGNORECASE cannot touch. Without the scoped `(?-i:…)`
+#: the exclusion is self-defeating: `[İı]` under IGNORECASE also matches plain `i`, so a
+#: lookahead built from it rejects the very letter it was meant to protect.
+NOT_TURKIC = f"(?!(?-i:[{TURKIC_I}]))"
+_IS_TURKIC = f"(?=(?-i:[{TURKIC_I}]))"
+_AFTER_TURKIC = f"(?<=(?-i:[{TURKIC_I}]))"
+_NOT_AFTER_TURKIC = f"(?<!(?-i:[{TURKIC_I}]))"
+
+
+def js_ci_unicode(literal: str) -> str:
+    """A literal matched case-insensitively as JavaScript's `/iu` does it.
+
+    Use with `re.IGNORECASE`. Only `i` needs guarding: `ſ` and `K` fold into `s` and `k`
+    under `/iu`, and Python agrees, so they must be left alone.
+
+    Getting this wrong is not cosmetic. `[<mınsize=2>a|b|c]` — a dotless `ı` in a
+    permutation config key — rendered `"b c"` here and `"bmınsize=2cmınsize=2a"` in the
+    reference, because Python accepted the key and JavaScript read the whole `<…>` as a
+    separator instead. That is a template meaning differently in two engines.
+    """
+    return "".join(f"{NOT_TURKIC}{ch}" if ch in "iI" else ch for ch in literal)
+
+
+def js_ci_ascii(literal: str) -> str:
+    """A literal matched case-insensitively as JavaScript's `/i` **without** `u` does it.
+
+    Use WITHOUT `re.IGNORECASE` — the classes carry the case themselves, so no flag can
+    widen them. That is the point: the `u` flag is what makes JavaScript fold `ſ` into
+    `s`, and a regex declared `/i` alone does not. Python's `re.IGNORECASE` has no such
+    distinction and always folds, so the only faithful translation of a non-`u` pattern is
+    to stop using the flag.
+
+    The reference's five permutation-config patterns are all `/i` with no `u`, which is
+    why `[<ſep="x">a|b|c]` is a config here and a literal separator there. Eight of 3437
+    differential cases, all from that one flag.
+    """
+    return "".join(
+        f"[{ch.lower()}{ch.upper()}]" if ch.isascii() and ch.isalpha() else ch
+        for ch in literal
+    )
+
+
+#: JavaScript's `\b`, which is NOT the same thing as `NOT_AFTER_WORD`.
+#:
+#: A boundary needs a TRANSITION: exactly one side must be a word character, with
 #: out-of-string counting as non-word. Checking only the preceding character finds a
 #: boundary that is not there whenever the following character is also non-word — and
 #: since JavaScript's word set is ASCII, every Cyrillic or accented letter is non-word.
 #:
-#: Measured cost of getting this wrong: `приме.com` and `ß.a.com` were shielded as domains
+#: Measured cost of getting that wrong: `приме.com` and `ß.a.com` were shielded as domains
 #: here and left alone by the reference, so the spacing and capitalization passes skipped
-#: text the reference rewrites. 64 of 1922 differential cases, all from this one line.
+#: text the reference rewrites. 64 of 1922 differential cases, all from one line.
+#:
+#: The Turkic guards matter because `re.IGNORECASE` applies to the WHOLE pattern, so a
+#: case-insensitive caller silently widened this ASCII-only set. JavaScript's `\b` does
+#: gain `ſ` and `K` under `/iu` — both fold into ASCII word characters — and this keeps
+#: them; it is only U+0130 and U+0131 that must stay non-word.
+_WORD = "[A-Za-z0-9_]"
+_WORD_AHEAD = f"(?={NOT_TURKIC}{_WORD})"
+_WORD_BEHIND = f"(?<={_WORD}){_NOT_AFTER_TURKIC}"
+_NOT_WORD_AHEAD = f"(?:(?!{_WORD})|{_IS_TURKIC})"
+_NOT_WORD_BEHIND = f"(?:(?<!{_WORD})|{_AFTER_TURKIC})"
 JS_WORD_BOUNDARY = (
-    "(?:(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])|(?<=[A-Za-z0-9_])(?![A-Za-z0-9_]))"
+    f"(?:{_NOT_WORD_BEHIND}{_WORD_AHEAD}|{_WORD_BEHIND}{_NOT_WORD_AHEAD})"
 )
 
 #: JavaScript's `\d`. Python's also matches every Unicode decimal digit, so an Arabic-Indic

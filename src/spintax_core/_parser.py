@@ -38,6 +38,8 @@ from ._charclasses import (
     JS_SPACE,
     NOT_AFTER_WORD,
     PHP_TRIM_CHARS,
+    js_ci_ascii,
+    js_ci_unicode,
 )
 
 _VARIABLE_RE = re.compile(f"%({ASCII_WORD}+)%")
@@ -57,13 +59,22 @@ _HTML_TAG_RE = re.compile(f"^([a-zA-Z][a-zA-Z0-9-]*)(?:{JS_SPACE}+[^>]*)?/?\\Z")
 _PER_ELEM_HTML_RE = re.compile(f"^[a-zA-Z][a-zA-Z0-9]*{JS_SPACE}")
 
 _CONFIG_KEY_RE = re.compile(
-    f"{NOT_AFTER_WORD}(?:minsize|maxsize|sep|lastsep){JS_SPACE}*=", re.IGNORECASE
+    f"{NOT_AFTER_WORD}(?:{js_ci_ascii('minsize')}|{js_ci_ascii('maxsize')}"
+    f"|{js_ci_ascii('sep')}|{js_ci_ascii('lastsep')}){JS_SPACE}*="
 )
-_MINSIZE_RE = re.compile(f"minsize{JS_SPACE}*={JS_SPACE}*({ASCII_DIGIT}+)", re.IGNORECASE)
-_MAXSIZE_RE = re.compile(f"maxsize{JS_SPACE}*={JS_SPACE}*({ASCII_DIGIT}+)", re.IGNORECASE)
+_MINSIZE_RE = re.compile(
+    f"{js_ci_ascii('minsize')}{JS_SPACE}*={JS_SPACE}*({ASCII_DIGIT}+)"
+)
+_MAXSIZE_RE = re.compile(
+    f"{js_ci_ascii('maxsize')}{JS_SPACE}*={JS_SPACE}*({ASCII_DIGIT}+)"
+)
 #: The lookbehind is what keeps `lastsep="…"` from also matching as `sep`.
-_SEP_RE = re.compile(f'(?<!last)sep{JS_SPACE}*={JS_SPACE}*"([^"]*)"', re.IGNORECASE)
-_LASTSEP_RE = re.compile(f'lastsep{JS_SPACE}*={JS_SPACE}*"([^"]*)"', re.IGNORECASE)
+_SEP_RE = re.compile(
+    f'(?<!{js_ci_ascii("last")}){js_ci_ascii("sep")}{JS_SPACE}*={JS_SPACE}*"([^"]*)"'
+)
+_LASTSEP_RE = re.compile(
+    f'{js_ci_ascii("lastsep")}{JS_SPACE}*={JS_SPACE}*"([^"]*)"'
+)
 
 
 def parse_template(src: str) -> ParsedAst:
@@ -350,7 +361,7 @@ def _looks_like_html_start_tag(tag_text: str, remaining: str) -> bool:
     if trimmed.endswith("/"):
         return True
     tag_name = (m.group(1) or "").lower()
-    closing = re.compile(f"</{re.escape(tag_name)}{JS_SPACE}*>", re.IGNORECASE)
+    closing = re.compile(f"</{js_ci_unicode(re.escape(tag_name))}{JS_SPACE}*>", re.IGNORECASE)
     return closing.search(remaining) is not None
 
 
