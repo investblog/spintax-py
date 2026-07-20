@@ -128,7 +128,7 @@ Done, and the fixtures were the smaller half of the verification. 39 cases is a 
 of a dozen interacting rules whose order matters, so the pass was differentially fuzzed
 against the reference on 1922 inputs. That found two divergences the corpus is blind to:
 
-- **A mistranslated `` — 64 of 1922.** JavaScript's word boundary needs a TRANSITION;
+- **A mistranslated `\b` — 64 of 1922.** JavaScript's word boundary needs a TRANSITION;
   rendering it as "no word character before" invents boundaries wherever the next
   character is also non-word, which — JavaScript's word set being ASCII — is every
   Cyrillic or accented letter. `приме.com` was shielded as a domain here and left alone
