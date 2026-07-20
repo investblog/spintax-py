@@ -1,6 +1,7 @@
 # Spintax Python engine — `spintax-core` (spec draft)
 
-Status: **ACTIVE — P0 and P1 complete** ([`plan-p1.md`](plan-p1.md)); P2 next. `validate()` and
+Status: **ACTIVE — P0 and P1 complete** ([`plan-p1.md`](plan-p1.md)); **P2 in progress**
+([`plan-p2.md`](plan-p2.md)). `validate()` and
 `extract()` ship; `parse()` and rendering do not. Idea captured 2026-07-13; revised 2026-07-19 for engine 3.0.0
 (`#def`, `#set` reverted to macro, BCS plurals). Q4 is answered; the remaining open questions are
 non-blocking.
@@ -147,10 +148,13 @@ Invariants carried over from the TS engine:
   — see [`plan-p1.md`](plan-p1.md): plural **arity** validation is P1 (14 cases carry a locale);
   `extract` came forward from P3; and the **parser went the other way, to P2**, because neither
   `validate` nor `extract` needs a tree — both are raw-text scanners, by design.
-- **P2 — parser + renderer + post-process.** The `Ast` lands here, with the renderer that is
-  the first thing to need it. Seeded render; deterministic render + post-process fixtures
-  green; RNG fixtures pass structural invariants only.
-- **P3 — neutralize + analyze + docs.** API surface complete (`extract` landed in P1).
+- **P2 — parser + renderer + post-process + neutralize.** The `Ast` lands here, with the renderer
+  that is the first thing to need it. Seeded render; deterministic render + post-process fixtures
+  green; RNG fixtures pass structural invariants only. **`neutralize` moved here from P3** — see
+  [`plan-p2.md`](plan-p2.md): its `strip_sentinels` / `safety_restore` halves are the pipeline's
+  first and last stages, and 7 of the 8 `neutralize.json` cases are `op: render` round-trips that
+  cannot pass without the renderer anyway. P2 therefore closes all 126 remaining fixtures.
+- **P3 — analyze + docs.** API surface complete (`extract` landed in P1, `neutralize` in P2).
 - **P4 — publish `0.1.0` to PyPI.** Claim `spintax-core` early (see Q1) but publish only here.
 
 ### 5.1 What the other three ports paid for
