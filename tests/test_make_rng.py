@@ -7,11 +7,13 @@ enumeration from ever being chosen, and every fixture using a `first` strategy s
 passes. Only a test that reaches for the boundary finds it.
 
 The determinism half is narrower than it looks: same seed, same output, *within this
-engine*. Cross-engine sequence parity is a deliberate non-goal (spec §3.2), so nothing
+engine*. Cross-engine sequence parity is a deliberate non-goal (spec §3), so nothing
 here compares against TypeScript.
 """
 
 from __future__ import annotations
+
+import random
 
 import pytest
 
@@ -60,6 +62,43 @@ def test_both_bounds_are_reachable(bounds: tuple[int, int]) -> None:
 def test_nothing_falls_outside_the_bounds() -> None:
     rng = make_rng(7)
     assert all(2 <= rng(2, 5) <= 5 for _ in range(2000))
+
+
+def test_an_inverted_range_rounds_the_way_javascript_does() -> None:
+    """`min > max` is misuse, and `Rng` is a public seam that a host can call directly.
+
+    `int()` truncates toward zero; `Math.floor` rounds down. They agree everywhere the
+    renderer can reach — the product is non-negative whenever `min <= max` — and diverge
+    exactly here: `rng(5, 1)` draws from {2,3,4} in JavaScript and from {3,4,5} under
+    `int()`. Cheap to match, so matched.
+    """
+    rng = make_rng(11)
+    assert {rng(5, 1) for _ in range(500)} <= {2, 3, 4}
+    assert {rng(2, 0) for _ in range(200)} == {1}
+
+
+def test_each_handle_owns_its_stream() -> None:
+    """Two handles from the same seed must agree, which they cannot if they share one.
+
+    Without this, a `make_rng` built on the module-level `random` passes every other test
+    in this file. It would also make two concurrent renders draw from one sequence, so
+    each would see the other's draws — non-determinism that appears only under load and
+    only in a host, never here.
+    """
+    first, second = make_rng(7), make_rng(7)
+    assert [first(0, 999) for _ in range(10)] == [second(0, 999) for _ in range(10)]
+
+
+def test_the_host_s_global_random_is_left_alone() -> None:
+    """The other half of the same mistake: seeding the module-level generator would
+    silently re-seed the host's own `random`, changing results in code that has nothing
+    to do with this library."""
+    random.seed(99)
+    expected = random.random()
+
+    random.seed(99)
+    make_rng("anything")(0, 10)
+    assert random.random() == expected
 
 
 def test_a_single_point_range_returns_that_point() -> None:

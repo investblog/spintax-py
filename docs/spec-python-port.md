@@ -284,8 +284,19 @@ Seeds are `int | str` and must be **reproducible within this engine**. Two paths
   seed → sequence mapping is ours, not the runtime's.
 
 Cross-engine sequence parity is a non-goal either way, so this is purely a robustness call.
-*Recommendation: implement the small PRNG — the engine's RNG should not be a hostage to a stdlib
-implementation detail.*
+
+✅ **ANSWERED (P2 step 0): `random.Random`, one instance per `make_rng` call.** The
+recommendation above was to port the small PRNG, and it was not followed. Porting mulberry32 would
+have made a seeded render byte-identical to TypeScript *today* — and that is the argument against
+it, not for it. Parity is a non-goal in this very section, so the reference may change its PRNG in
+a patch release; matching it would manufacture a promise upstream has not made, and Python users
+who came to rely on it would be broken by a change nobody here controls or is told about.
+
+The "hostage to a stdlib implementation detail" worry is real but narrower than it reads. Python
+guarantees the sequence of `Random.random()` for a given seed, so the bounded draw is computed from
+`random()` rather than delegated to `randint()`, and `seed(…, version=2)` is passed explicitly so a
+future change of default cannot silently re-map string seeds. What is promised is therefore exactly
+what is guaranteed, and no more.
 
 > **Note on seed UX** (already learned in the TS engine, do not re-learn it): distinct seeds are
 > *independent draws, not distinct results*. A low-cardinality template will repeat across seeds.

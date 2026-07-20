@@ -31,7 +31,12 @@ SENTINEL_BASE = 0xE000
 _SHIELD = {ch: chr(SENTINEL_BASE + i) for i, ch in enumerate(STRUCTURAL)}
 _RESTORE = {sentinel: ch for ch, sentinel in _SHIELD.items()}
 
-_SHIELD_RE = re.compile(r"[{}\[\]%#]")
+# Both classes are DERIVED from `STRUCTURAL` rather than written out beside it. A
+# hand-written class is a second copy of the same list, and the two drift in a way that
+# is worse here than in the TypeScript original: it falls back to the character itself on
+# a lookup miss, while a Python dict lookup raises — so a character present in the class
+# and absent from the tuple would throw `KeyError` out of the public `neutralize()`.
+_SHIELD_RE = re.compile(f"[{re.escape(''.join(STRUCTURAL))}]")
 _RESTORE_RE = re.compile(f"[{chr(SENTINEL_BASE)}-{chr(SENTINEL_BASE + len(STRUCTURAL) - 1)}]")
 
 

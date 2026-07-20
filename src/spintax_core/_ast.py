@@ -19,8 +19,9 @@ versions, which is what `AST_VERSION` and the guard in the pipeline exist to enf
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
+from typing import TypeGuard
 
 #: Bumped only on a breaking change to the node shape, independently of syntax version.
 #:
@@ -144,18 +145,30 @@ class ParsedAst(Ast):
     ast_version: int = field(default=AST_VERSION)
 
 
-def is_parsed_ast(value: object) -> bool:
-    """Was this produced by *this* engine version?"""
-    return isinstance(value, ParsedAst) and value.ast_version == AST_VERSION
+def is_parsed_ast(value: object) -> TypeGuard[ParsedAst]:
+    """Was this produced by *this* engine version?
+
+    Total by contract — it answers for any object, including a bare `Ast()` whose slots
+    were never filled, because the pipeline's job is to turn a bad handle into a clean
+    error rather than an `AttributeError` from inside a predicate.
+    """
+    return isinstance(value, ParsedAst) and getattr(value, "ast_version", None) == AST_VERSION
 
 
-def walk(nodes: tuple[Node, ...], visit: Callable[[Node], None]) -> None:
+def walk(nodes: Sequence[Node], visit: Callable[[Node], None]) -> None:
     """Depth-first over every node, descending into all child sequences.
 
-    Iterative rather than recursive. Nesting is bounded at parse time, so recursion would
-    almost certainly be fine — but this repository has already replaced one recursive
-    walk after it hit `RecursionError` on a deep chain, and the fix cost more than
-    writing it this way would have.
+    Iterative rather than recursive, and this is load-bearing rather than tidy.
+
+    **Nothing bounds nesting before a tree reaches here.** `max_depth` reads like a parse
+    guard — the reference's own comment calls it a "#include + parse-nesting guard" — but
+    it is only ever checked against the `#include` stack. Ordinary string input therefore
+    produces a tree as deep as the author cares to nest, which is exactly how the
+    recursive parser that preceded this died at 350 levels on a 701-character template.
+    A recursive walk would die the same way, on trees this engine really does build.
+
+    Takes a `Sequence` rather than a tuple so a caller mid-construction can pass the list
+    it is still building.
     """
     stack: list[Node] = list(reversed(nodes))
     while stack:

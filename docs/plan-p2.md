@@ -57,8 +57,10 @@ stretch where the corpus is silent about progress.
 
 Three small modules, none of which move a fixture on their own.
 
-`_rng.py` is a direct port of a 40-line reference (mulberry32 + FNV-1a) — see *Decision: no
-sequence parity* for what is deliberately not carried over. `_neutralize.py` is the sentinel map:
+`_rng.py` is **not** a port of the reference's mulberry32 + FNV-1a — see *Decision: no
+cross-engine sequence parity*. It wraps a per-call `random.Random`, and its docstring carries the
+one fact the renderer author has to know: the engine short-circuits `min == max` before calling the
+rng at all, so a default-config permutation spends zero draws on its size pick. `_neutralize.py` is the sentinel map:
 `{ } [ ] % #` to U+E000–U+E005, with `neutralize` / `safety_restore` / `strip_sentinels`.
 `_ast.py` is the node model — six node types, `AST_VERSION = 2`, `ParsedAst` carrying
 `source` + `set_defs` + `def_defs` + `nodes`, and a depth-first `walk`.
@@ -118,7 +120,7 @@ The largest fixture block and the one with a language-level obstacle of its own;
 `mulberry32` and the FNV-1a string hash would port in about fifteen lines of masked 32-bit
 arithmetic, and doing so would make a seeded render byte-identical to TypeScript today.
 
-Declining, because spec §3.2 makes sequence parity an explicit **non-goal**, which means the
+Declining, because spec §3 makes sequence parity an explicit **non-goal**, which means the
 reference is free to change its PRNG in a patch release. Matching it here would manufacture a
 promise the engine we are matching has not made: Python users would come to rely on identical
 output, and an upstream change we neither control nor get notified about would break them. A

@@ -1,13 +1,14 @@
 """Spintax engine for Python — the public API surface.
 
-``validate`` and ``extract`` are implemented; everything else still raises
+``analyze`` and ``render_with`` still raise
 ``NotImplementedError``, with the milestone that will fill it in. That is
 deliberate: the golden-corpus suite runs against this module and reports each
 unbuilt entry point as an *expected failure* rather than skipping it, so the
 count of what is left is visible on every test run and a fixture can never be
 quietly forgotten.
 
-Milestones fill these in: P1 validate/extract (done), P2 parse + render, P3 analyze/neutralize.
+Milestones fill these in: P1 validate/extract (done), P2 parse + rng + neutralize + render
+(in progress), P3 analyze. See `docs/plan-p2.md` for why neutralize moved out of P3.
 See ``docs/spec-python-port.md``.
 """
 
@@ -20,6 +21,11 @@ from typing import Any, Literal
 from . import _extract, _neutralize, _parser, _validator
 from ._ast import Ast
 from ._rng import Rng, make_rng as _make_rng
+
+# Both are public types that happen to be DEFINED in private modules. Without this,
+# `help()`, generated docs and every repr name `spintax_core._ast`, pointing users at a
+# module the API tells them not to touch.
+Ast.__module__ = __name__
 
 __all__ = [
     "Analysis",

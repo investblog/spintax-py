@@ -6,7 +6,17 @@ mirroring the injectable `$random_fn` the plugin exposes. Keeping it a parameter
 template takes: with a constant strategy, a macro re-rolled at every reference and a
 value rolled once produce identical output, and the distinction is untestable.
 
-**Cross-engine sequence parity is a deliberate non-goal (spec §3.2).** The reference uses
+**The engine short-circuits `min == max` before it ever gets here** — see `randomInt` in
+the reference's `render.ts`, and note that its `makeRng` does not short-circuit either.
+That belongs in this docstring because the renderer is where it bites: a default-config
+permutation clamps its size pick to `min == max`, so the reference spends ZERO draws on
+it. A Python renderer that calls `rng(2, 2)` anyway consumes a draw and shifts every
+later one, which breaks `def/rolled-once-covers-permutations` and
+`set/macro-re-shuffles-a-permutation` — the only pair in the corpus that tells `#set`
+from `#def` for permutations — and collapses them to the same output. The failure reads
+as a shuffle-order bug and is a draw-count bug.
+
+**Cross-engine sequence parity is a deliberate non-goal (spec §3).** The reference uses
 mulberry32 over an FNV-1a hash of the seed, which would port in about fifteen lines of
 masked 32-bit arithmetic and would make a seeded render byte-identical to TypeScript
 today. It is not ported on purpose: because the shared spec does not promise it, the
@@ -22,6 +32,7 @@ to `randint`, so the guarantee covers the whole path.
 
 from __future__ import annotations
 
+import math
 import random
 from collections.abc import Callable
 
@@ -34,11 +45,23 @@ def make_rng(seed: int | str | None) -> Rng:
 
     A string seed is accepted directly: `random.Random` hashes it with SHA-512, which is
     stable across runs and interpreters, unlike the built-in `hash()` that
-    `PYTHONHASHSEED` randomizes.
+    `PYTHONHASHSEED` randomizes. `version=2` is passed explicitly rather than left to the
+    default — the default is what a future Python is free to change, and the promise made
+    above is that a seed keeps meaning the same thing.
+
+    Each call returns its OWN generator. Reaching for the module-level `random` would
+    work in every test and then corrupt a host that renders two templates concurrently,
+    because both would be drawing from one shared stream.
     """
-    source = random.Random(seed) if seed is not None else random.Random()
+    source = random.Random()
+    if seed is not None:
+        source.seed(seed, version=2)
 
     def rng(minimum: int, maximum: int) -> int:
-        return minimum + int(source.random() * (maximum - minimum + 1))
+        # `math.floor`, not `int`: they agree for every range the engine produces, and
+        # disagree when `minimum > maximum` because `int` truncates toward zero while
+        # JavaScript's `Math.floor` rounds down. `Rng` is a public injectable seam, so a
+        # caller can reach that case even though the renderer's own clamping cannot.
+        return minimum + math.floor(source.random() * (maximum - minimum + 1))
 
     return rng

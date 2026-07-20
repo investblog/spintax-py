@@ -77,10 +77,53 @@ def test_order_is_depth_first() -> None:
     assert literals == ["a", "b", "c"]
 
 
+def test_sibling_branches_are_visited_in_source_order() -> None:
+    """The test above cannot see a reversal bug, and this one can.
+
+    Rewriting a recursive walk with an explicit stack means pushing children in reverse
+    so they pop in order, and getting that backwards is the single most likely mistake in
+    the rewrite. It stays invisible to every assertion that uses one option per
+    container, or compares a set: three separate reversal mutations were checked against
+    the rest of this file and all three survived it.
+
+    So: two branches per container, and an ordered comparison. `then` must precede
+    `otherwise`, option 1 must precede option 2, element 1 must precede element 2.
+    """
+    tree: tuple[Node, ...] = (
+        EnumerationNode(
+            options=((LiteralNode("e1"),), (LiteralNode("e2"),), (LiteralNode("e3"),))
+        ),
+        ConditionalNode(
+            name="V",
+            inverted=False,
+            then=(LiteralNode("t1"), LiteralNode("t2")),
+            otherwise=(LiteralNode("f1"), LiteralNode("f2")),
+        ),
+        PermutationNode(
+            config=PermConfig(minsize=None, maxsize=None, sep=", ", lastsep=None),
+            options=(
+                PermOption(nodes=(LiteralNode("p1"),), separator=None),
+                PermOption(nodes=(LiteralNode("p2"),), separator=", "),
+                PermOption(nodes=(LiteralNode("p3"),), separator=", "),
+            ),
+        ),
+    )
+    literals = [n.value for n in _collect(tree) if isinstance(n, LiteralNode)]
+    assert literals == [
+        "e1", "e2", "e3",
+        "t1", "t2", "f1", "f2",
+        "p1", "p2", "p3",
+    ]
+
+
 def test_deep_nesting_does_not_exhaust_the_stack() -> None:
-    """Nesting this deep is guarded at parse time, so the tree below cannot come from a
-    template — which is exactly why a recursive `walk` would look fine in every test that
-    used real input, and blow up on the one caller that built a tree itself.
+    """A tree this deep is not hypothetical — an ordinary template builds one.
+
+    An earlier version of this docstring claimed nesting was capped at parse time. It is
+    not: `max_depth` guards the `#include` stack and never reaches the parser, so any
+    string can nest as deep as its author likes. The recursive parser that preceded the
+    current one died at 350 levels on a 701-character template, and a recursive `walk`
+    would die on the same input.
     """
     depth = sys.getrecursionlimit() * 3
     node: Node = LiteralNode("core")

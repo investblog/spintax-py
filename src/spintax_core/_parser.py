@@ -15,6 +15,8 @@ is left alone here — the renderer resolves it as a post-tree string pass.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
+from dataclasses import dataclass, field
 
 from . import _directives, _source
 from ._ast import (
@@ -81,6 +83,25 @@ def parse_template(src: str) -> ParsedAst:
     )
 
 
+@dataclass(slots=True)
+class _Scan:
+    """A half-finished scan of one run of text. Resumable, which is the whole point."""
+
+    text: str
+    out: list[Node]
+    i: int = 0
+    literal: list[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class _Assemble:
+    """Build one construct once its children are parsed, and hand it to the parent."""
+
+    out: list[Node]
+    parts: list[list[Node]]
+    build: Callable[[list[list[Node]]], Node]
+
+
 def parse_sequence(text: str) -> tuple[Node, ...]:
     """Parse a run of text into a node sequence — constructs only.
 
@@ -88,74 +109,106 @@ def parse_sequence(text: str) -> tuple[Node, ...]:
     the *value* of a variable it has just substituted. A `#set` inside such a value is
     already gone by then; running the pre-passes again here would be a second, different
     parse of the same text.
+
+    **Iterative, over an explicit stack, and that is not a stylistic preference.** The
+    recursive form this replaced died with `RecursionError` at about 350 levels of
+    nesting — a 701-character template — because each level costs three Python frames.
+    The reference parses 1000 levels of the same input happily. Nothing bounds nesting
+    before this point: `max_depth` reads like a parse guard and is not one, it is checked
+    only against the `#include` stack, so ordinary string input reaches here at whatever
+    depth it likes.
+
+    The scan of any single run of text is flat; only construct *bodies* need more work.
+    So a construct pushes: this scan (to resume after the closing bracket), an assemble
+    step, then one scan per child. LIFO order means the children run first, the assemble
+    step appends the finished node, and the parent then resumes — leaving nodes in the
+    order they were written.
     """
-    nodes: list[Node] = []
-    literal: list[str] = []
-    i = 0
+    root: list[Node] = []
+    stack: list[_Scan | _Assemble] = [_Scan(text=text, out=root)]
 
-    def flush() -> None:
-        if literal:
-            nodes.append(LiteralNode(value="".join(literal)))
-            literal.clear()
+    while stack:
+        job = stack.pop()
 
-    while i < len(text):
-        ch = text[i]
-
-        if ch == "{":
-            end = find_matching_close(text, i, "{", "}")
-            if end == -1:
-                literal.append(ch)
-                i += 1
-                continue
-            flush()
-            nodes.append(_parse_brace_construct(text[i + 1 : end]))
-            i = end + 1
+        if isinstance(job, _Assemble):
+            job.out.append(job.build(job.parts))
             continue
 
-        if ch == "[":
-            end = find_matching_close(text, i, "[", "]")
-            if end == -1:
-                literal.append(ch)
-                i += 1
-                continue
-            flush()
-            nodes.append(_parse_permutation(text[i + 1 : end]))
-            i = end + 1
-            continue
+        suspended = False
+        while job.i < len(job.text):
+            ch = job.text[job.i]
 
-        if ch == "%":
-            m = _VARIABLE_RE.match(text, i)
-            if m is not None:
-                flush()
-                nodes.append(VariableNode(name=m.group(1)))
-                i = m.end()
-                continue
+            if ch in "{[":
+                close = "}" if ch == "{" else "]"
+                end = find_matching_close(job.text, job.i, ch, close)
+                if end == -1:
+                    job.literal.append(ch)
+                    job.i += 1
+                    continue
 
-        literal.append(ch)
-        i += 1
+                _flush(job)
+                inner = job.text[job.i + 1 : end]
+                children, build = (
+                    _plan_brace_construct(inner) if ch == "{" else _plan_permutation(inner)
+                )
+                job.i = end + 1
 
-    flush()
-    return tuple(nodes)
+                parts: list[list[Node]] = [[] for _ in children]
+                stack.append(job)
+                stack.append(_Assemble(out=job.out, parts=parts, build=build))
+                for child_text, child_out in reversed(list(zip(children, parts, strict=True))):
+                    stack.append(_Scan(text=child_text, out=child_out))
+                suspended = True
+                break
+
+            if ch == "%":
+                m = _VARIABLE_RE.match(job.text, job.i)
+                if m is not None:
+                    _flush(job)
+                    job.out.append(VariableNode(name=m.group(1)))
+                    job.i = m.end()
+                    continue
+
+            job.literal.append(ch)
+            job.i += 1
+
+        if not suspended:
+            _flush(job)
+
+    return tuple(root)
 
 
-def _parse_brace_construct(content: str) -> Node:
+def _flush(job: _Scan) -> None:
+    if job.literal:
+        job.out.append(LiteralNode(value="".join(job.literal)))
+        job.literal.clear()
+
+
+#: What a construct hands back to the scanner: the child texts still to be parsed, and a
+#: function turning their finished node lists into the node itself. Splitting planning
+#: from building is what keeps the descent on the heap instead of the call stack.
+_Plan = tuple[list[str], Callable[[list[list[Node]]], Node]]
+
+
+def _plan_brace_construct(content: str) -> _Plan:
     """Decide what a `{…}` is: conditional, plural, or — by default — an enumeration."""
     if content.startswith("?"):
-        conditional = _try_parse_conditional(content)
+        conditional = _plan_conditional(content)
         if conditional is not None:
             return conditional
         # Malformed conditional falls through to enumeration, matching the plugin, where
         # a bad `{?…}` survives the conditional pass and the enumeration pass then eats it.
     elif content.startswith(_PLURAL_PREFIX) and ":" in content[len(_PLURAL_PREFIX) :]:
-        return _parse_plural(content[len(_PLURAL_PREFIX) :])
+        return _plan_plural(content[len(_PLURAL_PREFIX) :])
 
-    return EnumerationNode(
-        options=tuple(parse_sequence(option) for option in split_top_level(content))
-    )
+    def build(parts: list[list[Node]]) -> Node:
+        return EnumerationNode(options=tuple(tuple(p) for p in parts))
+
+    return split_top_level(content), build
 
 
-def _try_parse_conditional(content: str) -> Node | None:
-    """Parse `?VAR?then|else` / `?!VAR?then`, or `None` when malformed."""
+def _plan_conditional(content: str) -> _Plan | None:
+    """Plan `?VAR?then|else` / `?!VAR?then`, or `None` when malformed."""
     p = 1  # past the leading '?'
     inverted = content[p : p + 1] == "!"
     if inverted:
@@ -176,12 +229,25 @@ def _try_parse_conditional(content: str) -> Node | None:
     then_raw = body if sep < 0 else body[:sep]
     else_raw = "" if sep < 0 else body[sep + 1 :]
 
-    return ConditionalNode(
-        name=name,
-        inverted=inverted,
-        then=parse_sequence(then_raw),
-        otherwise=parse_sequence(else_raw),
-    )
+    def build(parts: list[list[Node]]) -> Node:
+        return ConditionalNode(
+            name=name,
+            inverted=inverted,
+            then=tuple(parts[0]),
+            otherwise=tuple(parts[1]),
+        )
+
+    return [then_raw, else_raw], build
+
+
+def _plan_plural(after_prefix: str) -> _Plan:
+    """A plural has no children — both slots stay raw for the renderer to expand."""
+    node = _parse_plural(after_prefix)
+
+    def build(_parts: list[list[Node]]) -> Node:
+        return node
+
+    return [], build
 
 
 def _parse_plural(after_prefix: str) -> Node:
@@ -201,11 +267,21 @@ def _default_perm_config() -> PermConfig:
     return PermConfig(minsize=None, maxsize=None, sep=" ", lastsep=None)
 
 
-def _parse_permutation(raw_inner: str) -> Node:
+def _plan_permutation(raw_inner: str) -> _Plan:
     config, content = _extract_permutation_config(raw_inner)
-    return PermutationNode(
-        config=config, options=_extract_per_element_separators(split_top_level(content))
-    )
+    elements = _extract_per_element_separators(split_top_level(content))
+    separators = [sep for _text, sep in elements]
+
+    def build(parts: list[list[Node]]) -> Node:
+        return PermutationNode(
+            config=config,
+            options=tuple(
+                PermOption(nodes=tuple(nodes), separator=sep)
+                for nodes, sep in zip(parts, separators, strict=True)
+            ),
+        )
+
+    return [text for text, _sep in elements], build
 
 
 def _extract_permutation_config(content: str) -> tuple[PermConfig, str]:
@@ -278,14 +354,17 @@ def _looks_like_html_start_tag(tag_text: str, remaining: str) -> bool:
     return closing.search(remaining) is not None
 
 
-def _extract_per_element_separators(raw_parts: list[str]) -> tuple[PermOption, ...]:
+def _extract_per_element_separators(raw_parts: list[str]) -> list[tuple[str, str | None]]:
     """Attach each trailing `<sep>` to the element that FOLLOWS it.
 
     A separator is written after the element it comes behind, so `a<, >b` means "join a
     and b with ', '" — the separator found on part *i* belongs to element *i+1*. Empty
     elements drop out entirely.
+
+    Returns unparsed element text rather than nodes, so the caller can hand the texts to
+    the scanner's stack instead of recursing into them here.
     """
-    options: list[PermOption] = []
+    elements: list[tuple[str, str | None]] = []
     pending_sep: str | None = None
 
     for i, part in enumerate(raw_parts):
@@ -298,10 +377,10 @@ def _extract_per_element_separators(raw_parts: list[str]) -> tuple[PermOption, .
 
         trimmed = text.strip(PHP_TRIM_CHARS)
         if trimmed != "":
-            options.append(PermOption(nodes=parse_sequence(trimmed), separator=pending_sep))
+            elements.append((trimmed, pending_sep))
         pending_sep = trailing_sep
 
-    return tuple(options)
+    return elements
 
 
 def _extract_trailing_sep(part: str) -> tuple[str, str] | None:
