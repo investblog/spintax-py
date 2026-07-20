@@ -34,9 +34,25 @@ COMMENT_RE = re.compile(r"/#.*?#/", re.DOTALL)
 _LINE_TERMINATORS_RE = re.compile("\\r(?!\\n)|\\u2028|\\u2029")
 
 
+def normalize_terminators(text: str) -> str:
+    """Rewrite every JavaScript line terminator to `\\n`, preserving length.
+
+    For *matching* only. Anything that renders text back to a user must work from the
+    original: the reference keeps the author's bytes, so `render("a\\rb")` is `"a\\rb"`
+    and not `"a\\nb"`. Because the substitution is one character for one, a span found
+    in the normalised copy is the same span in the original.
+    """
+    return _LINE_TERMINATORS_RE.sub("\n", text)
+
+
 @dataclass(frozen=True, slots=True)
 class Source:
-    """The original text, its comment-stripped view, and the map between them."""
+    """The original text, its comment-stripped view, and the map between them.
+
+    ``text`` is the **scanning** view: comments removed and line terminators normalised.
+    It is what the validator and `extract` read, and neither of them returns template
+    text to a caller. A renderer must not emit from it — see `normalize_terminators`.
+    """
 
     original: str
     text: str

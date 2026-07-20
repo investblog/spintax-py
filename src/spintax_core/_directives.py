@@ -17,6 +17,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from . import _source
+
 #: JavaScript's `\w` is ASCII-only — always, `u` flag included — while Python's matches any
 #: Unicode letter. Spelling the class out keeps the accepted syntax identical to the reference
 #: instead of silently widening it. See `tests/test_ascii_parity.py`.
@@ -56,12 +58,31 @@ class Directives:
 
 
 def extract(text: str) -> Directives:
-    """Pull every directive line out of `text` and return the remaining body."""
+    """Pull every directive line out of `text` and return the remaining body.
+
+    Matching happens on a copy whose line terminators are normalised, because Python's
+    `^`/`$` only know `\\n` while the engine's grammar is line-anchored at everything
+    JavaScript calls a terminator. Without it a bare CR swallows the rest of the file
+    into one `#set` value and the directive after it is never seen.
+
+    The **body is cut from the text as given**, not from that copy. The renderer emits
+    it verbatim, and the reference keeps the author's bytes:
+
+        render("#set %x% = A\\r%x%")  ->  "\\rA"
+
+    So the CR is a line break for the purpose of finding the directive and an ordinary
+    character for the purpose of printing what is left. Normalising a copy is what lets
+    it be both — and the substitution is length-preserving, so a span found in one
+    string is the same span in the other.
+    """
+    scan = _source.normalize_terminators(text)
+
     set_defs: dict[str, str] = {}
     def_defs: dict[str, str] = {}
     occurrences: list[Occurrence] = []
+    spans: list[tuple[int, int]] = []
 
-    def _take(m: re.Match[str]) -> str:
+    for m in DIRECTIVE_RE.finditer(scan):
         kind, raw_name, value = m.group(1), m.group(2), m.group(3)
         name = raw_name.lower()
         occurrences.append(
@@ -69,17 +90,23 @@ def extract(text: str) -> Directives:
                 kind=kind,
                 name=name,
                 value=value,
-                line=text.count("\n", 0, m.start()) + 1,
+                line=scan.count("\n", 0, m.start()) + 1,
                 offset=m.start(),
             )
         )
         # Last definition wins in the maps; `occurrences` is what remembers the rest.
         (def_defs if kind == "def" else set_defs)[name] = value
-        return ""
+        spans.append((m.start(), m.end()))
 
-    stripped = DIRECTIVE_RE.sub(_take, text)
+    kept: list[str] = []
+    cursor = 0
+    for start, end in spans:
+        kept.append(text[cursor:start])
+        cursor = end
+    kept.append(text[cursor:])
+
     return Directives(
-        body=_BLANK_RUN_RE.sub("\n\n", stripped),
+        body=_BLANK_RUN_RE.sub("\n\n", "".join(kept)),
         set_defs=set_defs,
         def_defs=def_defs,
         occurrences=tuple(occurrences),

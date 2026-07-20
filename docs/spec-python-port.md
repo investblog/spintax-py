@@ -222,6 +222,34 @@ them today, so an implementation can be wrong about them with the suite fully gr
 Recorded rather than silently trusted: a gate you believe is total, and is not, is worse than one
 you know the edges of.
 
+### 5.2a Line terminators: a break for the rules, a character for the output
+
+Python's `^`/`$` end a line at `\n` alone. JavaScript's also end one at a bare `\r`, U+2028 and
+U+2029 — so without help a CR-terminated file has its whole remainder swallowed into one `#set`
+value and the directive after it is never seen.
+
+The engine therefore matches against a copy whose terminators are normalised, and **cuts the body
+from the text as authored**. Both halves matter, and the reference shows why in one line:
+
+```
+render("#set %x% = A\r%x%", {postProcess: false})  ->  "\rA"
+```
+
+The CR ended the directive — otherwise `%x%` would never resolve — *and* it reached the output
+unchanged. A renderer that emits from the normalised copy would print `"\nA"` and silently rewrite
+the author's bytes.
+
+Two rules follow, and both are pinned by `tests/test_terminators_and_body.py`:
+
+- **`Source.text` is a scanning view.** `validate` and `extract` never return template text, which
+  is why normalising it is safe for them. Nothing that renders may emit from it.
+- **`_directives.extract` normalises for itself.** It does not assume a caller has done it, so a
+  parser reaching for the module directly cannot reintroduce the swallowing bug.
+
+The one exception, and it belongs to the grammar rather than to this: `DIRECTIVE_RE` ends
+`[ \t]*\r?$`, so the CR of a **CRLF** line ending is part of the directive's own line and leaves
+with it. `"#set %x% = A\r\n%x%"` renders `"\nA"`, matching the reference.
+
 ### 5.3 Implementation notes that are contract, not style
 
 - **`definition.duplicate-name` requires preserving directive *occurrences* before any map is
