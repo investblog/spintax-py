@@ -119,16 +119,16 @@ Local tests are mandatory for these; a green corpus says nothing about any of th
 | `max_depth` | only the circular-include outcome is pinned |
 | `parse` itself | no fixtures; only observable through other ops |
 
-## Why `validate()` is not wired yet
+## Why `validate()` was wired only at the end
 
-The corpus reports by **op**: while `validate` raises `NotImplementedError` every one of its 40
-cases is an xfail, which reads as "not built". Wire a half-finished validator and those cases run
-for real — the ones whose codes exist pass, the rest **fail** — and the suite goes red for work
-that was never claimed to be done. Red would stop meaning "something broke".
+The corpus reports by **op**. While `validate` raised `NotImplementedError` all 40 of its cases
+were xfails, which reads as "not built". Wiring a half-finished validator would have run them for
+real — the ones whose codes existed passing, the rest **failing** — and turned the suite red for
+work nobody had claimed was done. Red would have stopped meaning "something broke".
 
-So the checks are proved by their own tests first, and the public entry point flips exactly once,
-when all seventeen codes exist. That is the same reason the reference suite lights up by op
-rather than by code.
+So each check was proved by its own tests first and the public entry point flipped exactly once,
+when all seventeen codes existed. Same reason the reference suite lights up by op, not by code.
+Worth repeating at P2: `render` should stay unwired until it can pass its own cases.
 
 ## Definition of done
 

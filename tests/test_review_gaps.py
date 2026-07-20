@@ -56,21 +56,38 @@ def test_a_wide_dependency_graph_stays_fast() -> None:
 # ── line terminators JavaScript honours and Python does not ───────────
 
 
-@pytest.mark.parametrize("terminator", ["\r", " ", " "])
+TERMINATORS = ["\n", "\r", "\r\n", "\u2028", "\u2029"]
+
+
+@pytest.mark.parametrize("terminator", TERMINATORS)
 def test_directives_are_line_anchored_at_every_javascript_terminator(terminator: str) -> None:
     """A bare CR would otherwise swallow the rest of the file into one `#set` value.
 
-    Measured against the reference: all three of these are line breaks there, so the
-    second directive is a duplicate rather than part of the first one's value.
+    Measured against the reference: every one of these ends a line there, so the second
+    directive is a duplicate rather than part of the first one's value.
     """
     assert codes(f"#set %x% = a{terminator}#set %x% = b") == ["definition.duplicate-name"]
 
 
-@pytest.mark.parametrize("terminator", ["\r", " ", " "])
+@pytest.mark.parametrize("terminator", TERMINATORS)
 def test_extract_sees_both_sides_of_an_unusual_terminator(terminator: str) -> None:
     got = engine.extract(f"#set %a% = 1{terminator}#set %b% = 2")
     assert sorted(got.sets) == ["a", "b"]
     assert got.refs == ()
+
+
+@pytest.mark.parametrize("terminator", TERMINATORS)
+def test_positions_use_the_same_terminators_as_the_rules(terminator: str) -> None:
+    """Whatever ends a line for the checks must also end one for the report.
+
+    Normalising bare CR made the validator *find* the second directive while still
+    counting lines by newline alone — so the diagnostic landed on line 1 at column 14,
+    in a file whose second line it had just read. Rules and positions have to agree
+    about what a line is.
+    """
+    src = f"#set %x% = a{terminator}#set %x% = b"
+    (diag,) = [d for d in engine.validate(src) if d.code == "definition.duplicate-name"]
+    assert (diag.line, diag.column) == (2, 1)
 
 
 def test_crlf_is_one_terminator_not_two() -> None:

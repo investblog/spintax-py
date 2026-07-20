@@ -89,8 +89,14 @@ def read(src: str) -> Source:
     if not spans:
         spans.append((0, 0))
 
+    # Count lines over the SAME terminator set the scanning text is normalised to. Doing
+    # it on `\n` alone would leave the engine treating a bare CR as a line break for the
+    # rules — it finds the second directive — while reporting every diagnostic on line 1
+    # with an ever-growing column. The substitution is length-preserving, so offsets in
+    # this string are still offsets in `src`.
+    for_lines = _LINE_TERMINATORS_RE.sub("\n", src)
     line_starts = [0]
-    for i, ch in enumerate(src):
+    for i, ch in enumerate(for_lines):
         if ch == "\n":
             line_starts.append(i + 1)
 

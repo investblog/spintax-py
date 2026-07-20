@@ -1,10 +1,11 @@
 """Spintax engine for Python — the public API surface.
 
-P0 status: every entry point is declared with its final signature and raises
-``NotImplementedError``. That is deliberate. The golden-corpus suite runs against
-this module from the very first commit, so each fixture is reported as an
-*expected failure* rather than being skipped — the count of what is not yet built
-is visible on every test run, and a fixture can never be quietly forgotten.
+``validate`` and ``extract`` are implemented; everything else still raises
+``NotImplementedError``, with the milestone that will fill it in. That is
+deliberate: the golden-corpus suite runs against this module and reports each
+unbuilt entry point as an *expected failure* rather than skipping it, so the
+count of what is left is visible on every test run and a fixture can never be
+quietly forgotten.
 
 Milestones fill these in: P1 validate/extract (done), P2 parse + render, P3 analyze/neutralize.
 See ``docs/spec-python-port.md``.

@@ -142,11 +142,13 @@ Invariants carried over from the TS engine:
 - **P0 — fixture access + corpus runner.** Q4 is decided (env var + CI checkout); stand up a pytest
   runner over the shared fixtures, green on an empty engine — every fixture reported as *expected
   failure*, none silently skipped. **Before any engine code.**
-- **P1 — parser + validator + `extract`.** Full syntax surface; `validate.json` green (verdicts
-  are the strictest gate). Two boundaries corrected by reading the fixtures — see
-  [`plan-p1.md`](plan-p1.md): plural **arity** validation is P1 (14 cases carry a locale), and
-  `extract` moves here from P3 because the parser has already built its index.
-- **P2 — renderer + post-process.** Seeded render; deterministic render + post-process fixtures
+- **P1 — validator + `extract`.** ✅ Done. `validate.json` green (verdicts are the strictest
+  gate), plus `extract.json`. Three boundaries moved by reading the fixtures rather than the plan
+  — see [`plan-p1.md`](plan-p1.md): plural **arity** validation is P1 (14 cases carry a locale);
+  `extract` came forward from P3; and the **parser went the other way, to P2**, because neither
+  `validate` nor `extract` needs a tree — both are raw-text scanners, by design.
+- **P2 — parser + renderer + post-process.** The `Ast` lands here, with the renderer that is
+  the first thing to need it. Seeded render; deterministic render + post-process fixtures
   green; RNG fixtures pass structural invariants only.
 - **P3 — neutralize + analyze + docs.** API surface complete (`extract` landed in P1).
 - **P4 — publish `0.1.0` to PyPI.** Claim `spintax-core` early (see Q1) but publish only here.
