@@ -1,8 +1,8 @@
 # P1 — parser, validator, extract
 
-Status: **in progress.** Planned 2026-07-19; steps 2 and 5 partly landed (brackets, directive
-shape, uniqueness, `#include`-in-a-`#def`, permutation config). `validate()` is deliberately not
-wired yet — see below. Governing contract: [`spec-python-port.md`](spec-python-port.md).
+Status: **complete**, with one step moved rather than done. `validate()` and `extract()` are
+wired and every case in `validate.json` and `extract.json` passes. Governing contract:
+[`spec-python-port.md`](spec-python-port.md). Next: P2 (parser + renderer).
 
 P0 left the corpus running against an empty engine: **7 passed, 168 xfailed, 0 skipped**. P1's
 progress metric is that number moving — every step below turns a named set of xfails into passes,
@@ -28,16 +28,17 @@ than the plan:
 Ordered so that each one moves the counter, and the hardest lands last against a suite that is
 already mostly green.
 
-### 1. Parser → `Ast`
+### 1. Parser → `Ast` — **moved to P2, not done**
 
-Full syntax surface: comments, `#set` / `#def` / `#include`, `%vars%`, enumerations,
-permutations with their config block, conditionals, plurals.
+Reading the reference before writing any of it showed the premise was wrong: `validate` and
+`extract` are raw-text scanners *by design*, because the AST is lenient — an unbalanced bracket
+is not represented in it at all, and a `[…]` body stays a raw string. Neither needs a tree, so
+building one first would have been a week with no case moving. It is P2's opening, where the
+renderer actually requires it. `parse()` still raises.
 
-**Corpus movement: none.** `parse` has no fixtures of its own — it is load-bearing for everything
-after it and invisible on its own. Cover it with local tests; do not expect the corpus to notice.
-
-Position tracking is built in **here** or not at all: every node carries line/column from the
-start. Retrofitting positions after the tree exists means touching every construct twice.
+What did survive from this step is the position work, and it moved into `_source.py`: comment
+stripping keeps a map back to the original offsets, so a diagnostic points at the place the
+author is looking at rather than at a place that existed before the comments were removed.
 
 ### 2. Structural diagnostics — 8 codes
 
@@ -132,7 +133,10 @@ rather than by code.
 ## Definition of done
 
 - `validate.json` and `extract.json` fully green — 42 cases moved from xfail to pass.
-- Suite reports **49 passed, 126 xfailed, 0 skipped** (7 P0 tests + 42).
-- Local tests covering the four surfaces above, each verified by breaking the implementation and
-  watching the test fail — not by observing that it passes.
+- The corpus's 42 P1 cases move from xfail to passed, and no case is ever skipped. The absolute
+  totals are deliberately not written down here: they change with every local test added, and a
+  number in a document is a number that goes stale.
+- Local tests covering the ungated surfaces above, each verified by breaking the implementation
+  and watching the test fail — not by observing that it passes. `max_depth` is excluded: it is a
+  render budget, so it belongs to P2 with the code that enforces it.
 - `mypy --strict` and `ruff` clean.

@@ -18,8 +18,20 @@ import re
 from bisect import bisect_right
 from dataclasses import dataclass
 
-#: Comments are non-greedy and may span lines: `/# … #/`.
+#: Comments are non-greedy and may span lines: `/# … #/`. Non-greedy matters — a greedy
+#: match would swallow everything between the first `/#` and the last `#/`.
 COMMENT_RE = re.compile(r"/#.*?#/", re.DOTALL)
+
+#: JavaScript's `m` flag ends a line at `\r`, U+2028 and U+2029 as well as `\n`;
+#: Python's ends it only at `\n`, and its `.` happily matches a bare `\r`. Left alone, a
+#: file using bare CR line endings has its entire remainder swallowed into one `#set`
+#: value — the directive after it is never seen at all.
+#:
+#: Substituting these for `\n` is safe precisely because it is length-preserving: every
+#: offset, and therefore every position and every span, is unchanged. `\r\n` is excluded
+#: because JavaScript treats the pair as ONE terminator, and rewriting the `\r` would
+#: turn it into two blank lines.
+_LINE_TERMINATORS_RE = re.compile("\\r(?!\\n)|\\u2028|\\u2029")
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,7 +96,7 @@ def read(src: str) -> Source:
 
     return Source(
         original=src,
-        text="".join(out),
+        text=_LINE_TERMINATORS_RE.sub("\n", "".join(out)),
         _spans=tuple(spans),
         _line_starts=tuple(line_starts),
     )

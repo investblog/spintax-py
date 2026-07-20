@@ -1,6 +1,7 @@
 # Spintax Python engine — `spintax-core` (spec draft)
 
-Status: **ACTIVE — P0 complete, P1 planned** ([`plan-p1.md`](plan-p1.md)). Idea captured 2026-07-13; revised 2026-07-19 for engine 3.0.0
+Status: **ACTIVE — P0 and P1 complete** ([`plan-p1.md`](plan-p1.md)); P2 next. `validate()` and
+`extract()` ship; `parse()` and rendering do not. Idea captured 2026-07-13; revised 2026-07-19 for engine 3.0.0
 (`#def`, `#set` reverted to macro, BCS plurals). Q4 is answered; the remaining open questions are
 non-blocking.
 Owner: 301st
@@ -198,7 +199,19 @@ them today, so an implementation can be wrong about them with the suite fully gr
   Unicode-aware — so **TS and PHP already disagree**, on the very first item this spec marks
   parity-REQUIRED. This port follows TS, the stricter of the two, because a narrower accepted
   syntax can be widened later without breaking a template that already works. Covered locally in
-  `tests/test_ascii_parity.py`; the family-level decision is still open.
+  `tests/test_ascii_parity.py`. **Decided 2026-07-20: this port stays ASCII and does not chase
+  the difference.** Widening it would mean either diverging from the reference on purpose or
+  reopening the question for three engines and a published package, to support identifiers
+  nobody has asked for. If a real template ever needs them, the narrower rule can be widened
+  without breaking anything that already works — which is the whole reason for choosing it.
+- **Comments.** Not one of the 168 fixtures contains a `/#` at all, so comment stripping — and
+  therefore every position that passes through it — is held up by local tests alone.
+- **Diagnostic ORDER.** `validate()` returns findings sorted by position; the reference returns
+  them in check order. The corpus matches diagnostics by `any()`, so it cannot see the difference,
+  and §3's allowed-to-diverge list does not mention ordering either way. Treated as a deliberate
+  divergence: a consumer reading a template top to bottom is better served by source order than
+  by the order the checks happen to run in. Recorded here so it is a decision rather than a
+  discovery.
 - **`line` / `column` on every diagnostic.** **Zero** fixtures assert a position, so the corpus is
   green whatever the numbers say — while the public `Diagnostic` type promises them and editor
   integrations depend on them. Track positions in the parser from the start (retrofitting means

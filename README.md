@@ -1,8 +1,8 @@
 # spintax-core (Python)
 
-> **Status: P1 in progress — the validator is being built.** The shared golden corpus runs from
-> commit one and reports what is not built yet as *expected failures*, so the remaining work is a
-> number on every test run. Nothing is published yet.
+> **Status: P1 done — `validate()` and `extract()` work; rendering is next.** The shared golden
+> corpus runs from commit one and reports what is not built yet as *expected failures*, so the
+> remaining work is a number on every test run. Nothing is published yet.
 
 A framework-agnostic **[Spintax](https://spintax.net) engine** for Python — parse, render,
 validate, extract, analyze, and neutralize spintax templates. MIT, zero runtime dependencies.

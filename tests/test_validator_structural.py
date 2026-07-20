@@ -84,13 +84,18 @@ def test_indented_directive_is_still_a_directive() -> None:
 
 
 def test_define_looks_like_a_directive_but_is_not() -> None:
-    """`#define` is not `#def` — the keyword needs its whitespace, and this must not
-    be reported as a malformed `#def`."""
-    assert codes("#define %x% = 1") == []
+    """`#define` is not `#def` — the keyword needs its whitespace.
+
+    Asserted as "no malformed report" rather than "no diagnostics": the line is
+    ordinary text, so its `%x%` is a genuine undefined-variable warning. The
+    reference agrees, warning included.
+    """
+    assert "def.malformed" not in codes("#define %x% = 1")
 
 
 def test_keyword_is_case_sensitive() -> None:
-    assert codes("#DEF %x% = 1") == []
+    """Same shape as above: not a directive, so `%x%` is an ordinary reference."""
+    assert "def.malformed" not in codes("#DEF %x% = 1")
 
 
 # ── uniqueness and #include-in-a-#def ──────────────────────────────────

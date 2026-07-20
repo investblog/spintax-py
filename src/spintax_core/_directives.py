@@ -3,7 +3,8 @@
 Directives are **not** tree nodes. They are pulled out of the whole text before
 anything else looks at it, regardless of brace nesting — so a `#set` on its own
 line inside an enumeration is a global definition, not an option's literal text.
-The corpus pins that (`set/global-scope-inside-group`).
+The corpus has a fixture for that (`set/global-scope-inside-group`) but it is a RENDER
+case, so it stays xfail until P2 — until then the rule is held by local tests only.
 
 `occurrences` keeps every directive line, including the duplicates the two maps
 flatten to last-wins. That is not bookkeeping for its own sake: a validator cannot

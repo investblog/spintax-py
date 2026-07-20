@@ -6,7 +6,7 @@ this module from the very first commit, so each fixture is reported as an
 *expected failure* rather than being skipped — the count of what is not yet built
 is visible on every test run, and a fixture can never be quietly forgotten.
 
-Milestones fill these in: P1 parse/validate/extract, P2 render, P3 analyze/neutralize.
+Milestones fill these in: P1 validate/extract (done), P2 parse + render, P3 analyze/neutralize.
 See ``docs/spec-python-port.md``.
 """
 
@@ -15,6 +15,8 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal
+
+from . import _extract, _validator
 
 __all__ = [
     "Analysis",
@@ -87,9 +89,14 @@ class Analysis:
     constructs: Mapping[str, int] = field(default_factory=dict)
 
 
+def _reject_bare_string(param: str, value: Sequence[str] | None) -> None:
+    if isinstance(value, str):
+        raise TypeError(f"{param} takes a sequence of strings, not a single string")
+
+
 def parse(src: str) -> Ast:
     """Parse once into a reusable handle."""
-    raise NotImplementedError("parse: P1")
+    raise NotImplementedError("parse: P2")
 
 
 def make_rng(seed: int | str | None) -> Rng:
@@ -158,12 +165,65 @@ def validate(
     known_variables: Sequence[str] | None = None,
 ) -> list[Diagnostic]:
     """Return diagnostics. Valid ⇔ no diagnostic with ``severity == "error"``."""
-    raise NotImplementedError("validate: P1")
+    if not isinstance(input, str):
+        raise NotImplementedError("validate(Ast): P2 — pass the source string for now")
+    # A bare `str` satisfies `Sequence[str]`, so `known_includes="hero"` type-checks and
+    # then silently means the four slugs 'h', 'e', 'r', 'o'. The TypeScript signature
+    # rejects it outright; here only a runtime check can.
+    _reject_bare_string("known_includes", known_includes)
+    _reject_bare_string("known_variables", known_variables)
+
+    source, findings = _validator.run(
+        input,
+        locale=locale,
+        known_includes=list(known_includes) if known_includes else None,
+        known_variables=list(known_variables) if known_variables else None,
+    )
+    out: list[Diagnostic] = []
+    for f in findings:
+        line, column = source.position(f.offset)
+        # The end is exclusive, so it is one past the last character of the span. The
+        # last character is at `offset + length - 1`; a zero-length finding collapses
+        # to the start rather than reaching backwards.
+        end_line, end_column = source.position(f.offset + max(0, f.length - 1))
+        data = f.data
+
+        # Offsets are the only coordinate the checks speak. Anything a message wants to
+        # say about *another* place in the file is translated here, where the Source is —
+        # a check that formatted its own line number would be quoting a position in the
+        # comment-stripped text while its diagnostic reported one in the original.
+        if data is not None and "first_offset" in data:
+            first_line, _ = source.position(int(data["first_offset"]))  # type: ignore[call-overload]
+            data = {k: v for k, v in data.items() if k != "first_offset"}
+            data["first_line"] = first_line
+
+        out.append(
+            Diagnostic(
+                severity="warning" if f.severity == "warning" else "error",
+                code=f.code,
+                message=f.message,
+                line=line,
+                column=column,
+                end_line=end_line,
+                end_column=end_column + 1,
+                data=data,
+            )
+        )
+
+    # Source order — a reader walks the template top to bottom instead of in whatever
+    # order the checks happened to run. This is a deliberate divergence from the
+    # reference, which emits in check order; see spec §3, "Allowed to diverge".
+    # Python's sort is stable, so findings sharing a position keep check order.
+    out.sort(key=lambda d: (d.line, d.column))
+    return out
 
 
 def extract(input: str | Ast) -> Extraction:
     """List variable references, ``#set`` / ``#def`` names, and ``#include`` targets."""
-    raise NotImplementedError("extract: P1")
+    if not isinstance(input, str):
+        raise NotImplementedError("extract(Ast): P2 — pass the source string for now")
+    refs, sets, defs, includes = _extract.extract(input)
+    return Extraction(refs=refs, sets=sets, defs=defs, includes=includes)
 
 
 def analyze(
