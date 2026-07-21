@@ -1,7 +1,10 @@
 # P3 — `analyze`, and the `Ast` input path
 
-Status: **active**. Governing contract: [`spec-python-port.md`](spec-python-port.md).
-Previous: [`plan-p2.md`](plan-p2.md) — all 168 corpus fixtures pass, 0 xfailed, 0 skipped.
+Status: **COMPLETE** — `analyze` and the `Ast` input path ship; no `NotImplementedError` is left
+in the public API, and every entry point takes a `str` or a parsed `Ast`. The corpus stays at 168
+passed, 0 xfailed, 0 skipped (this milestone adds only ungated local tests, measured against the
+reference). Governing contract: [`spec-python-port.md`](spec-python-port.md). Previous:
+[`plan-p2.md`](plan-p2.md).
 
 ## What P3 must close
 

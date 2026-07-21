@@ -1,8 +1,9 @@
 # Spintax Python engine — `spintax-core` (spec draft)
 
 Status: **SHIPPED — P0 through P4 complete** ([`plan-p1.md`](plan-p1.md),
-[`plan-p2.md`](plan-p2.md), [`plan-p3.md`](plan-p3.md)). **`spintax-core` is published on PyPI
-(0.1.1, 2026-07-20).** All 168 corpus fixtures pass, 0 xfailed, 0 skipped. Every entry point —
+[`plan-p2.md`](plan-p2.md), [`plan-p3.md`](plan-p3.md)). **`spintax-core` is published on
+[PyPI](https://pypi.org/project/spintax-core/)** (first release 0.1.0, 2026-07-20; see the git tags
+for the current version). All 168 corpus fixtures pass, 0 xfailed, 0 skipped. Every entry point —
 `parse`, `render`, `validate`, `extract`, `analyze`, `neutralize` — is built and takes a `str` or a
 parsed `Ast`. Idea captured 2026-07-13; revised 2026-07-19 for engine 3.0.0 (`#def`, `#set` reverted
 to macro, BCS plurals). All questions below are answered or recorded as deliberate; this file is now
@@ -269,18 +270,16 @@ with it. `"#set %x% = A\r\n%x%"` renders `"\nA"`, matching the reference.
   overwrites the first and there is nothing left to report. Collect occurrences first, diagnose,
   then collapse.
 
-## 6. Open questions — decide these BEFORE writing code
+## 6. Design questions — all decided (kept as a record of why)
 
-### Q1 — package name and import name
-Dist name **`spintax-core`** is free on PyPI (checked 2026-07-13), consistent with `@spintax/core`.
-Import name: **`spintax_core`** is the safe pick — `import spintax` would collide with the
-abandoned GPLv3 `spintax` package if both are installed. *Recommendation: `spintax-core` /
-`spintax_core`. Claim the name on PyPI before someone else does.*
+### Q1 — package name and import name ✅ ANSWERED
+Published as dist **`spintax-core`**, import **`spintax_core`**. `spintax_core` avoids the collision
+`import spintax` would have with the abandoned GPLv3 `spintax` package, and the dist name lines up
+with `@spintax/core`.
 
-### Q2 — minimum Python version
-`3.10+` buys `X | Y` unions and `match`, with **zero** dependencies. `3.9` widens reach but needs
-`typing_extensions` (a dependency) or uglier typing. *Recommendation: 3.10+, revisit only if a
-real consumer is stuck on 3.9.*
+### Q2 — minimum Python version ✅ ANSWERED
+**3.10+** (`requires-python >=3.10`). It buys `X | Y` unions and `match` with zero dependencies;
+`3.9` would have needed `typing_extensions`. Revisit only if a real consumer is stuck on 3.9.
 
 ### Q3 — RNG
 Seeds are `int | str` and must be **reproducible within this engine**. Two paths:
@@ -376,7 +375,7 @@ and the shared fixtures plus `tests/test_case_folding.py` are what keep them hon
 single most likely place for a silent parity break; do it with the corpus wired and fuzz against the
 reference, never blind.
 
-### Q6 — `#include` resolution
+### Q6 — `#include` resolution ✅ ANSWERED
 Stays **synchronous and host-injected** (`Callable[[str], str | None]`), same as TS. Async sources
 use the two-phase pattern: `extract().includes` → host prefetches → sync map resolver. The circular
 guard and scope isolation (a child inherits global+runtime vars, **not** the parent's local
