@@ -34,11 +34,15 @@ ast = parse('[<sep=", ">fast|cheap|good]')
 ```
 
 Rendering is **lenient**: malformed markup degrades rather than raising, so a template a
-non-programmer wrote cannot take a page down.
+non-programmer wrote cannot take a page down. Output is also **tidied up** by default —
+sentence capitalization, spacing around punctuation, URLs and abbreviations left intact —
+which is why `[…fast|cheap|good]` above comes back capitalized. Pass `post_process=False`
+to turn that off and get the raw pick.
 
-Syntax — enumerations `{a|b}`, permutations `[a|b]`, variables `%name%`, conditionals
-`{?VAR?yes|no}`, plural agreement `{plural 3: one|few|many}`, `#set` / `#def` / `#include` — is
-documented at **[spintax.net/docs](https://spintax.net/docs/)**.
+Syntax — enumerations `{a|b}`, permutations `[<sep=", ">a|b]`, variables `%name%`,
+conditionals `{?VAR?yes|no}`, plural agreement `{plural 3: one|few|many}`, comments
+`/# … #/`, and the `#set` / `#def` / `#include` directives — is documented in full at
+**[spintax.net/docs](https://spintax.net/docs/)**.
 
 - **Spec:** [`docs/spec-python-port.md`](docs/spec-python-port.md) — the parity contract, the API
   surface, and the decisions behind the port (including where Python's regex dialect is wider than
