@@ -21,7 +21,17 @@ from __future__ import annotations
 
 import pytest
 
-from spintax_core import Ast, AstVersionError, analyze, extract, parse, validate
+from spintax_core import (
+    Ast,
+    AstVersionError,
+    analyze,
+    extract,
+    neutralize,
+    parse,
+    render,
+    render_with,
+    validate,
+)
 
 
 def nonzero(constructs: dict[str, int]) -> dict[str, int]:
@@ -145,17 +155,58 @@ PARSE_ONCE = [
     '#include "x"',
     "%undefined_one%",
     "#set %s% = %s%",
+    # A reserved-range sentinel an author typed. `render(str)` strips it before parsing;
+    # `parse()` used to NOT, so a cached handle rendered `a{b` where the string rendered
+    # `ab`. Both now strip, because `parse_template` is the one door and it sanitises.
+    f"a{chr(0xE000)}b",
+    f"x{chr(0xE003)}{{a|b}}",
 ]
 
 
 @pytest.mark.parametrize("template", PARSE_ONCE)
 def test_a_handle_answers_the_same_as_its_source(template: str) -> None:
-    """Spec §4 opens by promising a host can parse once and reuse. Until this milestone
-    three of the five entry points refused a handle outright."""
+    """Spec §4 opens by promising a host can parse once and reuse.
+
+    `render` is checked here as well as the read-only three — it was missing, and its
+    absence is exactly why the sentinel divergence shipped. A cached `Ast` that renders
+    differently from its source is the quiet failure this contract exists to forbid.
+    """
     ast = parse(template)
     assert extract(ast) == extract(template)
     assert [d.code for d in validate(ast)] == [d.code for d in validate(template)]
     assert analyze(ast).constructs == analyze(template).constructs
+    assert render(ast, seed=1) == render(template, seed=1)
+    assert render(ast, seed=1, post_process=False) == render(template, seed=1, post_process=False)
+
+
+def test_an_author_typed_sentinel_is_stripped_on_every_parse_path() -> None:
+    """The reserved range belongs to the engine, on all four doors into a tree.
+
+    `_neutralize` documents the invariant — only `neutralize()` may introduce a sentinel,
+    so author markup is stripped of stray ones — and `render(str)` honoured it while
+    `parse()` and `analyze(str)` did not. Centralising the strip in `parse_template` closes
+    that. A host's *neutralized* data is untouched: those sentinels ride in through a
+    variable value, which is re-parsed by `parse_sequence` (not `parse_template`) and must
+    reach the safety-restore.
+    """
+    src = f"a{chr(0xE000)}b"
+    assert render(src, post_process=False) == "ab"
+    assert render(parse(src), post_process=False) == "ab"
+    # The legitimate path: a neutralized value survives to be restored to its glyphs.
+    shielded = neutralize("{x|y}")
+    assert render_with("%v%", lambda lo, _hi: lo, context={"v": shielded}, post_process=False) == "{x|y}"
+
+
+def test_the_sentinel_strip_is_a_deliberate_divergence_from_the_reference() -> None:
+    """Recorded, not hidden. The reference strips at its render entry points and not in
+    `parse`, so its `render(parse(src))` returns `a{b` for this input while this port
+    returns `ab`. Same category as plural counts past 2^53: the divergence is only on a
+    reserved-range character the engine says a host should neutralize, and the port is the
+    more correct of the two — it keeps its own documented invariant on every path.
+    """
+    src = f"a{chr(0xE000)}b"
+    # If this ever equals the reference's `a{b`, the parse-once-reuse fix was reverted.
+    assert render(parse(src), post_process=False) == "ab"
 
 
 def test_a_handle_carries_positions_from_the_original_source() -> None:

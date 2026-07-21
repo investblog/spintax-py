@@ -62,8 +62,8 @@ def render_with(
 def _resolve_ast(source: str | Ast) -> ParsedAst:
     """A string is parsed fresh; a handle is checked before it is trusted."""
     if isinstance(source, str):
-        # Stray sentinels come out of AUTHOR markup here so that only `neutralize()` can
-        # introduce one. Otherwise the mandatory restore would rewrite a character the
-        # author typed into a brace they never wrote.
-        return _parser.parse_template(_neutralize.strip_sentinels(source))
+        # `parse_template` sanitises author markup itself now (see its docstring), so the
+        # sentinel strip that used to live here — and only here, missing `parse()` — is
+        # gone. One door, one rule.
+        return _parser.parse_template(source)
     return require_parsed(source)

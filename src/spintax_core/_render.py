@@ -26,7 +26,7 @@ import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 
-from . import _neutralize, _parser, _plurals
+from . import _parser, _plurals
 from ._ast import (
     ConditionalNode,
     EnumerationNode,
@@ -675,5 +675,6 @@ def _open_include(ref: str, ctx: RenderCtx) -> tuple[str, RenderCtx] | None:
         return None
 
     child_ctx = replace(ctx, include_stack=(*ctx.include_stack, ref))
-    ast = _parser.parse_template(_neutralize.strip_sentinels(included))
+    # `parse_template` strips stray sentinels from the included author markup itself.
+    ast = _parser.parse_template(included)
     return _render_body(ast, child_ctx), child_ctx

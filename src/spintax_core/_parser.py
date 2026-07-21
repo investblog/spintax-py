@@ -18,7 +18,7 @@ import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
-from . import _directives, _source
+from . import _directives, _neutralize, _source
 from ._ast import (
     AST_VERSION,
     ConditionalNode,
@@ -78,12 +78,31 @@ _LASTSEP_RE = re.compile(
 
 
 def parse_template(src: str) -> ParsedAst:
-    """Parse a full template: strip comments, extract directives, build the tree."""
+    """Parse a full template: sanitise, strip comments, extract directives, build the tree.
+
+    **This is the one door from author source into a tree, and it sanitises.** Stray engine
+    sentinels (U+E000–U+E005) are stripped first, so a reserved-range character an author
+    typed cannot survive to be rewritten into a brace by the mandatory safety-restore — the
+    invariant `_neutralize` documents ("only `neutralize()` may introduce a sentinel"). It
+    lives here rather than at each caller because there were three callers and two of them
+    (`parse()` and `analyze(str)`) forgot it, so `render(parse(src))` diverged from
+    `render(src)` on that edge and broke the parse-once-reuse contract (§4). The reference
+    strips at its render entry points and not in `parse`, and has the same divergence; this
+    port closes it, deliberately more correct on a reserved-range input the engine says a
+    host should neutralize anyway.
+
+    `parse_sequence` is NOT sanitised, and must not be: it re-parses a variable's *value*,
+    where sentinels a host neutralized are legitimate and have to reach the safety-restore.
+
+    `source` keeps the ORIGINAL, unsanitised text — the raw-text checks that read it are
+    unaffected by a sentinel, and a diagnostic should point at the bytes the author wrote.
+    """
+    body_src = _neutralize.strip_sentinels(src)
     # Comments are stripped WITHOUT the offset map `_source.read` builds. That map exists
     # so the validator can point a diagnostic at the author's text; the parser feeds a
     # renderer, which must emit the author's bytes — including line terminators the
     # scanning view normalises away.
-    stripped = _source.COMMENT_RE.sub("", src)
+    stripped = _source.COMMENT_RE.sub("", body_src)
     directives = _directives.extract(stripped)
     return ParsedAst(
         source=src,
