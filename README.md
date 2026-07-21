@@ -74,18 +74,13 @@ SPINTAX_FIXTURES=../spintax-js/packages/conformance/fixtures pytest
 ```
 
 Without the fixtures the suite **fails** rather than passing an empty run — a green suite that
-tested nothing is the most expensive kind of green. The shape of the output is:
+tested nothing is the most expensive kind of green.
 
-```
-N passed, M xfailed, 0 skipped
-```
-
-The two numbers are the milestone tracker: `passed` grows as the engine does, `xfailed` is what
-the corpus still expects and the engine cannot yet do. A **skip** should never appear — it would
-mean a case is being neither asserted nor counted.
-
-The xfails are the whole cross-engine contract, waiting on P1–P3. As milestones land, cases turn
-into real passes with no change to the runner.
+The engine is complete, so every corpus case is a real pass: **168 corpus fixtures pass, 0 xfailed,
+0 skipped**, alongside the port's own local tests. A **skip** must never appear — it would mean a
+case is being neither asserted nor counted. During the build (P0–P3) `xfailed` was the milestone
+tracker, one number counting down what the corpus expected and the engine could not yet do; it
+reached zero when the renderer and `analyze` landed.
 
 > **If you mutate a source file to check that a test catches it, delete `__pycache__` first.**
 > Python invalidates bytecode on (mtime, size). A mutation that preserves both — swapping `.*?`

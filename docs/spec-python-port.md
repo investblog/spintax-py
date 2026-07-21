@@ -1,11 +1,12 @@
 # Spintax Python engine — `spintax-core` (spec draft)
 
-Status: **ACTIVE — P0, P1 and P2 complete** ([`plan-p1.md`](plan-p1.md),
-[`plan-p2.md`](plan-p2.md)). **All 168 corpus fixtures pass**, 0 xfailed, 0 skipped.
-`validate()`, `extract()`, `parse()`, `neutralize()` and the full renderer ship; `analyze()`
-is the one entry point left (P3). Idea captured 2026-07-13; revised 2026-07-19 for engine 3.0.0
-(`#def`, `#set` reverted to macro, BCS plurals). Q4 is answered; the remaining open questions are
-non-blocking.
+Status: **SHIPPED — P0 through P4 complete** ([`plan-p1.md`](plan-p1.md),
+[`plan-p2.md`](plan-p2.md), [`plan-p3.md`](plan-p3.md)). **`spintax-core` is published on PyPI
+(0.1.1, 2026-07-20).** All 168 corpus fixtures pass, 0 xfailed, 0 skipped. Every entry point —
+`parse`, `render`, `validate`, `extract`, `analyze`, `neutralize` — is built and takes a `str` or a
+parsed `Ast`. Idea captured 2026-07-13; revised 2026-07-19 for engine 3.0.0 (`#def`, `#set` reverted
+to macro, BCS plurals). All questions below are answered or recorded as deliberate; this file is now
+a record of the decisions, not a plan of open ones.
 Owner: 301st
 Canonical location: this file, `W:\projects\spintax-py\docs\spec-python-port.md`.
 
@@ -340,20 +341,40 @@ branch of `spintax-js` holds at run time, so an upstream fixture change turns th
 without a commit here. That is the intended failure mode — it is how a contract announces that
 the engines have diverged.
 
-### Q5 — Unicode in post-process ⚠ real trap, already verified
-The TS post-process leans on `\p{L}` / `\p{N}` with the `u` flag. **Python's stdlib `re` does NOT
-support Unicode property escapes** — `re.compile(r"\p{L}")` raises `bad escape \p` (verified on
-CPython 3.13). The obvious fix, the third-party `regex` module, would **break the zero-dependency
-rule.**
+### Q5 — Unicode in post-process ✅ ANSWERED (P2), and the first-draft answer was WRONG
+Python's stdlib `re` has no Unicode property escapes — `re.compile(r"\p{L}")` raises `bad escape
+\p`. The third-party `regex` module would break the zero-dependency rule. All of this is centralised
+in `src/spintax_core/_charclasses.py`, each constant carrying its measured divergence set. Read that
+file before touching any post-process or parser regex; the summary here is a map, not the territory.
 
-Stdlib workaround, verified: `[^\W\d_]` (with the default Unicode semantics of `str` patterns)
-matches Unicode letters, including Cyrillic —
-`re.findall(r"[^\W\d_]+", "Привет мир 42 test-case")` → `['Привет', 'мир', 'test', 'case']`.
+**`[^\W\d_]` is NOT `\p{L}` — this was the draft answer and it is a trap.** It disagrees on 1151
+code points, because Python's `\w` includes categories `Nl` and `No`, so under it `²` and `½` parse
+as letters. The identities that actually hold, measured across the whole Unicode range:
 
-So the domain/URL/email shielding patterns must be **rewritten**, not transliterated from the TS
-source. This is the single most likely place for a silent parity break, and the post-process
-fixtures (including the Cyrillic ones) are what will catch it. *Do the post-process pass with the
-corpus already wired, never blind.*
+- `[\p{L}\p{N}]` **is** `[^\W_]` exactly (Python's `\w` = `L ∪ N ∪ _`).
+- `\p{L}` is `[^\W\d_]` **minus** `Nl ∪ No` — an 81-range baked constant (`_NL_NO`).
+- `\p{Ll}` has **no** table-free form (`U+0138 ĸ` defeats every `upper()`-based predicate); it is a
+  658-range baked constant. Both tables are generated and frozen; `tests/test_charclass_tables.py`
+  rebuilds them from the running `unicodedata` and asserts COVERAGE (not equality — they track the
+  reference's Unicode version, not Python's).
+
+Two more traps in the same territory, both found only by differential fuzzing after being reasoned
+about wrongly first:
+
+- **`\b` is ASCII in JS and Unicode in Python, and needs a TRANSITION, not a one-sided lookaround.**
+  Translating it as "no word char before" invents boundaries wherever the next char is also
+  non-word — which, JS's word set being ASCII, is every accented or Cyrillic letter. `приме.com`
+  was shielded as a domain here and left alone there. See `JS_WORD_BOUNDARY`.
+- **`re.IGNORECASE` means three different things.** Python always folds Turkish `İ`/`ı`→`i`; JS
+  `/iu` never does; JS `/i` **without** `u` also won't fold `ſ`→`s`. The reference uses `/giu` in
+  post-process and `/i` (no `u`) in the parser's config keys — so `[<ſep="x">…]` and `[<mınsize=2>…]`
+  meant different things in the two engines. Hence `js_ci_unicode` (keep the flag, exclude the
+  Turkic pair via scoped `(?-i:…)`) and `js_ci_ascii` (drop the flag, spell the case out).
+
+The post-process and config patterns are **rewritten**, never transliterated from the TS source,
+and the shared fixtures plus `tests/test_case_folding.py` are what keep them honest. This is the
+single most likely place for a silent parity break; do it with the corpus wired and fuzz against the
+reference, never blind.
 
 ### Q6 — `#include` resolution
 Stays **synchronous and host-injected** (`Callable[[str], str | None]`), same as TS. Async sources
