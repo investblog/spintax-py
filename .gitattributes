@@ -1,0 +1,9 @@
+# The engine is developed on Windows with core.autocrlf=true, and everything it ships is
+# text. Without this the checkout reapplies CRLF, the working copy disagrees with the index
+# on every file git touches, and a second machine with a different autocrlf produces a diff
+# that is entirely line endings. Both PHP repos in the family already pay for this rule.
+* text=auto eol=lf
+
+# Deliberately NOT carried over from spintax-php: its `export-ignore` lines shape the
+# Packagist tarball, which `git archive` builds from these attributes. Hatchling builds the
+# sdist itself and never reads them, so the same lines here would be decoration.
