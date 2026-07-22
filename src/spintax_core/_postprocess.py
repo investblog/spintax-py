@@ -71,11 +71,22 @@ value ever came to contain another key. On `\x00`-free input none can: `_URI_BOD
 placeholder (spintax-js#53). Worth stating because it is the property an ordering change
 would quietly take away.
 
-**A second O(n²) remains, and it is not the restore.** `_DOMAIN_PART` backtracks on a long
-run of dotted labels: `"a."` repeated takes 2.2 s at 3.2 KB, 1.0 s of it in `_DOMAIN_RE`
-and 0.3 s in `_EMAIL_RE`, and none of it in step 12. That shape is machine-generated, not
-prose, and a host feeding the engine such text should cap the input or render with
-`post_process=False`.
+**A second O(n²) remains, and it is not the restore.** `_DOMAIN_RE` and `_EMAIL_RE` are the
+cost now, on a long run of dotted labels (`"a."` repeated). A single match attempt is
+linear — 5 ms at 12.5 KB — so this is not catastrophic backtracking within a match; it is
+`re.sub` re-scanning. The greedy `(?:…\\.)+` in `_DOMAIN_PART` consumes to the end before
+failing, and `re.sub` retries that from every word boundary, so O(n) starts × O(n) consume
+= O(n²): the whole pass takes ~1.1 s at 3.2 KB (0.85 s in `_DOMAIN_RE`, 0.29 s in
+`_EMAIL_RE`), and step 12 no longer figures.
+
+Not fixed here, and the usual fix does not apply: atomic groups / possessive quantifiers
+cut *within-match* backtracking, which is already linear, and need Python 3.11 besides
+(3.10 is supported). Removing the re-scan means rewriting `_DOMAIN_PART`, which is
+parity-pinned to `@spintax/core`'s `DOMAIN_PART` character-for-character — a change that
+must be measured against the reference, not reasoned. `@spintax/core` does not hit this at
+all (V8's regex engine does not re-scan the same way), so there is no reference answer to
+port. The shape is machine-generated, not prose; a host feeding the engine such text should
+cap the input or render with `post_process=False`.
 """
 
 from __future__ import annotations
