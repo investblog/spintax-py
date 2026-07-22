@@ -1,5 +1,9 @@
 # spintax-core (Python)
 
+[![PyPI](https://img.shields.io/pypi/v/spintax-core.svg)](https://pypi.org/project/spintax-core/)
+[![CI](https://github.com/investblog/spintax-py/actions/workflows/ci.yml/badge.svg)](https://github.com/investblog/spintax-py/actions/workflows/ci.yml)
+[![license](https://img.shields.io/pypi/l/spintax-core.svg)](https://github.com/investblog/spintax-py/blob/main/LICENSE)
+
 A framework-agnostic **[Spintax](https://spintax.net) engine** for Python — parse, render,
 validate, extract, analyze, and neutralize spintax templates. MIT, zero runtime dependencies,
 Python 3.10+.

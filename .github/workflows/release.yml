@@ -101,3 +101,35 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: twine upload dist/*
+
+  # The release note is already written — it is the annotation on the tag, composed at the
+  # moment the release was decided. This publishes it as a GitHub release rather than have
+  # it retyped by hand, which is how the first three tags ended up with no release at all.
+  # Runs after `publish`, so a GitHub release never announces an artifact PyPI refused.
+  announce:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The tag ANNOTATION lives in the tag object, which a shallow checkout of the
+          # commit does not bring along.
+          fetch-depth: 0
+
+      - name: Publish the GitHub release from the tag annotation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          title=$(git tag -l --format='%(contents:subject)' "$TAG")
+          body=$(git tag -l --format='%(contents:body)' "$TAG")
+          link="On PyPI: https://pypi.org/project/spintax-core/${TAG#v}/"
+          # A patch tag is often a one-line annotation with no body. Falling back to the
+          # commit log there beats publishing a release that says nothing at all.
+          if [ -n "$(printf '%s' "$body" | tr -d '[:space:]')" ]; then
+            gh release create "$TAG" --title "${title:-$TAG}" --notes "$(printf '%s\n\n%s\n' "$body" "$link")"
+          else
+            gh release create "$TAG" --title "${title:-$TAG}" --generate-notes --notes "$link"
+          fi
