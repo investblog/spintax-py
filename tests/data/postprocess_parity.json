@@ -1,5 +1,5 @@
 {
- "reference_version": "0.3.0",
+ "reference_version": "0.3.1+6a4c39b",
  "note": "Generated — do not hand-edit.",
  "cases": [
   {
@@ -2573,6 +2573,78 @@
   {
    "template": "[<lastsep=\"y\" sep=\"x\">a|b|c]",
    "text": "B x c y a"
+  },
+  {
+   "template": "\u0000URL_0\u0000 see https://example.com/a",
+   "text": "https://example.com/a see https://example.com/a"
+  },
+  {
+   "template": "\u0000URL_9\u0000 see https://example.com/a",
+   "text": "\u0000URL_9\u0000 see https://example.com/a"
+  },
+  {
+   "template": "\u0000 https://example.com/a",
+   "text": "\u0000 https://example.com/a"
+  },
+  {
+   "template": "see https://example.com/a \u0000",
+   "text": "See https://example.com/a \u0000"
+  },
+  {
+   "template": "3.14\u0000NUM_0\u00003.14",
+   "text": "3.143.143.14"
+  },
+  {
+   "template": "see \u0000ABBR_1\u0000 etc. and т.д.",
+   "text": "See \u0000ABBR_1\u0000 etc. and т. Д."
+  },
+  {
+   "template": "\u0000\u0000https://example.com/a?b=1. \u0000NUM_9https://example.com/b",
+   "text": "\u0000\u0000https://example.com/a?b=1. \u0000NUM_9https://example.com/b"
+  },
+  {
+   "template": "ABBR_1т.д.URL_0ftp://f.org/z",
+   "text": "ABBR_1т.д.URL_0ftp://f.org/z"
+  },
+  {
+   "template": "URL_0Inc. https://example.com/a?b=1  EMAIL_0Mr.some words Mr. Mr.URI_1tel:+1-555-0100, ",
+   "text": "URL_0Inc. https://example.com/a?b=1 EMAIL_0Mr. Some words Mr. Mr.URI_1tel:+1-555-0100,"
+  },
+  {
+   "template": "т.д.NUM_0 3.14 и т.п.",
+   "text": "Т. Д. NUM_0 3.14 и т. П."
+  },
+  {
+   "template": "</p>\u0000NUM_9\u0000http://x.io/p?q=1\u0000URI_1\u0000. \u0000tel:+1-555-0100",
+   "text": "</p>\u0000NUM_9\u0000http://x.io/p?q=1tel:+1-555-0100. \u0000tel:+1-555-0100"
+  },
+  {
+   "template": "ABBR_1т.д.URL_0tel:+1-555-0100http://x.io/p?q=1.",
+   "text": "ABBR_1т.д.URL_0tel:+1-555-0100http://x.io/p?q=1."
+  },
+  {
+   "template": "tel:+1-555-0100http://x.io/p?q=1.",
+   "text": "tel:+1-555-0100http://x.io/p?q=1."
+  },
+  {
+   "template": "mailto:a@b.iohttps://example.com/a?b=1 and 3.14",
+   "text": "mailto:a@b.iohttps://example.com/a?b=1 and 3.14"
+  },
+  {
+   "template": "mailto:sales@example.com?body=see%20https://shop.example.com/cart",
+   "text": "mailto:sales@example.com?body=see%20https://shop.example.com/cart"
+  },
+  {
+   "template": "see https://x.io/a.mailto:contact@example.com now",
+   "text": "See https://x.io/a.mailto:contact@example.com now"
+  },
+  {
+   "template": "call tel:+1-555-0100,https://x.io/p now",
+   "text": "Call tel:+1-555-0100,https://x.io/p now"
+  },
+  {
+   "template": "https://a.io e.g. URL_0mailto:x@y.io",
+   "text": "https://a.io e.g. URL_0mailto:x@y.io"
   }
  ]
 }

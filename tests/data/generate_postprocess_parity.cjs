@@ -32,7 +32,20 @@ esbuild.buildSync({
   bundle: true, platform: 'node', format: 'cjs', outfile: bundled,
 });
 const { renderWith } = require(bundled);
+
+// The bundle is built from the spintax-js WORKING TREE, not from the published tarball, so
+// package.json's version is only half the provenance: a fixture generated on top of an
+// unreleased commit would otherwise claim to be the release below it, and the recipe above
+// run against that release would produce different rows and a red suite with nothing to
+// explain it. Record the commit too, and mark it when the tree is dirty.
 const version = require(`${CORE}/package.json`).version;
+const git = (args) =>
+  require('child_process')
+    .execFileSync('git', ['-C', 'W:/Projects/spintax-js', ...args], { encoding: 'utf8' })
+    .trim();
+const head = git(['rev-parse', '--short', 'HEAD']);
+const dirty = git(['status', '--porcelain', 'packages/core/src']) ? '-dirty' : '';
+const reference = `${version}+${head}${dirty}`;
 
 const templates = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'postprocess_parity_cases.json'), 'utf8'),
@@ -46,8 +59,8 @@ const cases = templates.map((template) => ({
 
 fs.writeFileSync(
   path.join(__dirname, 'postprocess_parity.json'),
-  `${JSON.stringify({ reference_version: version, note: 'Generated — do not hand-edit.', cases }, null, 1)}\n`,
+  `${JSON.stringify({ reference_version: reference, note: 'Generated — do not hand-edit.', cases }, null, 1)}\n`,
   'utf8',
 );
 fs.unlinkSync(bundled);
-console.log(`${cases.length} cases from @spintax/core ${version}`);
+console.log(`${cases.length} cases from @spintax/core ${reference}`);

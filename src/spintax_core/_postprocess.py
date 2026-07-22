@@ -13,17 +13,75 @@ the two cannot collide. This pass runs while neutralize sentinels are still in p
 must leave them alone; it must equally leave alone the fullwidth `｛…｝` a lenient plural
 emits, which is why that fallback widens its braces rather than keeping ASCII ones.
 
-**Cost.** This pass is O(n²) in the length of the text, inherited from the reference
-rather than introduced here — but Python's constant is roughly 25× larger, so it bites
-sooner. Measured on a pathological input of dotted labels (`"a."` repeated): 3.2 KB takes
-about 1 s here against 40 ms there, and 12.8 KB takes 15 s. Ordinary prose is nowhere
-near this; a host feeding the engine machine-generated text of that shape should cap the
-input or render with `post_process=False`.
+**The restore is two restores** (step 12, and issue #1). The reference form is one
+whole-text replace PER KEY, and every URL, URI, email, domain, decimal and abbreviation
+mints a key — so on shield-heavy text the placeholder count grows with the text and the
+restore is O(text × placeholders). Measured here: 13 s on 418 KB, 44 s on 950 KB.
+
+One left-to-right pass over the token shape is O(text), and is NOT the same function. A
+per-key `str.replace` is a repeated SUBSTRING substitution, not a token substitution: it
+rewrites every occurrence of a key, including one that was never minted. Three ways that
+shows:
+
+1. the caller's own text spells a key the shield then mints, and is substituted;
+2. an unpaired `\x00` from the input pairs with a real placeholder's delimiter;
+3. **two real placeholders sandwich caller text that spells a key** — in
+   `\x00ABBR_2\x00URL_0\x00URI_1\x00` the closing `\x00` of one token and the opening
+   `\x00` of the next make a third occurrence of `\x00URL_0\x00`, which the loop
+   substitutes, destroying both real tokens.
+
+(3) needs **no `\x00` in the input at all** — only prose that happens to contain
+`ABBR_1` and `URL_0`, which any document about this engine does. There the loop is not a
+contract to preserve, it is a corruption: `ABBR_1т.д.URL_0ftp://f.org/z` comes back as
+`ABBR_1\x00ABBR_1ftp://f.org/zURL_0\x00`, with raw NULs. So the single pass is not
+merely faster, and the fast path is chosen on the input rather than on the algorithm: it
+runs whenever the input carries no `\x00`, which is all real input, and the loop survives
+for the ambiguous corner where the delimiters no longer pair as the shield placed them.
+
+**Why the guard is enough.** With no `\x00` in the input, every `\x00` in the working
+text is one the shield placed, so the keys are well formed, uniquely numbered and
+disjoint. Passes 6–11 cannot break one open either: the spacing rules match only ASCII
+whitespace and `,;:!?.`, and the capitalization rules re-emit every group verbatim and
+upper-case a single `Ll` character — a key contains none of those. And nothing can inject
+text between the check and the shield, because the check is the first statement of the
+function and `_pipeline` calls it on fully rendered text.
+
+Both branches are pinned against the reference in `tests/data/postprocess_parity.json`.
+`@spintax/core` guards the same way, on the same condition — but as unreleased work on top
+of 0.3.1, which is why the fixture records a commit as well as a version. Measured over
+spintax-js#52's shared 234 256-input sweep: 0 divergences from the reference; the guard is
+load-bearing at 7 955 unguarded, matching the reference's own count.
+
+Case (3) is a **deliberate** behaviour change, not a preserved one, and it is the family's
+one open seam here — spintax-py#2, spintax-js#54. #52 first recorded "on `\x00`-free input
+the single pass is the loop — 50 625 inputs, zero divergences" as a contract; it is a
+property of that probe set, whose 15 NUL-free fragments contain nothing that spells a
+placeholder key. Add a bare `URL_0` and the zero goes away.
+
+An earlier draft here declined the fast path on case (3) too, to keep the fast path a pure
+optimisation. That made this engine the only one returning the loop's wreckage, so it was
+dropped: the guard is the input's `\x00` and nothing else, which is what `@spintax/core`
+and `spintax/core` do (spintax-php#1). The published PHP, JS and Object Pascal releases
+still give the old answer, so this corner is unpinned by the shared corpus and pinned here
+instead.
+
+Neither branch rescans a value it inserted, which is what makes them agree even if a stored
+value ever came to contain another key. On `\x00`-free input none can: `_URI_BODY` excludes
+`\x00` and every other shield class is letters, digits and dots, so no match can span a
+placeholder (spintax-js#53). Worth stating because it is the property an ordering change
+would quietly take away.
+
+**A second O(n²) remains, and it is not the restore.** `_DOMAIN_PART` backtracks on a long
+run of dotted labels: `"a."` repeated takes 2.2 s at 3.2 KB, 1.0 s of it in `_DOMAIN_RE`
+and 0.3 s in `_EMAIL_RE`, and none of it in step 12. That shape is machine-generated, not
+prose, and a host feeding the engine such text should cap the input or render with
+`post_process=False`.
 """
 
 from __future__ import annotations
 
 import re
+from typing import Literal, get_args
 
 from ._charclasses import (
     ASCII_DIGIT,
@@ -62,13 +120,37 @@ _DOMAIN_PART = (
     f"(?:xn--[a-z0-9\\-]{{2,59}}|{JS_LETTER}(?:{JS_LETTER_OR_NUMBER}|-){{1,62}})"
 )
 
-_URL_RE = re.compile(f"(?:https?|ftp)://[^{_WS}<>\"')\\]]+", re.IGNORECASE)
-#: `mailto:` and `tel:` have no `//` authority, so `_URL_RE` misses them. Shielded before
-#: the email and domain passes, or the address is carved out from under its own prefix and
-#: the bare `mailto:` left behind — then the "space after a colon" rule splits it.
-_MAILTEL_RE = re.compile(
-    f"(?:{js_ci_unicode('mailto')}|tel):[^{_WS}<>\"')\\]]+", re.IGNORECASE
+#: URIs — `https?`/`ftp` with a `//` authority, and `mailto:`/`tel:` without one — shielded
+#: in ONE pass, deliberately, and always before the email and domain passes so the whole
+#: address survives (`mailto:` carved out from under its own prefix leaves a bare `mailto:`
+#: that the "space after a colon" rule then splits — spintax-js#41).
+#:
+#: They were two passes until spintax-js#53. A URI body runs to the first delimiter, so the
+#: two match sets OVERLAP whenever one URI contains the other's scheme, and the second pass
+#: then ran into a placeholder the first had already minted: `mailto:a@x.com?body=see%20
+#: https://shop.x.com/cart` shielded the URL, then stored a `mailto:` value with `URL_0`'s
+#: key inside it. Neither restore rescans a value it inserted, so a raw U+0000 reached the
+#: caller — illegal in XML, U+FFFD to an HTML parser, rejected by Postgres `text`, and a
+#: live key again the moment an edit detaches it from the prefix that was shielding it.
+#:
+#: Neither pass ORDER fixes that: whichever runs second is the one that gets split, and
+#: putting `mailto:` first only moves the damage onto a URL whose path carries a `mailto:`
+#: (`https://x.io/a.mailto:…` losing its dot to the punctuation pass). One alternation has
+#: no second pass to damage — the leftmost match takes the whole token, whichever scheme it
+#: is. Measured upstream: the alternation changes 3 212 of the 50 625 NUL-free sweep inputs,
+#: exactly the number that leaked before, where reordering changes 4 818.
+#:
+#: `\x00` stays out of the body class regardless. Nothing is shielded yet when this pass
+#: runs, so on ordinary input it never bites; it is there for a caller-supplied U+0000,
+#: which would otherwise let a URI match run through the delimiters of a placeholder minted
+#: after it.
+_URI_BODY = f"[^\\x00{_WS}<>\"')\\]]"
+_URI_RE = re.compile(
+    f"(?:(?:https?|ftp)://|(?:{js_ci_unicode('mailto')}|tel):){_URI_BODY}+", re.IGNORECASE
 )
+#: Which prefix a match gets. Kept distinct even though one pass mints both: `URL` and `URI`
+#: are what the corpus fixtures and `_PLACEHOLDER_RE` speak.
+_MAILTEL_PREFIX_RE = re.compile(f"\\A(?:{js_ci_unicode('mailto')}|tel):", re.IGNORECASE)
 # `NOT_TURKIC` on the class, `js_ci` on the literals: under `re.IGNORECASE` an `[a-z]`
 # range accepts U+0130 and U+0131, which JavaScript's `/iu` never folds into it.
 _EMAIL_RE = re.compile(
@@ -84,6 +166,19 @@ _SINGLE_ABBR_RE = re.compile(
 )
 #: `\Z`, not `$`: the reference has no `m` flag, so it anchors at the very end.
 _TRAILING_PUNCT_RE = re.compile(r"([.,;:!]+)\Z")
+
+#: Every prefix the shield can mint. `store` is typed against it and `_PLACEHOLDER_RE` is
+#: built from it, so the two stay in step by construction rather than by memory: a new
+#: shield pass whose prefix the restore does not know would otherwise emit a raw
+#: `\x00…\x00` to the caller on the fast path, silently and with nothing to catch it.
+ShieldPrefix = Literal["URL", "URI", "EMAIL", "DOM", "NUM", "ABBR"]
+SHIELD_PREFIXES: tuple[ShieldPrefix, ...] = get_args(ShieldPrefix)
+
+#: Exactly the token shape `store` mints. Anchored on `\x00` at BOTH ends, and never
+#: "anything between two `\x00`": on a failed match that shape consumes the whole span and
+#: loses sync with the delimiters, which rewrites text no restore should touch — 50× more
+#: divergence than this pattern, on the sweep in issue #1.
+_PLACEHOLDER_RE = re.compile(rf"\x00(?:{'|'.join(SHIELD_PREFIXES)})_\d+\x00")
 
 #: The inverted marks that OPEN a Spanish question or exclamation.
 #:
@@ -168,17 +263,22 @@ def _capitalize(match: re.Match[str]) -> str:
 
 
 def post_process(text: str) -> str:
+    # Decided BEFORE shielding, and this is the only place it can be decided: once the
+    # placeholders are in, a `\x00` the caller wrote is indistinguishable from one the
+    # shield placed. See the module docstring for what it buys.
+    caller_wrote_nul = "\x00" in text
+
     placeholders: dict[str, str] = {}
     counter = 0
 
-    def store(value: str, prefix: str) -> str:
+    def store(value: str, prefix: ShieldPrefix) -> str:
         nonlocal counter
         key = f"\x00{prefix}_{counter}\x00"
         placeholders[key] = value
         counter += 1
         return key
 
-    def store_with_trailing_punct(value: str, prefix: str) -> str:
+    def store_with_trailing_punct(value: str, prefix: ShieldPrefix) -> str:
         m = _TRAILING_PUNCT_RE.search(value)
         if m:
             suffix = m.group(1)
@@ -186,9 +286,12 @@ def post_process(text: str) -> str:
             return suffix if body == "" else store(body, prefix) + suffix
         return store(value, prefix)
 
-    # 1-5: shield. mailto:/tel: before email and domain, so the whole URI survives.
-    text = _URL_RE.sub(lambda m: store_with_trailing_punct(m.group(), "URL"), text)
-    text = _MAILTEL_RE.sub(lambda m: store_with_trailing_punct(m.group(), "URI"), text)
+    def store_uri(m: re.Match[str]) -> str:
+        prefix: ShieldPrefix = "URI" if _MAILTEL_PREFIX_RE.match(m.group()) else "URL"
+        return store_with_trailing_punct(m.group(), prefix)
+
+    # 1-5: shield. URIs in one pass, and before email and domain so the whole one survives.
+    text = _URI_RE.sub(store_uri, text)
     text = _EMAIL_RE.sub(lambda m: store(m.group(), "EMAIL"), text)
     text = _DOMAIN_RE.sub(lambda m: store(m.group(), "DOM"), text)
     text = _DECIMAL_RE.sub(lambda m: store(m.group(), "NUM"), text)
@@ -215,7 +318,10 @@ def post_process(text: str) -> str:
     text = cap_after_block.sub(_capitalize, text)
     text = cap_after_break.sub(_capitalize, text)
 
-    # 12: restore, then trim.
-    for key, value in placeholders.items():
-        text = text.replace(key, value)
+    # 12: restore, then trim. See the module docstring for why this is two restores.
+    if caller_wrote_nul:
+        for key, value in placeholders.items():
+            text = text.replace(key, value)
+    else:
+        text = _PLACEHOLDER_RE.sub(lambda m: placeholders.get(m.group(), m.group()), text)
     return _JS_TRIM_RE.sub("", text)
