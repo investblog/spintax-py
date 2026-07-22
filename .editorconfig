@@ -1,0 +1,23 @@
+# Pairs with .gitattributes: that one settles what git stores, this one settles what an
+# editor writes, so the two never argue through the working copy.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{yml,yaml,json,toml}]
+indent_size = 2
+
+# 100 to agree with ruff's line-length; an editor wrapping at 88 would fight the formatter.
+[*.py]
+max_line_length = 100
+
+# Markdown gives two trailing spaces a meaning — a hard line break. Trimming them here would
+# silently reflow the docs.
+[*.md]
+trim_trailing_whitespace = false
