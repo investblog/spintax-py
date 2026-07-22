@@ -188,6 +188,11 @@ def test_an_author_typed_sentinel_is_stripped_on_every_parse_path() -> None:
     that. A host's *neutralized* data is untouched: those sentinels ride in through a
     variable value, which is re-parsed by `parse_sequence` (not `parse_template`) and must
     reach the safety-restore.
+
+    This briefly made the port diverge from the reference, which had the same defect and
+    returned `a{b` here. It no longer does: `@spintax/core` 0.3.1 (`spintax-js` 3430bc1)
+    took the same fix the same way, hours later. So this asserts *parity*, not a divergence —
+    if it ever yields `a{b` again, the fix was reverted, on both engines' contract.
     """
     src = f"a{chr(0xE000)}b"
     assert render(src, post_process=False) == "ab"
@@ -195,18 +200,6 @@ def test_an_author_typed_sentinel_is_stripped_on_every_parse_path() -> None:
     # The legitimate path: a neutralized value survives to be restored to its glyphs.
     shielded = neutralize("{x|y}")
     assert render_with("%v%", lambda lo, _hi: lo, context={"v": shielded}, post_process=False) == "{x|y}"
-
-
-def test_the_sentinel_strip_is_a_deliberate_divergence_from_the_reference() -> None:
-    """Recorded, not hidden. The reference strips at its render entry points and not in
-    `parse`, so its `render(parse(src))` returns `a{b` for this input while this port
-    returns `ab`. Same category as plural counts past 2^53: the divergence is only on a
-    reserved-range character the engine says a host should neutralize, and the port is the
-    more correct of the two — it keeps its own documented invariant on every path.
-    """
-    src = f"a{chr(0xE000)}b"
-    # If this ever equals the reference's `a{b`, the parse-once-reuse fix was reverted.
-    assert render(parse(src), post_process=False) == "ab"
 
 
 def test_a_handle_carries_positions_from_the_original_source() -> None:
