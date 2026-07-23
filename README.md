@@ -51,9 +51,11 @@ conditionals `{?VAR?yes|no}`, plural agreement `{plural 3: one|few|many}`, comme
 - **Spec:** [`docs/spec-python-port.md`](docs/spec-python-port.md) — the parity contract, the API
   surface, and the decisions behind the port (including where Python's regex dialect is wider than
   JavaScript's and how each divergence was measured and pinned).
-- **Sibling engines:** [`@spintax/core`](https://www.npmjs.com/package/@spintax/core) (TypeScript,
-  MIT, published) · [Spintax for WordPress](https://wordpress.org/plugins/spintax/) (PHP, GPL, the
-  origin).
+- **Sibling engines:** [`@spintax/core`](https://www.npmjs.com/package/@spintax/core) (TypeScript) ·
+  [`spintax/core`](https://packagist.org/packages/spintax/core) (PHP) ·
+  [spintax-win](https://github.com/investblog/spintax-win) (Object Pascal) — all MIT, zero-dep, held
+  to one shared corpus · plus [Spintax for WordPress](https://wordpress.org/plugins/spintax/) (PHP,
+  GPL, the origin).
 - **Tracking issue:** [investblog/spintax-js#43](https://github.com/investblog/spintax-js/issues/43).
 
 ## Why
