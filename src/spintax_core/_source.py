@@ -56,6 +56,13 @@ class Source:
 
     original: str
     text: str
+    #: The comment-stripped view with the author's terminators INTACT. For the one rule
+    #: whose character class carries `\n` inside it — `#include`'s gap — the normalised
+    #: view is a trap: a U+2028 rewritten to `\n` for anchoring becomes gap whitespace,
+    #: and `#include "x"` turns into an include the reference calls plain text.
+    #: Normalisation is one character for one, so offsets here and in ``text`` are the
+    #: same offsets; ``to_original`` serves both.
+    text_exact: str
     #: (stripped_start, original_start) for each surviving run, in order.
     _spans: tuple[tuple[int, int], ...]
     #: Offsets of every line start in `original`, for position lookup.
@@ -116,9 +123,11 @@ def read(src: str) -> Source:
         if ch == "\n":
             line_starts.append(i + 1)
 
+    stripped = "".join(out)
     return Source(
         original=src,
-        text=_LINE_TERMINATORS_RE.sub("\n", "".join(out)),
+        text=_LINE_TERMINATORS_RE.sub("\n", stripped),
+        text_exact=stripped,
         _spans=tuple(spans),
         _line_starts=tuple(line_starts),
     )

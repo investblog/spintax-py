@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import pytest
 
-from spintax_core import PluralIssue, render, render_with
+from spintax_core import PluralIssue, extract, render, render_with, validate
 
 LS = chr(0x2028)  # LINE SEPARATOR
 PS = chr(0x2029)  # PARAGRAPH SEPARATOR
@@ -174,6 +174,21 @@ def test_a_child_does_not_see_the_parent_s_set() -> None:
 )
 def test_a_terminator_after_an_include(terminator: str, expected: str) -> None:
     assert render_inc(f'#include "a"{terminator}', {"a": "C"}) == expected
+
+
+@pytest.mark.parametrize("terminator", [LS, PS])
+def test_a_terminator_is_not_the_include_gap(terminator: str) -> None:
+    """`#include "a"` is plain text: LS/PS end a line, they are not whitespace.
+
+    The renderer always got this right; extract and validate read the include rule off
+    the terminator-NORMALISED scanning view, where the LS had already become the `\n`
+    the gap class contains — one engine, two answers for the same line. Caught by a
+    165-case differential against the reference while measuring spintax-js#55.
+    """
+    template = f'#include{terminator}"a"'
+    assert render_inc(template, {"a": "C"}) == template
+    assert extract(template).includes == ()
+    assert not any(d.severity == "error" for d in validate(template, known_includes=["ok"]))
 
 
 # ── permutation <config>: the whole clamp table ───────────────────────────────

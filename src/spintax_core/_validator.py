@@ -55,11 +55,22 @@ _DEFINITION_LINE_RE = re.compile(
     r"^[ \t]*#(?:set|def)[ \t]+%" + _W + r"+%[ \t]*=[ \t]*.*?$", re.MULTILINE
 )
 
-#: `#include "slug"`. The whitespace class is spelled out as ASCII on purpose — the
-#: plugin's is ASCII, and Python's `\s` would also match Unicode spaces here.
-_INCLUDE_WS = r"[ \t\n\r\f\v]"
+#: `#include "slug"`. The whitespace class is the contract's six ASCII characters,
+#: spelled out — no engine's `\s` is this set (Python's and PCRE2-under-`/u`'s are each
+#: a different Unicode; the plugin's WAS `\s` until spintax-js#55 measured the drift).
+#: The corpus pins the class character by character (`extract/include-*`).
+#:
+#: Anchored with the JavaScript line boundaries and matched over ``Source.text_exact``,
+#: NOT the normalised scanning view. This is the one rule whose class carries `\n`
+#: INSIDE it, so normalisation feeds the anchors by poisoning the class: a U+2028
+#: rewritten to `\n` became gap whitespace, and `#include "x"` was an include to
+#: this scan while the reference — and this port's own renderer — printed it verbatim.
+#: `_render.py` documents the same trap from the other end; it is why the pattern
+#: cannot simply keep `re.MULTILINE` and the normalised text.
 _INCLUDE_RE = re.compile(
-    r'^[ \t]*#include' + _INCLUDE_WS + r'+"([^"]+)"' + _INCLUDE_WS + r"*$", re.MULTILINE
+    _charclasses.JS_LINE_START
+    + r'[ \t]*#include[ \t\n\r\f\x0b]+"([^"]+)"[ \t\n\r\f\x0b]*'
+    + _charclasses.JS_LINE_END
 )
 
 #: Spintax still unresolved when plural agreement runs: a `[`, or a `{` that does not
@@ -532,5 +543,7 @@ def run(
     check_plurals(source.text, locale, findings)
     check_variable_references(source.text, known_variables, findings)
     if known_includes:
-        check_include_targets(source.text, known_includes, findings)
+        # Exact terminators, not the normalised view — see _INCLUDE_RE. Offsets agree
+        # between the two views, so the findings' positions need nothing special.
+        check_include_targets(source.text_exact, known_includes, findings)
     return source, findings

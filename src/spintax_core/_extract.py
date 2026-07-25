@@ -37,11 +37,14 @@ def _collect(text: str, pattern: re.Pattern[str], fold: bool) -> tuple[str, ...]
 
 def extract(src: str) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
     """Return `(refs, sets, defs, includes)`."""
-    text = _source.read(src).text
+    source = _source.read(src)
+    text = source.text
 
     sets = _collect(text, _SET_DEF_RE, fold=True)
     defs = _collect(text, _DEF_DEF_RE, fold=True)
-    includes = _collect(text, _INCLUDE_RE, fold=False)
+    # The include rule scans the terminator-EXACT view — its class carries `\n`, so a
+    # normalised U+2028 would turn into gap whitespace. See _validator._INCLUDE_RE.
+    includes = _collect(source.text_exact, _INCLUDE_RE, fold=False)
 
     body = _DEFINITION_LHS_RE.sub("", text)
     refs: dict[str, None] = {}
