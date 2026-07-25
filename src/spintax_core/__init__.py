@@ -24,7 +24,8 @@ from . import _analyze, _extract, _neutralize, _parser, _pipeline, _validator
 from ._ast import Ast, require_parsed, source_of
 from ._errors import AstVersionError, IncludeResolverError, SpintaxError
 from ._render import PluralIssue
-from ._rng import Rng, make_rng as _make_rng
+from ._rng import Rng
+from ._rng import make_rng as _make_rng
 
 # Both are public types that happen to be DEFINED in private modules. Without this,
 # `help()`, generated docs and every repr name `spintax_core._ast`, pointing users at a
@@ -34,8 +35,8 @@ PluralIssue.__module__ = __name__
 
 __all__ = [
     "Analysis",
-    "AstVersionError",
     "Ast",
+    "AstVersionError",
     "Diagnostic",
     "Extraction",
     "IncludeResolverError",

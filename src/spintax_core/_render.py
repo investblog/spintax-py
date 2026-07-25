@@ -669,7 +669,7 @@ def _open_include(ref: str, ctx: RenderCtx) -> tuple[str, RenderCtx] | None:
         return None
     try:
         included = ctx.resolver(ref) if ctx.resolver else None
-    except Exception as cause:  # noqa: BLE001 - re-raised as ours, with the original attached
+    except Exception as cause:
         raise IncludeResolverError(f'include_resolver threw for "{ref}"') from cause
     if included is None:
         return None

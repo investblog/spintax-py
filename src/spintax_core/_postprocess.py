@@ -240,8 +240,10 @@ _SPACE_AFTER_OPENER_RE = re.compile(f"([{SENTENCE_OPENERS}]){_S}+")
 _CAP_SOURCES = (
     f"\\A({_LEAD})({JS_LOWERCASE_LETTER})",
     f"([.!?…])({_LEAD})({JS_LOWERCASE_LETTER})",
-    f"(</?(?:p|h[1-6]|{js_ci_unicode('li')}|blockquote|{js_ci_unicode('div')}|td|th)"
-    f"[^>]*>{_LEAD})({JS_LOWERCASE_LETTER})",
+    (
+        f"(</?(?:p|h[1-6]|{js_ci_unicode('li')}|blockquote|{js_ci_unicode('div')}|td|th)"
+        f"[^>]*>{_LEAD})({JS_LOWERCASE_LETTER})"
+    ),
     f"(\\n{_LEAD})({JS_LOWERCASE_LETTER})",
 )
 _CAP_FLAGS = (0, 0, re.IGNORECASE, 0)

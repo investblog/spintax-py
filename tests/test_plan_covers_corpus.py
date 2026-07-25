@@ -35,7 +35,7 @@ def _expected_codes() -> set[str]:
 
 def _counted_steps(plan: str) -> list[str]:
     """The `### … — N codes` sections. A code owned by no such step is unscheduled."""
-    return [s for s in re.split(r"^### ", plan, flags=re.M)[1:] if re.search(r"—\s*\d+\s*codes?", s)]
+    return [s for s in re.split(r"^### ", plan, flags=re.MULTILINE)[1:] if re.search(r"—\s*\d+\s*codes?", s)]
 
 
 def test_every_diagnostic_code_is_owned_by_a_counted_step() -> None:
@@ -68,7 +68,7 @@ def test_plan_step_counts_match_the_codes_they_list() -> None:
     plan = PLAN.read_text(encoding="utf-8")
     known = _expected_codes()
 
-    sections = re.split(r"^### ", plan, flags=re.M)[1:]
+    sections = re.split(r"^### ", plan, flags=re.MULTILINE)[1:]
     checked = 0
     for section in sections:
         heading, _, _body = section.partition("\n")

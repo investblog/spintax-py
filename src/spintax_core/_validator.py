@@ -87,7 +87,7 @@ class Finding:
     place translate them into positions in the original source.
     """
 
-    __slots__ = ("severity", "code", "message", "offset", "length", "data")
+    __slots__ = ("code", "data", "length", "message", "offset", "severity")
 
     def __init__(
         self,
@@ -167,7 +167,7 @@ def check_directives(text: str, out: list[Finding]) -> None:
     for raw_line in text.split("\n"):
         stripped = raw_line.lstrip(" \t")
         kind = next(
-            (k for k in ("#set", "#def") if stripped.startswith(k + " ") or stripped.startswith(k + "\t")),
+            (k for k in ("#set", "#def") if stripped.startswith((k + " ", k + "\t"))),
             None,
         )
         if kind is not None and not _directives.DIRECTIVE_RE.match(stripped):
@@ -312,12 +312,12 @@ def _names_reaching_a_cycle(refs: dict[str, list[str]]) -> set[str]:
     colour: dict[str, int] = {}
     reaches: dict[str, bool] = {}
 
-    for root in refs:
+    for root, root_refs in refs.items():
         if colour.get(root, _WHITE) != _WHITE:
             continue
         colour[root] = _GREY
         reaches[root] = False
-        stack: list[tuple[str, Iterator[str]]] = [(root, iter(refs[root]))]
+        stack: list[tuple[str, Iterator[str]]] = [(root, iter(root_refs))]
 
         while stack:
             node, it = stack[-1]
