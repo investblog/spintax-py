@@ -162,6 +162,15 @@ def check_directives(text: str, out: list[Finding]) -> None:
     of them was a live defect: it required a non-empty value, so `#set %x% =` — which
     the parser accepts, defining an empty string — was reported malformed unless a
     trailing space happened to be present.
+
+    ``text`` must be ``Source.text_exact``, not the normalised scanning view: the
+    reference splits on LF ALONE, so a lone CR or U+2028 is line CONTENT, and the
+    normalised copy invents line starts the reference never checks (corpus:
+    validate/directive-check-cr-does-not-split and -ls-does-not-split). And the shape
+    test is a `/m` regex TEST, not an anchored match — a well-formed directive after a
+    CR inside the line anchors on `JS_LINE_START` and satisfies it, which is why the
+    malformed-looking head in -cr-survivor-satisfies is not reported. `search`, not
+    `match`, reproduces that.
     """
     offset = 0
     for raw_line in text.split("\n"):
@@ -170,7 +179,7 @@ def check_directives(text: str, out: list[Finding]) -> None:
             (k for k in ("#set", "#def") if stripped.startswith((k + " ", k + "\t"))),
             None,
         )
-        if kind is not None and not _directives.DIRECTIVE_RE.match(stripped):
+        if kind is not None and not _directives.DIRECTIVE_RE.search(stripped):
             indent = len(raw_line) - len(stripped)
             code = "def.malformed" if kind == "#def" else "set.malformed"
             out.append(
@@ -538,7 +547,10 @@ def run(
     source = _source.read(src)
     findings: list[Finding] = []
     check_brackets(source.text, findings)
-    check_directives(source.text, findings)
+    # Exact terminators, like the include scan below — the LF-only line split and the
+    # JS-anchored shape test both need the author's CR/U+2028 kept, and the 1:1
+    # normalisation means every offset agrees between the two views.
+    check_directives(source.text_exact, findings)
     check_permutation_configs(source.text, findings)
     check_plurals(source.text, locale, findings)
     check_variable_references(source.text, known_variables, findings)
