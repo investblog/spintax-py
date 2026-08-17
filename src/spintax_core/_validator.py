@@ -493,8 +493,8 @@ def check_plurals(text: str, locale: str | None, out: list[Finding]) -> None:
             # invented problem.
             continue
 
+        got = len(block.forms_raw.split("|"))
         if expected > 0:
-            got = len(block.forms_raw.split("|"))
             if got != expected:
                 out.append(
                     _error(
@@ -506,6 +506,27 @@ def check_plurals(text: str, locale: str | None, out: list[Finding]) -> None:
                         got=got,
                     )
                 )
+        elif got != _plurals.DEFAULT_ARITY:
+            # No locale ⇒ no arity VERDICT: the template may well be correct for the
+            # locale it will be rendered with, and calling it invalid here would fail a
+            # good template for a fact the caller never claimed. But `render` has no such
+            # luxury — it defaults to 2 forms — so silence sends a 3-form block straight
+            # to the fullwidth-brace fallback in finished text (spintax-js#65: a pipeline
+            # shipped ｛plural …｝ to live pages because validate stayed quiet). A warning
+            # says the one true thing: this resolves only if a matching locale arrives at
+            # render time.
+            out.append(
+                Finding(
+                    "warning",
+                    "plural.locale-missing",
+                    f"{{plural ...}}: {got} forms, but no locale was supplied. render "
+                    f"defaults to {_plurals.DEFAULT_ARITY} forms and leaves this block "
+                    f"unresolved — pass the locale you will render with.",
+                    block.start,
+                    length,
+                    {"got": got, "defaultArity": _plurals.DEFAULT_ARITY},
+                )
+            )
 
 
 # ── includes ───────────────────────────────────────────────────────────

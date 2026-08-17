@@ -56,13 +56,22 @@ the only one that must not flip a verdict to invalid).
 `known_variables` suppression is implemented here and **is not gated by the corpus** — the fixture
 schema has no such field. It needs local tests or it can break silently.
 
-### 4. Plural diagnostics — 2 codes, 14 cases touched
+### 4. Plural diagnostics — 3 codes, 15 cases touched
 
 `normalize_base_lang` (`sr-Latn` → `sr`, `pt-BR` → `pt`; three-letter tags are *not* mapped) plus
 the arity table: 3 forms for `ru`/`uk`/`be`/`sr`/`hr`/`bs`, 2 for everything else — including
 `pl`/`cs`/`sk`/`sl`/`bg`, which are wrong-but-accepted by design.
 
-Then `plural.arity`. Note an empty or absent locale **skips** the arity check entirely.
+Then `plural.arity`. Note an empty or absent locale **skips** the arity VERDICT entirely — the
+template may be right for whatever locale the host renders with, and failing it here would fail a
+good template for a fact the caller never claimed.
+
+`plural.locale-missing` is the other half of that (spintax-js#65, added 2026-08-17): render has no
+such luxury and defaults to 2 forms, so a block with any other form count reaches finished text as
+the fullwidth-brace fallback. A **warning**, so the verdict is unchanged — silence was the bug, an
+error would be a different one. It fires only when no locale normalizes AND the form count is not
+the default arity; a 2-form block stays silent, which the corpus cannot express (its diagnostics
+assertion is a subset) and `test_validator_semantic.py` therefore pins.
 
 `plural.nested-brackets` lands here too, and needs no locale: a form slot must be plain text, so
 `{plural 1: {a|b}|c}` is rejected structurally. Keep it distinct from step 6 — this one is about

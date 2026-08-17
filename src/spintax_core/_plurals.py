@@ -90,6 +90,14 @@ def arity(base_lang: str) -> int:
     return 3 if base_lang in _THREE_FORM else 2
 
 
+#: How many forms `render` resolves against when the host supplies no locale.
+#:
+#: Derived from the table rather than written as ``2``, so the validator's
+#: ``plural.locale-missing`` warning cannot come to disagree with what render actually
+#: does — the disagreement between those two is the whole of spintax-js#65.
+DEFAULT_ARITY = arity("")
+
+
 def plural_for(base_lang: str, n: int, forms: Sequence[str]) -> str:
     """Pick the form for `n`.
 

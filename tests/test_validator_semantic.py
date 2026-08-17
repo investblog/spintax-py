@@ -79,9 +79,24 @@ def test_a_shared_dependency_is_not_a_cycle() -> None:
 # ── plurals ────────────────────────────────────────────────────────────
 
 
-def test_arity_is_skipped_without_a_locale() -> None:
-    """No locale means no opinion — 2 or 3 forms could both be right."""
-    assert codes("{plural 1: a|b|c}") == []
+def test_arity_is_skipped_without_a_locale_but_the_risk_is_reported() -> None:
+    """No locale means no VERDICT — 2 or 3 forms could both be right for the locale the
+    host will render with, so failing the template here would fail a good one.
+
+    `render` has no such luxury: it defaults to 2 forms, so a 3-form block with no locale
+    reaches finished text as the fullwidth-brace fallback. spintax-js#65 — a pipeline
+    shipped `{plural ...}` in fullwidth braces to live pages because validate stayed
+    quiet. Hence a WARNING: the verdict is unchanged, the risk is machine-readable.
+    """
+    findings = engine.validate("{plural 1: a|b|c}")
+    assert [(d.severity, d.code) for d in findings] == [("warning", "plural.locale-missing")]
+    assert findings[0].data == {"got": 3, "defaultArity": 2}
+
+
+def test_a_two_form_block_without_a_locale_stays_silent() -> None:
+    """The negative control, and it lives here because the corpus cannot express it:
+    the runner asserts diagnostics as a SUBSET, so "no diagnostic" is not a fixture."""
+    assert codes("{plural 1: a|b}") == []
 
 
 def test_arity_for_a_three_form_locale() -> None:
@@ -100,8 +115,11 @@ def test_locales_with_their_own_grammar_are_bucketed_as_two_form() -> None:
         assert codes("{plural 1: a|b}", locale=locale) == [], locale
 
 
-def test_a_locale_that_normalizes_to_nothing_skips_the_check() -> None:
-    assert codes("{plural 1: a|b|c}", locale="_en") == []
+def test_a_locale_that_normalizes_to_nothing_behaves_like_no_locale() -> None:
+    """Including the warning: "_en" tells the engine nothing, so render will still
+    default to 2 forms."""
+    assert codes("{plural 1: a|b|c}", locale="_en") == ["plural.locale-missing"]
+    assert codes("{plural 1: a|b}", locale="_en") == []
 
 
 def test_nested_brackets_in_a_form() -> None:
