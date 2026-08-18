@@ -243,3 +243,36 @@ def test_one_expansion_pass_cannot_allocate_past_the_budget() -> None:
     src = "#set %a% = " + "%a% " * 15_000 + "\n{plural 2: one|%a%}"
 
     assert "variable.self-reference" in [d.code for d in engine.validate(src, locale="en")]
+
+
+def test_a_diamond_feeding_a_cycle_reports_once_per_name() -> None:
+    """This port's per-name walk is why it was the one engine immune to spintax-js#59.
+
+    The others emitted one diagnostic per PATH, and the number of routes through a
+    converging diamond is exponential in its depth: 507 bytes produced 2 097 152
+    diagnostics in the JS engine and 547 bytes took its reference deployment out with HTTP
+    503. They adopted this shape on 2026-08-18. Pinned here so the engine the rest aligned
+    *to* cannot drift back without saying so.
+    """
+    lines = ["#set %c1% = %c2%", "#set %c2% = %c1%"]
+    for i in range(200):
+        src = "c1" if i == 0 else "d%d" % (i - 1)
+        lines.append("#set %%d%d%% = %%%s%% %%%s%%" % (i, src, src))
+
+    circular = [d for d in engine.validate("\n".join(lines)) if d.code == "variable.circular-reference"]
+
+    assert len(circular) == 202  # two names on the cycle, 200 that reach it
+
+
+def test_a_giant_cycle_keeps_its_diagnostic_text_linear() -> None:
+    """One diagnostic per name is not enough on its own: a route printed per name is
+    quadratic in the cycle's length. This port never printed the route, which is the other
+    half of why it was immune; the JS and PHP engines cap theirs instead.
+    """
+    n = 2000
+    src = "\n".join("#set %%n%d%% = %%n%d%%" % (i, (i + 1) % n) for i in range(n))
+
+    circular = [d for d in engine.validate(src) if d.code == "variable.circular-reference"]
+
+    assert len(circular) == n
+    assert sum(len(d.message) for d in circular) < 512 * 1024
