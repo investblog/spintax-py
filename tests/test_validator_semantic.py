@@ -220,3 +220,26 @@ def test_diagnostics_come_back_in_source_order() -> None:
     src = "a}\n{plural 1: {x|y}|z}\n#set %q = broken"
     lines = [d.line for d in engine.validate(src)]
     assert lines == sorted(lines)
+
+
+def test_a_long_plain_form_list_is_still_counted() -> None:
+    """The expansion budget bounds GROWTH, not size.
+
+    A ceiling on total length made this "unknowable" and flipped invalid -> valid. Nothing
+    in the grammar limits how long a form may be; long is not exploding. Not in the shared
+    corpus because a 65 KB fixture would be carried by five engines.
+    """
+    src = "{plural 2: one|" + "x" * (65 * 1024) + "}"
+
+    assert [d.code for d in engine.validate(src, locale="ru")] == ["plural.arity"]
+
+
+def test_one_expansion_pass_cannot_allocate_past_the_budget() -> None:
+    """15k self-references: the next generation is ~900 MB.
+
+    Measuring the result after building it is measuring too late -- the allocation is the
+    failure, so the budget is enforced while the pass runs.
+    """
+    src = "#set %a% = " + "%a% " * 15_000 + "\n{plural 2: one|%a%}"
+
+    assert "variable.self-reference" in [d.code for d in engine.validate(src, locale="en")]

@@ -456,6 +456,19 @@ def _macro_tainted_names(text: str) -> set[str]:
 #: a chain deeper than this is suppressed rather than judged, which is the safe direction.
 _FORM_EXPANSION_PASSES = 51
 
+#: How far the form list may GROW under expansion, in characters.
+#:
+#: Passes alone do NOT bound the work: ``#set %a% = %b% %b%`` over ``#set %b% = %a% %a%``
+#: doubles the text every pass, so 51 of them is 2**51 -- a 62-character template took
+#: ``validate()`` out with an out-of-memory crash in every engine of the family.
+#:
+#: Growth, not total size, and the difference is a verdict: ``{plural 2: one|<65 KB of
+#: ordinary text>}`` is plainly two forms and must keep earning ``plural.arity`` under
+#: ``ru``. A ceiling on total length called that unknowable and flipped it to valid -- a
+#: real regression, caught in review before it shipped. Expansion that ADDS this much is a
+#: graph exploding; a long form list is just long.
+_FORM_EXPANSION_MAX_GROWTH = 64 * 1024
+
 #: Any bracket at all — all four, and conditionals too.
 #:
 #: Conditionals: one resolves before plurals, so it is not "unresolved at plural time",
@@ -506,9 +519,31 @@ def _expand_forms_for_counting(
     # `#set %b% = {a|b}` never crosses a #def, so the macro text arrives whole.
     seen_macro: set[str] = set()
 
+    def _refs_of(text: str) -> list[str]:
+        return [m.group(1).lower() for m in _VARIABLE_RE.finditer(text)]
+
     def _walk_macros(source: str) -> str:
-        for m in _VARIABLE_RE.finditer(source):
-            name = m.group(1).lower()
+        """Pre-order depth-first walk of the ``#set`` graph, in source order.
+
+        Iterative, and the order is load-bearing: the FIRST non-clean answer wins, so a
+        graph holding both an opaque macro and a brackety one gives different diagnostics
+        depending on which is met first. A cheaper order would be a different contract.
+
+        Written recursively it cost one frame per link and raised ``RecursionError`` on a
+        long acyclic ``#set`` chain -- about 1000 links, a 20 KB template -- while the PHP
+        engines returned a verdict. ``validate()`` answering with an exception is neither a
+        verdict nor parity. ``seen_macro`` already bounds total work to the number of
+        distinct macros, so no step budget is needed on top.
+        """
+        stack: list[tuple[list[str], int]] = [(_refs_of(source), 0)]
+
+        while stack:
+            refs, i = stack[-1]
+            if i >= len(refs):
+                stack.pop()
+                continue
+            stack[-1] = (refs, i + 1)
+            name = refs[i]
             # A #def rolls it and a host value replaces it — either way the macro text
             # does not arrive verbatim, so this path says nothing.
             if name in defs or name in host_names:
@@ -524,9 +559,8 @@ def _expand_forms_for_counting(
                 return "opaque"
             if _ANY_BRACKET.search(macro):
                 return "brackets"
-            deeper = _walk_macros(macro)
-            if deeper != "clean":
-                return deeper
+            stack.append((_refs_of(macro), 0))
+
         return "clean"
 
     verbatim = _walk_macros(forms_raw)
@@ -536,38 +570,48 @@ def _expand_forms_for_counting(
         return 0, True, False
 
     text = forms_raw
+    budget = len(forms_raw) + _FORM_EXPANSION_MAX_GROWTH
     for _ in range(_FORM_EXPANSION_PASSES):
         bailed = False
         saw_reference = False
-
-        def _substitute(m: re.Match[str]) -> str:
-            nonlocal bailed, saw_reference
-            saw_reference = True
-            name = m.group(1).lower()
-            # Runtime context outranks a definition of the same name, so a host-declared
-            # name makes the count unknowable even where the template defines one locally.
-            if name in host_names:
-                bailed = True
-                return m.group(0)
-            value = defs.get(name, macros.get(name))
-            if value is None:
-                bailed = True
-                return m.group(0)
-            # A construct in the value: what it rolls to may or may not carry a top-level
-            # pipe, so no single count is true of every render.
-            if _ANY_BRACKET.search(value):
-                bailed = True
-                return m.group(0)
-            return value
+        # Built by hand rather than with ``sub()`` because the budget has to be enforced
+        # DURING the pass: ``sub()`` materializes the whole next generation before anyone
+        # can measure it, so a single pass over 60 KB of self-reference allocates ~900 MB
+        # and a check downstream never runs.
+        parts: list[str] = []
+        total = 0
+        cursor = 0
 
         # EVERY reference per pass, as the renderer's expansion does. `_VARIABLE_RE` is the
         # shared ASCII class, not `\w`: Python's `\w` is Unicode, so `%é%` would count as a
         # reference here and as literal text everywhere else — the exact divergence this
         # port spent #55/#56 removing.
-        text = _VARIABLE_RE.sub(_substitute, text)
+        for m in _VARIABLE_RE.finditer(text):
+            saw_reference = True
+            name = m.group(1).lower()
+            # Runtime context outranks a definition of the same name, so a host-declared
+            # name makes the count unknowable even where the template defines one locally.
+            value = None if name in host_names else defs.get(name, macros.get(name))
+            # A construct in the value: what it rolls to may or may not carry a top-level
+            # pipe, so no single count is true of every render.
+            if value is None or _ANY_BRACKET.search(value):
+                bailed = True
+                break
+            parts.append(text[cursor : m.start()])
+            parts.append(value)
+            total += m.start() - cursor + len(value)
+            cursor = m.end()
+            if total > budget:
+                return 0, True, False
 
         if bailed:
             return 0, True, False
+        parts.append(text[cursor:])
+        total += len(text) - cursor
+        if total > budget:
+            return 0, True, False
+        text = "".join(parts)
+
         if not saw_reference:
             # No construct can be left, so the plain split is what the renderer does too.
             return len(text.split("|")), False, False
