@@ -17,9 +17,11 @@ failure returning, not a benchmark.
 
 from __future__ import annotations
 
+import time
+
 import pytest
 
-from spintax_core import _parser, parse
+from spintax_core import _parser, parse, render
 from spintax_core._ast import EnumerationNode, LiteralNode, walk
 
 
@@ -74,3 +76,31 @@ def test_a_deep_tree_can_still_be_walked() -> None:
 
     walk(ast.nodes, count)
     assert seen == depth + 1  # one enumeration per level, plus the literal
+
+
+def test_a_deep_conditional_in_a_plural_count_slot_renders() -> None:
+    """The count slot is the one place a construct is walked by the RENDERER, not the parser.
+
+    The first version of that pass recursed into the taken branch, cost one frame per
+    level, and raised ``RecursionError`` at about 1000 levels -- a 5 KB template, and from
+    inside a web framework's request handler it failed at 700. Same lesson as
+    ``parse_sequence`` above, learned twice; it is iterative now.
+    """
+    depth = 3_000  # 3x the interpreter's frame limit, which is what the old pass hit
+    template = "#set %V% = y\n{plural " + "{?V?" * depth + "1" + "}" * depth + ": one|two}"
+
+    assert render(template, locale="en") == "One"
+
+
+def test_an_unbalanced_plural_count_slot_stays_linear() -> None:
+    """Legal input: only the whole ``{plural …}`` block has to balance, and the slot is cut
+    at the first ``:``. Walking to the matching brace per ``{?`` rescanned to the end of the
+    slot every time it failed, which made the pass quadratic. The ceiling is loose on
+    purpose -- it is here to catch a return to quadratic, not to time the machine.
+    """
+    n = 100_000
+    template = "{plural " + "{?a?" * n + ": one|two" + "}" * (n + 1)
+
+    started = time.monotonic()
+    assert "｛plural" in render(template, locale="en")
+    assert time.monotonic() - started < 20

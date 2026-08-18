@@ -428,13 +428,103 @@ def _expand_vars_only(text: str, walk: _Walk) -> str:
     return out
 
 
-def _conditional_branch(node: ConditionalNode, walk: _Walk) -> Sequence[Node]:
-    """Which branch renders. Truthy = the RAW value exists and holds a non-blank char."""
-    value = walk.vars.get(node.name.lower())
+def _takes_then(name: str, inverted: bool, walk: _Walk) -> bool:
+    """Truthy = the RAW value exists and holds a non-blank char."""
+    value = walk.vars.get(name.lower())
     truthy = value is not None and _NOT_BLANK_RE.search(value) is not None
-    if node.inverted:
-        truthy = not truthy
-    return node.then if truthy else node.otherwise
+    return not truthy if inverted else truthy
+
+
+def _conditional_branch(node: ConditionalNode, walk: _Walk) -> Sequence[Node]:
+    """Which branch renders."""
+    return node.then if _takes_then(node.name, node.inverted, walk) else node.otherwise
+
+
+def _resolve_count_conditionals(text: str, walk: _Walk) -> str:
+    """Resolve conditionals in the plural COUNT slot, textually (spintax-js#67).
+
+    The plugin runs its conditional stage over the whole text before plurals, so
+    ``#set %n% = {?flag?1|2}`` reaches the count slot as a plain number and the block
+    renders. This engine expands VARIABLES only into the raw count slot, so the
+    conditional survived, failed the numeric test, and the block was ERASED -- while
+    ``validate()`` reported nothing and ``plural.count-macro`` documents conditionals as
+    exempt *because* they resolve before plurals. Valid input, silently deleted output.
+
+    The branch is substituted, never rendered: enumerations and permutations resolve
+    AFTER plurals, so a branch yielding ``{a|b}`` must reach the numeric test intact and
+    erase the block, exactly as the plugin does. The FORM slot is deliberately untouched
+    -- there the engines genuinely disagree and no side has been chosen yet.
+
+    Iterative, over spans, for two reasons paid for in review. Recursing into the taken
+    branch raised ``RecursionError`` at ~1000 levels of nesting -- a 5 KB template, and
+    ``render`` never raises on content; ``tests/test_parser_depth.py`` records the same
+    lesson being learned for ``parse_sequence``. And re-scanning for the matching brace
+    per ``{?`` was quadratic: an unbalanced count slot is legal, because only the whole
+    ``{plural …}`` block has to balance and the slot is cut at the first ``:``. Both are
+    reachable from template text through the live public Worker.
+    """
+    if "{?" not in text:
+        return text
+
+    close = _match_braces(text)
+    out: list[str] = []
+    # Spans of ``text`` still to emit, in order. A taken branch is a SPAN of the same
+    # string, never a copy, and the untaken one is skipped -- so every character is
+    # visited at most once.
+    pending: list[tuple[int, int]] = [(0, len(text))]
+
+    while pending:
+        i, seg_end = pending.pop()
+
+        while i < seg_end:
+            open_at = text.find("{?", i)
+            # A `{?` found past this span belongs to the text around it, not to it.
+            if open_at < 0 or open_at + 1 >= seg_end:
+                out.append(text[i:seg_end])
+                break
+
+            # A close outside the span is no close at all: the branch it would reach
+            # into is not ours to read.
+            shut = close[open_at]
+            head = None if shut < 0 or shut >= seg_end else _parser.recognize_conditional(text, open_at + 1, shut)
+            if head is None:
+                # Unclosed, or a `{?` that is not a conditional -- a malformed one is an
+                # enumeration to the parser, and enumerations are not this pass's business.
+                out.append(text[i : min(open_at + 2, seg_end)])
+                i = open_at + 2
+                continue
+
+            out.append(text[i:open_at])
+            if _takes_then(head.name, head.inverted, walk):
+                branch = (head.body_start, shut if head.sep_index < 0 else head.sep_index)
+            else:
+                branch = (shut if head.sep_index < 0 else head.sep_index + 1, shut)
+            # Continuation first, branch second: the stack pops the branch back out
+            # ahead of it, which is what keeps the output in source order.
+            pending.append((shut + 1, seg_end))
+            pending.append(branch)
+            break
+
+    return "".join(out)
+
+
+def _match_braces(text: str) -> list[int]:
+    """Match `{` to `}` across the whole string in ONE pass -- the index of the closing
+    brace for every opening one, or -1.
+
+    Equivalent to walking to the matching brace per `{`, and that is the point: the
+    per-brace walk rescans to the end of the string every time it fails to match.
+    """
+    close = [-1] * len(text)
+    opens: list[int] = []
+
+    for i, ch in enumerate(text):
+        if ch == "{":
+            opens.append(i)
+        elif ch == "}" and opens:
+            close[opens.pop()] = i
+
+    return close
 
 
 def _render_plural(node: PluralNode, walk: _Walk) -> tuple[str, Sequence[Node] | None]:
@@ -442,7 +532,7 @@ def _render_plural(node: PluralNode, walk: _Walk) -> tuple[str, Sequence[Node] |
 
     Returns finished text, or the nodes of the picked form for the caller to walk.
     """
-    count_raw = _expand_vars_only(node.count_raw, walk)
+    count_raw = _resolve_count_conditionals(_expand_vars_only(node.count_raw, walk), walk)
     forms_raw = _expand_vars_only(node.forms_raw, walk)
     base = _plurals.normalize_base_lang(walk.locale)
 

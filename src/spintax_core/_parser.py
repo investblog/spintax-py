@@ -17,6 +17,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import NamedTuple
 
 from . import _directives, _neutralize, _source
 from ._ast import (
@@ -237,27 +238,85 @@ def _plan_brace_construct(content: str) -> _Plan:
     return split_top_level(content), build
 
 
-def _plan_conditional(content: str) -> _Plan | None:
-    """Plan `?VAR?then|else` / `?!VAR?then`, or `None` when malformed."""
-    p = 1  # past the leading '?'
-    inverted = content[p : p + 1] == "!"
+class ConditionalHead(NamedTuple):
+    """A recognized `{?…}` as OFFSETS into the string it was found in.
+
+    No branch text is copied out. The count-slot pass walks spans instead of
+    substrings: slicing the branch at every level of nesting is quadratic on a
+    deeply nested template, and that template arrives from the public Worker.
+    """
+
+    name: str
+    inverted: bool
+    #: Offset of the body (past ``?name?``).
+    body_start: int
+    #: Offset of the top-level ``|``, or -1 when the branch stands alone.
+    sep_index: int
+
+
+class ConditionalParts(NamedTuple):
+    """A recognized `{?…}` with its branches materialized -- what the parser needs."""
+
+    name: str
+    inverted: bool
+    then_raw: str
+    else_raw: str
+
+
+def recognize_conditional(text: str, content_start: int, content_end: int) -> ConditionalHead | None:
+    """Recognize `?VAR?then|else` / `?!VAR?then` in ``text[content_start:content_end]``.
+
+    The one place the conditional grammar lives; reports offsets only.
+    :func:`split_conditional` is the wrapper that materializes the branches for the
+    parser. The renderer needs them unparsed: the plural count slot resolves
+    conditionals textually, without resolving the enumerations a branch may carry
+    (spintax-js#67). A second copy of these rules would be a syntax-surface
+    divergence waiting to happen (#55-#57).
+    """
+    p = content_start + 1  # past the leading '?'
+    inverted = text[p : p + 1] == "!"
     if inverted:
         p += 1
 
-    m = _CONDITIONAL_NAME_RE.match(content, p)
+    m = _CONDITIONAL_NAME_RE.match(text, p, content_end)
     if m is None:
         return None
-    name = m.group()
     p = m.end()
 
-    if content[p : p + 1] != "?":  # the '?' after the name is required
+    if text[p : p + 1] != "?":  # the '?' after the name is required
         return None
     p += 1
 
-    body = content[p:]
-    sep = _first_top_level_pipe(body)
-    then_raw = body if sep < 0 else body[:sep]
-    else_raw = "" if sep < 0 else body[sep + 1 :]
+    return ConditionalHead(
+        name=m.group(),
+        inverted=inverted,
+        body_start=p,
+        sep_index=_first_top_level_pipe(text, p, content_end),
+    )
+
+
+def split_conditional(content: str) -> ConditionalParts | None:
+    """Recognize a conditional and materialize its branches, or `None` when malformed."""
+    head = recognize_conditional(content, 0, len(content))
+    if head is None:
+        return None
+
+    body = content[head.body_start :]
+    sep = -1 if head.sep_index < 0 else head.sep_index - head.body_start
+    return ConditionalParts(
+        name=head.name,
+        inverted=head.inverted,
+        then_raw=body if sep < 0 else body[:sep],
+        else_raw="" if sep < 0 else body[sep + 1 :],
+    )
+
+
+def _plan_conditional(content: str) -> _Plan | None:
+    """Plan `?VAR?then|else` / `?!VAR?then`, or `None` when malformed."""
+    parts = split_conditional(content)
+    if parts is None:
+        return None
+    name, inverted, then_raw, else_raw = parts
 
     def build(parts: list[list[Node]]) -> Node:
         return ConditionalNode(
@@ -500,7 +559,7 @@ def split_top_level(inner: str) -> list[str]:
     return parts
 
 
-def _first_top_level_pipe(body: str) -> int:
+def _first_top_level_pipe(body: str, start: int = 0, end: int | None = None) -> int:
     """Index of the first `|` at depth zero in a conditional body, or -1.
 
     **A different algorithm from `split_top_level`, on purpose.** This uses ONE counter
@@ -510,7 +569,8 @@ def _first_top_level_pipe(body: str) -> int:
     not; unifying them would change what `{?V?a]|b}` means.
     """
     depth = 0
-    for j, ch in enumerate(body):
+    for j in range(start, len(body) if end is None else end):
+        ch = body[j]
         if ch in "{[":
             depth += 1
         elif ch in "}]":
