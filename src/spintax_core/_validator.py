@@ -449,7 +449,139 @@ def _macro_tainted_names(text: str) -> set[str]:
     return tainted
 
 
-def check_plurals(text: str, locale: str | None, out: list[Finding]) -> None:
+#: Passes, not occurrences — each one substitutes EVERY reference, as the renderer's
+#: expansion does. Counting occurrences instead let a form list with 51 references exhaust
+#: the budget and go unjudged. Deliberately NOT claimed to match a renderer's own limit
+#: (they differ: 50 here and in JS, 51 in both PHP engines); it only has to terminate, and
+#: a chain deeper than this is suppressed rather than judged, which is the safe direction.
+_FORM_EXPANSION_PASSES = 51
+
+#: Any bracket at all — all four, and conditionals too.
+#:
+#: Conditionals: one resolves before plurals, so it is not "unresolved at plural time",
+#: but its branches can differ in top-level pipes (``{?flag?a|b|c}`` freezes as ``a`` or as
+#: ``b|c``), and counting is about invariance rather than stage order. Closing brackets: a
+#: ``#set %x% = ]`` balances against a ``[`` elsewhere, so the bracket checker stays quiet,
+#: and every renderer's plural guard is ``[{}\[\]]`` — a stray closer is rejected exactly
+#: like an opener.
+#:
+#: Construct-free is a SUFFICIENT condition for invariance, deliberately not a necessary
+#: one: ``{a|b}`` really does always freeze to one form. It is the property this validator
+#: elects to prove, because an invariant construct cannot be told from a varying one
+#: without evaluating it.
+_ANY_BRACKET = re.compile(r"[\[\]{}]")
+_CONDITIONAL_OPEN = re.compile(r"\{\?")
+
+
+def _expand_forms_for_counting(
+    forms_raw: str,
+    defs: dict[str, str],
+    macros: dict[str, str],
+    host_names: frozenset[str],
+) -> tuple[int, bool, bool]:
+    """How many forms the plural stage will receive: (forms, unresolved, direct_macro_spintax).
+
+    ``render`` expands ``%variables%`` and only THEN splits the form list, while this
+    validator used to split the raw source — so any reference inside a form list was judged
+    on the wrong number, in both directions (spintax-js#66).
+
+    The rule is deliberately narrow, and the narrowness IS the correction. A first version
+    tried to predict the roll, counting pipes at bracket depth 0 on the theory that a
+    construct always collapses to one form. It does not::
+
+        #set %flag% =
+        #def %x% = {?flag?a|b|c}     # the false branch freezes as `b|c`: TWO forms
+        {plural 1: one|%x%}          # renders fine under ru; the guess said arity error
+
+    So a value is counted only when its form count is the same WHATEVER the roll does —
+    when it carries no construct at all. Anything else, any name the host may supply, and
+    any reference the template does not define suppress the count-based verdicts.
+
+    ``direct_macro_spintax`` is the one prediction that survives, because it is not one: a
+    ``#set`` named DIRECTLY in the form slot is substituted verbatim and is still spintax
+    when the plural is decided. Reached through a ``#def`` it is rolled first.
+    """
+    # Which brackets reach the form slot VERBATIM: follow the #set chain out of the raw
+    # slot. "Direct" is a property of the PATH, not of one hop — `#set %a% = %b%` with
+    # `#set %b% = {a|b}` never crosses a #def, so the macro text arrives whole.
+    seen_macro: set[str] = set()
+
+    def _walk_macros(source: str) -> str:
+        for m in _VARIABLE_RE.finditer(source):
+            name = m.group(1).lower()
+            # A #def rolls it and a host value replaces it — either way the macro text
+            # does not arrive verbatim, so this path says nothing.
+            if name in defs or name in host_names:
+                continue
+            macro = macros.get(name)
+            if macro is None or name in seen_macro:
+                continue
+            seen_macro.add(name)
+            # A conditional is where the engines themselves disagree: both PHP renderers
+            # resolve one that expansion introduces INSIDE a form list, this port and JS
+            # do not. Until that is settled, decline to judge rather than pick a side.
+            if _CONDITIONAL_OPEN.search(macro):
+                return "opaque"
+            if _ANY_BRACKET.search(macro):
+                return "brackets"
+            deeper = _walk_macros(macro)
+            if deeper != "clean":
+                return deeper
+        return "clean"
+
+    verbatim = _walk_macros(forms_raw)
+    if verbatim == "brackets":
+        return 0, True, True
+    if verbatim == "opaque":
+        return 0, True, False
+
+    text = forms_raw
+    for _ in range(_FORM_EXPANSION_PASSES):
+        bailed = False
+        saw_reference = False
+
+        def _substitute(m: re.Match[str]) -> str:
+            nonlocal bailed, saw_reference
+            saw_reference = True
+            name = m.group(1).lower()
+            # Runtime context outranks a definition of the same name, so a host-declared
+            # name makes the count unknowable even where the template defines one locally.
+            if name in host_names:
+                bailed = True
+                return m.group(0)
+            value = defs.get(name, macros.get(name))
+            if value is None:
+                bailed = True
+                return m.group(0)
+            # A construct in the value: what it rolls to may or may not carry a top-level
+            # pipe, so no single count is true of every render.
+            if _ANY_BRACKET.search(value):
+                bailed = True
+                return m.group(0)
+            return value
+
+        # EVERY reference per pass, as the renderer's expansion does. `_VARIABLE_RE` is the
+        # shared ASCII class, not `\w`: Python's `\w` is Unicode, so `%é%` would count as a
+        # reference here and as literal text everywhere else — the exact divergence this
+        # port spent #55/#56 removing.
+        text = _VARIABLE_RE.sub(_substitute, text)
+
+        if bailed:
+            return 0, True, False
+        if not saw_reference:
+            # No construct can be left, so the plain split is what the renderer does too.
+            return len(text.split("|")), False, False
+
+    # A cycle, or a chain deeper than this bothers to follow.
+    return 0, True, False
+
+
+def check_plurals(
+    text: str,
+    locale: str | None,
+    known_variables: list[str] | None,
+    out: list[Finding],
+) -> None:
     """Count-slot macros, brackets in a form slot, and form count against the locale."""
     # Guard on the NORMALIZED base: a non-empty locale that normalizes to nothing
     # (`"_en"`) skips the arity check rather than guessing at it.
@@ -457,6 +589,12 @@ def check_plurals(text: str, locale: str | None, out: list[Finding]) -> None:
     expected = _plurals.arity(base) if base else 0
 
     tainted = _macro_tainted_names(text)
+    directives = _directives.extract(text)
+    defs, macros = directives.def_defs, directives.set_defs
+    # Names the host says it will supply: runtime context outranks a definition of the
+    # same name, so one of these makes a form count unknowable however the template
+    # defines it.
+    host_names = frozenset(name.lower() for name in (known_variables or ()))
 
     for block in _plurals.find_blocks(text):
         length = block.end - block.start
@@ -493,7 +631,32 @@ def check_plurals(text: str, locale: str | None, out: list[Finding]) -> None:
             # invented problem.
             continue
 
-        got = len(block.forms_raw.split("|"))
+        # The form list AS THE RENDERER WILL SEE IT (spintax-js#66).
+        got, unresolved, macro_spintax = _expand_forms_for_counting(
+            block.forms_raw, defs, macros, host_names
+        )
+
+        # A #set whose value carries spintax lands in the form list verbatim and is still
+        # unresolved when the plural is decided — the same fact plural.count-macro states
+        # for the count slot, and exactly what this message already describes.
+        if macro_spintax:
+            out.append(
+                _error(
+                    "plural.nested-brackets",
+                    "{plural ...}: forms must not contain nested spintax brackets. Extract via "
+                    "#def first — a #set is substituted verbatim and would put the brackets "
+                    "straight back.",
+                    block.start,
+                    length,
+                )
+            )
+            continue
+
+        # A reference the template does not define has no static form count. Judging it
+        # would repeat the mistake #65 fixed: a verdict on a fact nobody claimed.
+        if unresolved:
+            continue
+
         if expected > 0:
             if got != expected:
                 out.append(
@@ -573,7 +736,7 @@ def run(
     # normalisation means every offset agrees between the two views.
     check_directives(source.text_exact, findings)
     check_permutation_configs(source.text, findings)
-    check_plurals(source.text, locale, findings)
+    check_plurals(source.text, locale, known_variables, findings)
     check_variable_references(source.text, known_variables, findings)
     if known_includes:
         # Exact terminators, not the normalised view — see _INCLUDE_RE. Offsets agree
