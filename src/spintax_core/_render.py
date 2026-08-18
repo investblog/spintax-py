@@ -52,6 +52,31 @@ from ._rng import Rng
 #: How many times a variable value may be re-expanded before the renderer stops.
 MAX_VARIABLE_DEPTH = 50
 
+#: Characters a single render may produce by expanding ``%variables%`` (spintax-js#69).
+#:
+#: Depth alone does not bound expansion, only its height: ``#set %a% = %b% %b%`` over
+#: ``#set %b% = %a% %a%`` replaces one reference with two every level, so 50 levels is
+#: 2**50 and a 62-character template ended the process in every engine of the family.
+#: Acyclic doubling does the same, so the cycle guard never sees it.
+#:
+#: Deliberately far above any real document -- the point is to end an explosion, not to
+#: ration ordinary output.
+MAX_EXPANSION_CHARS = 1024 * 1024
+
+
+class _Budget:
+    """Expansion allowance, shared by every branch of one render.
+
+    A mutable object rather than a field on ``_Walk`` because ``_Walk`` is rebuilt with
+    ``replace()`` on the way down; a plain int would give each branch its own allowance and
+    bound nothing.
+    """
+
+    __slots__ = ("left",)
+
+    def __init__(self, left: int) -> None:
+        self.left = left
+
 #: Line-anchored `#include "ref"`. Two classes here are deliberately narrow:
 #:
 #: - the whitespace around the ref is ASCII, because that is what PHP's `\s` matches under
@@ -118,6 +143,7 @@ class _Walk:
     locale: str
     depth: int
     on_plural_error: Callable[[PluralIssue], None] | None
+    budget: _Budget
 
 
 def render_ast(ast: ParsedAst, ctx: RenderCtx) -> str:
@@ -138,6 +164,7 @@ def _render_body(ast: ParsedAst, ctx: RenderCtx) -> str:
         locale=ctx.locale,
         depth=0,
         on_plural_error=ctx.on_plural_error,
+        budget=_Budget(MAX_EXPANSION_CHARS),
     )
     # Rolled here rather than inside `build_vars` because a definition renders against the
     # FULL context — globals and runtime included — so it has to wait for that to exist.
@@ -399,6 +426,11 @@ def _resolve_variable(name: str, walk: _Walk) -> tuple[str, Sequence[Node] | Non
     # output, never an exception — the plugin throws here and resolves to empty.
     if walk.depth >= MAX_VARIABLE_DEPTH or not _HAS_CONSTRUCT_RE.search(value):
         return value, None
+    # Out of budget ⇒ the reference stays literal, exactly as an undefined name does. No
+    # new output shape, and the promise that render never raises on content survives.
+    if walk.budget.left <= 0:
+        return f"%{name}%", None
+    walk.budget.left -= len(value)
     # `parse_sequence`, NOT `parse_template`: a value must not be comment-stripped or
     # directive-extracted a second time. Those are one-time passes over the body.
     return "", _parser.parse_sequence(value)
@@ -419,6 +451,10 @@ def _expand_vars_only(text: str, walk: _Walk) -> str:
             value = walk.vars.get(m.group(1).lower())
             if value is None:
                 return m.group()
+            # Same purse as _resolve_variable: a plural slot is not a separate allowance.
+            if walk.budget.left <= 0:
+                return m.group()
+            walk.budget.left -= len(value)
             changed = True
             return value
 

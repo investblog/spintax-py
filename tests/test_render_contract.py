@@ -215,3 +215,30 @@ def test_a_seeded_render_is_reproducible() -> None:
         template, seed=42, post_process=False
     )
     assert render_with(template, make_rng(1), post_process=False) is not None
+
+
+def test_an_expansion_bomb_renders_instead_of_ending_the_process() -> None:
+    """62 characters (spintax-js#69).
+
+    Each pass replaces one reference with two, so depth 50 is 2**50 -- the process died in
+    every engine of the family before the bound existed, and the reference deployment
+    answered HTTP 503. Acyclic doubling does the same, so the cycle guard never sees it.
+
+    What is asserted is the contract: it terminates, it does not raise, the output is
+    bounded, and the references it could not afford stay literal. The exact text is
+    deliberately NOT pinned -- the engines expand by different mechanisms and stop in
+    different places, which is why no corpus fixture covers it.
+    """
+    bomb = "#set %a% = %b% %b%\n#set %b% = %a% %a%\n%a%"
+
+    out = render(bomb, locale="en")
+
+    assert len(out) < 4 * 1024 * 1024
+    assert "%b%" in out
+
+
+def test_an_ordinary_template_is_nowhere_near_the_expansion_budget() -> None:
+    """The bound must be invisible to real work: this is the shape a host actually sends."""
+    ordinary = "#set %greeting% = {Hi|Hello}\n#def %n% = 2\n%greeting%, {plural %n%: guest|guests}!"
+
+    assert render(ordinary, locale="en", seed=1) in ("Hi, guests!", "Hello, guests!")
