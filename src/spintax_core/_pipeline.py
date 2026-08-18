@@ -17,7 +17,7 @@ from collections.abc import Callable, Mapping
 
 from . import _neutralize, _parser, _postprocess, _render
 from ._ast import Ast, ParsedAst, require_parsed
-from ._render import PluralIssue, RenderCtx
+from ._render import MAX_EXPANSION_CHARS, PluralIssue, RenderCtx, _Budget
 from ._rng import Rng
 
 #: `#include` nesting cap. Reads like a parse-depth guard and is not one — it is only ever
@@ -45,6 +45,9 @@ def render_with(
         max_depth=max_depth,
         include_stack=(),
         on_plural_error=on_plural_error,
+        # One allowance for the whole call. Created here rather than in the renderer
+        # because includes re-enter it, and a budget made there is a budget per subtree.
+        budget=_Budget(MAX_EXPANSION_CHARS),
     )
 
     out = _render.render_ast(_resolve_ast(source), ctx)

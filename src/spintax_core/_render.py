@@ -132,6 +132,13 @@ class RenderCtx:
     #: The `#include` ref chain, for circular-reference detection.
     include_stack: tuple[str, ...]
     on_plural_error: Callable[[PluralIssue], None] | None
+    #: Expansion allowance for the WHOLE call, includes and all (spintax-js#69).
+    #:
+    #: Per-call, not per-document: include resolution renders each included body through
+    #: ``_render_body``, so a budget created there gave every include a fresh megabyte.
+    #: Fifty ``#include`` lines over one 62-character bomb turned 690 bytes into 57 MB --
+    #: the bound held for each subtree and bounded nothing overall.
+    budget: _Budget
 
 
 @dataclass(frozen=True, slots=True)
@@ -164,7 +171,7 @@ def _render_body(ast: ParsedAst, ctx: RenderCtx) -> str:
         locale=ctx.locale,
         depth=0,
         on_plural_error=ctx.on_plural_error,
-        budget=_Budget(MAX_EXPANSION_CHARS),
+        budget=ctx.budget,
     )
     # Rolled here rather than inside `build_vars` because a definition renders against the
     # FULL context — globals and runtime included — so it has to wait for that to exist.
