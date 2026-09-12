@@ -10,8 +10,8 @@ Python 3.10+.
 
 This is the third engine in the Spintax family, and an **independent implementation** — not a
 transcription of the others. It is held to the same behavior contract by a **shared golden corpus**
-of language-neutral fixtures, which already gates the TypeScript engine and the PHP one. All 168
-of them pass here, none skipped, none expected to fail.
+of language-neutral fixtures, which already gates the TypeScript engine and the PHP one. Every one
+of them passes here, none skipped, none expected to fail.
 
 ## Install
 
@@ -99,9 +99,10 @@ SPINTAX_FIXTURES=../spintax-js/packages/conformance/fixtures pytest
 Without the fixtures the suite **fails** rather than passing an empty run — a green suite that
 tested nothing is the most expensive kind of green.
 
-The engine is complete, so every corpus case is a real pass: **168 corpus fixtures pass, 0 xfailed,
-0 skipped**, alongside the port's own local tests. A **skip** must never appear — it would mean a
-case is being neither asserted nor counted. During the build (P0–P3) `xfailed` was the milestone
+The engine is complete, so every corpus case is a real pass: **every corpus fixture passes,
+0 xfailed, 0 skipped**, alongside the port's own local tests. The count is deliberately not written
+here — the corpus grows, and a number pinned in a file that ships to PyPI immutably goes stale
+quietly. A **skip** must never appear — it would mean a case is being neither asserted nor counted. During the build (P0–P3) `xfailed` was the milestone
 tracker, one number counting down what the corpus expected and the engine could not yet do; it
 reached zero when the renderer and `analyze` landed.
 
