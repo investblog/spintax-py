@@ -43,6 +43,19 @@ sentence capitalization, spacing around punctuation, URLs and abbreviations left
 which is why `[…fast|cheap|good]` above comes back capitalized. Pass `post_process=False`
 to turn that off and get the raw pick.
 
+A variable written **inside** a construct is spliced into it as text before the construct is
+split, so a pipe-joined value is a list rather than one item:
+
+```python
+render('[<sep=", ">%names%]', context={"names": "Ann|Bo|Cy"}, seed=1)  # 'Cy, Bo, Ann' — three elements
+render("%names%", context={"names": "Ann|Bo|Cy"})                     # 'Ann|Bo|Cy' — no construct, no split
+```
+
+That is the behaviour of every engine in the family (it comes from the original, which
+substitutes variables before it reads a bracket). It also means `neutralize()` does not make a
+value atomic *there* — it shields brackets, braces, `%` and `#`, and deliberately not `|`.
+Strip the pipes yourself if a value must stay one option.
+
 Syntax — enumerations `{a|b}`, permutations `[<sep=", ">a|b]`, variables `%name%`,
 conditionals `{?VAR?yes|no}`, plural agreement `{plural 3: one|few|many}`, comments
 `/# … #/`, and the `#set` / `#def` / `#include` directives — is documented in full at

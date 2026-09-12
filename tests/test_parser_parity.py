@@ -61,10 +61,15 @@ def _node_to_reference_shape(node: Node) -> dict[str, Any]:
     if isinstance(node, VariableNode):
         return {"type": "variable", "name": node.name}
     if isinstance(node, EnumerationNode):
-        return {
+        shape: dict[str, Any] = {
             "type": "enumeration",
             "options": [[_node_to_reference_shape(n) for n in o] for o in node.options],
         }
+        # The reference omits the key entirely when no direct reference is inside; a
+        # `None` here has to disappear the same way, or every plain construct differs.
+        if node.raw is not None:
+            shape["raw"] = node.raw
+        return shape
     if isinstance(node, ConditionalNode):
         return {
             "type": "conditional",
@@ -75,7 +80,7 @@ def _node_to_reference_shape(node: Node) -> dict[str, Any]:
             "else": [_node_to_reference_shape(n) for n in node.otherwise],
         }
     if isinstance(node, PermutationNode):
-        return {
+        perm: dict[str, Any] = {
             "type": "permutation",
             "config": {
                 "minsize": node.config.minsize,
@@ -91,6 +96,9 @@ def _node_to_reference_shape(node: Node) -> dict[str, Any]:
                 for o in node.options
             ],
         }
+        if node.raw is not None:
+            perm["raw"] = node.raw
+        return perm
     if isinstance(node, PluralNode):
         return {"type": "plural", "countRaw": node.count_raw, "formsRaw": node.forms_raw}
     raise AssertionError(f"node type not covered by the comparison: {node!r}")

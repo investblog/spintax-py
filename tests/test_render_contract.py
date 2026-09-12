@@ -242,3 +242,20 @@ def test_an_ordinary_template_is_nowhere_near_the_expansion_budget() -> None:
     ordinary = "#set %greeting% = {Hi|Hello}\n#def %n% = 2\n%greeting%, {plural %n%: guest|guests}!"
 
     assert render(ordinary, locale="en", seed=1) in ("Hi, guests!", "Hello, guests!")
+
+
+def test_a_large_page_of_plain_values_is_still_whole_but_a_megabyte_of_them_is_not() -> None:
+    """Since 0.4.0 a plain value is charged like any other (spintax-py#3): it had to be, or a
+    re-read construct expanded the references its own fixpoint had cut off, for free. So the
+    bound is no longer only about bombs, and the boundary deserves to be visible rather than
+    discovered by a host. A 300 KB page is untouched; 1.2 MB of substituted text is not.
+    """
+    page = "#set %b% = " + "y" * 3000 + "\n" + "%b%" * 100
+    assert len(render(page, post_process=False)) == 300_001
+    assert "%b%" not in render(page, post_process=False)
+
+    over = "#set %v% = " + "x" * 2400 + "\n" + "%v%" * 500
+    out = render(over, post_process=False)
+    assert len(out) < 1024 * 1024 + 4096
+    # Silent by design: an unaffordable reference reads exactly like an undefined name.
+    assert "%v%" in out

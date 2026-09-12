@@ -30,7 +30,12 @@ from ._errors import AstVersionError
 #: 2 — `ParsedAst` gained `def_defs`. An `Ast` built by an older version carries no `#def`
 #: map, so rendering it would silently drop every definition; the guard turns that into a
 #: loud failure instead.
-AST_VERSION = 2
+#:
+#: 3 — `EnumerationNode` and `PermutationNode` gained `raw`, the body a direct `%var%`
+#: reference is spliced into at render time (spintax-py#3). A handle from version 2 carries
+#: no `raw`, so rendering it would silently keep a pipe-joined value as ONE option — the
+#: defect 0.4.0 fixed.
+AST_VERSION = 3
 
 
 class Ast:
@@ -60,9 +65,18 @@ class VariableNode:
 
 @dataclass(frozen=True, slots=True)
 class EnumerationNode:
-    """`{a|b|c}` — pick one option. Each option is its own node sequence."""
+    """`{a|b|c}` — pick one option. Each option is its own node sequence.
+
+    `raw` is the content between the braces, kept ONLY when an option holds a direct
+    `%var%` reference (the parser's `has_direct_reference`). The renderer splices such a
+    value into the body as TEXT and re-reads the construct, because a `|` inside a
+    substituted value separates options in the reference engines — their expansion runs
+    before any bracket is read. `None` on every other construct, so nothing else pays for
+    it, and the parsed tree stays the one rendered.
+    """
 
     options: tuple[tuple[Node, ...], ...]
+    raw: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,10 +99,18 @@ class PermOption:
 
 @dataclass(frozen=True, slots=True)
 class PermutationNode:
-    """`[<config>a|b|c]` — select, shuffle, join."""
+    """`[<config>a|b|c]` — select, shuffle, join.
+
+    `raw` is the FULL inner text, `<config>` included, kept only when the construct holds
+    a direct `%var%` reference — in an element, in a conditional's branch, in the config's
+    separators or in a per-element one. The re-read starts from the config again, so
+    `[<sep="%S%">a|b]` takes its separator from the value, as it does in the reference
+    engines.
+    """
 
     config: PermConfig
     options: tuple[PermOption, ...]
+    raw: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

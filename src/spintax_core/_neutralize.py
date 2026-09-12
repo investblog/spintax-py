@@ -13,6 +13,12 @@ re-interpretation as spintax, nothing more.
 PUA rather than the `\\x00…` scheme post-process uses, so the two shielding mechanisms
 cannot collide with each other.
 
+The pipe is deliberately not in the set: `|` means nothing outside a construct. Inside one
+it does — a neutralized value the author places in `{…}` or `[…]` is still split on its
+`|`, in every engine: the reference expands before it reads a bracket, and this engine
+splices a direct reference the same way (0.4.0, spintax-py#3). Shielding it would be a
+family-wide contract change.
+
 **U+E000–U+E005 are reserved.** Author markup is stripped of them on the way in, so only
 `neutralize` can introduce one — otherwise `safety_restore` would rewrite a sentinel the
 author typed. A raw (non-neutralized) context value carrying these code points is
@@ -41,7 +47,12 @@ _RESTORE_RE = re.compile(f"[{chr(SENTINEL_BASE)}-{chr(SENTINEL_BASE + len(STRUCT
 
 
 def neutralize(value: str) -> str:
-    """Shield data-derived (T2) input so it cannot be re-interpreted as spintax markup."""
+    """Shield data-derived (T2) input so it cannot be re-interpreted as spintax markup.
+
+    The six characters of `STRUCTURAL`, and deliberately not the pipe — see the module
+    docstring. A shielded value placed by the author inside `{…}`/`[…]` is still split on
+    its `|`, in every engine of the family.
+    """
     return _SHIELD_RE.sub(lambda m: _SHIELD[m.group()], value)
 
 

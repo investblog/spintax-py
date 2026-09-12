@@ -15,7 +15,7 @@ is left alone here — the renderer resolves it as a post-tree string pass.
 from __future__ import annotations
 
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
@@ -233,9 +233,40 @@ def _plan_brace_construct(content: str) -> _Plan:
         return _plan_plural(content[len(_PLURAL_PREFIX) :])
 
     def build(parts: list[list[Node]]) -> Node:
-        return EnumerationNode(options=tuple(tuple(p) for p in parts))
+        options = tuple(tuple(p) for p in parts)
+        return EnumerationNode(
+            options=options, raw=content if has_direct_reference(options) else None
+        )
 
     return split_top_level(content), build
+
+
+def has_direct_reference(lists: Sequence[Sequence[Node]]) -> bool:
+    """Does a construct body hold a `%var%` that expansion would splice at THIS
+    construct's own level?
+
+    One at the top level of an option counts, and so does one inside a conditional's
+    branches: the reference engines resolve `{?…}` before they expand, so a branch's text
+    lands in the body ahead of the split. Nested enumerations / permutations / plurals are
+    not entered — a value inside them is spliced when THEY render, and a `|` it carries
+    belongs to them.
+
+    Iterative, like every walk here: a deep chain of conditionals is content, and the
+    parser must not raise on content.
+    """
+    stack: list[Sequence[Node]] = list(lists)
+    while stack:
+        for node in stack.pop():
+            if isinstance(node, VariableNode):
+                return True
+            if isinstance(node, ConditionalNode):
+                stack.append(node.then)
+                stack.append(node.otherwise)
+    return False
+
+
+#: A `%var%` reference written inside a separator string — config or per-element.
+_REFERENCE_RE = re.compile(f"%{ASCII_WORD}+%")
 
 
 class ConditionalHead(NamedTuple):
@@ -360,15 +391,21 @@ def _plan_permutation(raw_inner: str) -> _Plan:
     config, content = _extract_permutation_config(raw_inner)
     elements = _extract_per_element_separators(split_top_level(content))
     separators = [sep for _text, sep in elements]
+    # The reference engines expand the config and the per-element separators too — to
+    # them it is all text — so a reference written there is as direct as one in an element.
+    separator_has_ref = (
+        _REFERENCE_RE.search(config.sep) is not None
+        or (config.lastsep is not None and _REFERENCE_RE.search(config.lastsep) is not None)
+        or any(sep is not None and _REFERENCE_RE.search(sep) is not None for sep in separators)
+    )
 
     def build(parts: list[list[Node]]) -> Node:
-        return PermutationNode(
-            config=config,
-            options=tuple(
-                PermOption(nodes=tuple(nodes), separator=sep)
-                for nodes, sep in zip(parts, separators, strict=True)
-            ),
+        options = tuple(
+            PermOption(nodes=tuple(nodes), separator=sep)
+            for nodes, sep in zip(parts, separators, strict=True)
         )
+        direct = separator_has_ref or has_direct_reference([o.nodes for o in options])
+        return PermutationNode(config=config, options=options, raw=raw_inner if direct else None)
 
     return [text for text, _sep in elements], build
 

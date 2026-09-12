@@ -33,7 +33,9 @@ class AstVersionError(SpintaxError):
 
     Raised rather than tolerated because the alternative is silent and worse: an `Ast`
     built before `AST_VERSION` 2 carries no `#def` map, so rendering it would quietly
-    drop every definition and produce plausible output that is wrong.
+    drop every definition and produce plausible output that is wrong; one built before
+    `AST_VERSION` 3 carries no `raw`, so a pipe-joined value inside `{…}`/`[…]` would
+    quietly render as one option again.
     """
 
 

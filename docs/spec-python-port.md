@@ -64,6 +64,30 @@ WP-free PHPUnit runner against the real plugin engine.
   a single `#set` or `#def`; a `{plural}` count that resolves through a `#set` macro still holding
   spintax is an error, not a silent empty render
 - the **post-process pipeline** (shielding / spacing / capitalization)
+- **a `%var%` directly inside `{…}`/`[…]` is spliced as TEXT before the construct is split**
+  (`splice/*`, 19 fixtures, `@spintax/core` 0.7.0 / this port 0.4.0, spintax-py#3). The plugin
+  expands variables over the whole text before any bracket is read, so a value `a|b|c` inside
+  `[<…>%list%]` is three elements and inside `{%list%}` three options; a conditional's taken
+  branch lands in the body first (Stage 6a), and `<sep="%S%">` / a per-element `<%S%>` take
+  their value. A tree walk has to re-read the construct from its expanded text — the parser
+  keeps `raw` on a construct with a *direct* reference (an option's top level, a conditional's
+  branches, a separator string; never inside a nested construct, which splices at its own
+  level), and the renderer re-reads it in the plugin's order: conditionals → variable fixpoint
+  → conditionals → parse. The hop budget is the plugin's 51 in every shape (`_passes_left`),
+  and what a fixpoint leaves unexpanded is frozen for the subtree. What does NOT split: a
+  reference at top level, an undefined name (one literal element), a nested construct's list.
+
+  **Two edges of that rule are the family's, not this port's — measured identical on
+  `@spintax/core` 0.7.0, and both follow from a tree walk marking `raw` per construct rather
+  than expanding the whole text as PHP does.** A reference in a *size* or unquoted config key
+  (`[<minsize=%n%>a|b|c]`, `[<sep=%S%>a|b]`) does not mark the construct, so it is never
+  expanded, where the plugin's whole-text pass would have substituted it before the bracket
+  was read. And a nested construct whose value carries an *unbalanced* bracket
+  (`[a|{%L%}]` with `L = x}|y`) splices at its own level, where the plugin's expand-then-parse
+  order would have let the stray `}` rewrite the OUTER element boundaries. Neither is reachable
+  from a `splice/*` fixture. Do not "fix" either here alone: the parity fixture pins the
+  reference's tree and a unilateral change would break parity in the direction of PHP while
+  breaking it against the engine this port is measured on. They belong upstream first.
 
 **Allowed to diverge:** RNG selection results, internal architecture, diagnostic message strings,
 performance. Seeded rendering must be reproducible **within** this engine; cross-engine
@@ -137,7 +161,11 @@ Invariants carried over from the TS engine:
 - **`Ast` is opaque and versioned** — an in-memory perf handle, not a serialization format. Do not
   persist it across engine versions.
 - **`neutralize`'s safety restore is mandatory** — it survives `post_process=False` (that flag
-  skips cosmetics only).
+  skips cosmetics only). It shields the six structural characters and **not the pipe**: a shielded
+  value the author places inside `{…}`/`[…]` is still split on its `|`, because the splice above
+  is a property of the construct, not of the value. Family-wide, and stated in the public
+  docstring so a T2 caller is not left to discover it; a host needing an atomic value there
+  strips `|` itself.
 - `Diagnostic` carries `severity`, `code`, `message`, `line`, `column`, and optional `end_line`,
   `end_column`, `data`, so a consumer builds UI without parsing the (non-parity-gated) `message`.
 
@@ -218,7 +246,7 @@ them today, so an implementation can be wrong about them with the suite fully gr
   reopening the question for three engines and a published package, to support identifiers
   nobody has asked for. If a real template ever needs them, the narrower rule can be widened
   without breaking anything that already works — which is the whole reason for choosing it.
-- **Comments.** Not one of the 168 fixtures contains a `/#` at all, so comment stripping — and
+- **Comments.** Not one of the fixtures contains a `/#` at all, so comment stripping — and
   therefore every position that passes through it — is held up by local tests alone.
 - **Diagnostic ORDER.** `validate()` returns findings sorted by position; the reference returns
   them in check order. The corpus matches diagnostics by `any()`, so it cannot see the difference,
@@ -233,6 +261,16 @@ them today, so an implementation can be wrong about them with the suite fully gr
 
 Recorded rather than silently trusted: a gate you believe is total, and is not, is worse than one
 you know the edges of.
+
+**And one the corpus DID gate only after it had shipped wrong in four engines (2026-09-12).** No
+fixture put a `%var%` inside `{…}`/`[…]` — 258 cases, not one — so every tree-walk engine of the
+family rendered a pipe-joined value inside a bracket as ONE element while both textual PHP engines
+were right all along, and it reached production (131 published rows across 15 tenants, spintax-js#78).
+A corpus cannot see what a bracket does to a value it never puts there. Closed by the 19 `splice/*`
+fixtures (§3), but the lesson is the shape of the gap, not the case: when a new construct or value
+kind lands, ask what the corpus never *combines*, not only what it never *mentions*. The port's own
+check for this class is the differential stand described in CLAUDE.md — random templates rendered
+on the reference with an injected RNG strategy, byte-compared to this port.
 
 ### 5.2a Line terminators: a break for the rules, a character for the output
 

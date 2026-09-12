@@ -11,7 +11,11 @@ engines now depend on:
    same name outranks it, and the definition is then never rolled at all.
 4. The tree is walked. A variable whose value contains constructs is re-parsed and
    rendered in place, which is how conditionals and plurals introduced *by a value* get
-   resolved without a separate pass.
+   resolved without a separate pass. A `%var%` that sits DIRECTLY in an enumeration or
+   permutation body is instead spliced as TEXT and the construct re-read
+   (`_splice_construct`, 0.4.0): a `|` inside such a value separates options, exactly as
+   in the plugin, whose expansion runs before any bracket is read. Every other construct
+   keeps the tree it was parsed into.
 5. `#include` is resolved last, as a string pass over the rendered text, matching the
    plugin's post-enumeration `resolve_includes`.
 
@@ -25,6 +29,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
+from typing import NamedTuple
 
 from . import _parser, _plurals
 from ._ast import (
@@ -59,8 +64,15 @@ MAX_VARIABLE_DEPTH = 50
 #: 2**50 and a 62-character template ended the process in every engine of the family.
 #: Acyclic doubling does the same, so the cycle guard never sees it.
 #:
-#: Deliberately far above any real document -- the point is to end an explosion, not to
-#: ration ordinary output.
+#: Since 0.4.0 **every** substitution is charged, plain values included (the reference does
+#: the same, and PHP always did). That was forced: a free plain value was the one door left
+#: open once `_splice_construct` could hand `_resolve_variable` references its own fixpoint
+#: had cut off. The consequence is real and is NOT only about bombs -- the ceiling now
+#: bounds ordinary variable output too. Measured: a 3 KB block referenced 100 times (300 KB)
+#: is untouched; a 2.4 KB value referenced 500 times (1.2 MB) stops at ~1 MiB with the last
+#: 63 references left literal. A document that needs more than a megabyte of *substituted*
+#: text has to raise this, and the truncation is silent -- an unaffordable reference is
+#: indistinguishable from an undefined name, by design (no new output shape, §9.2).
 MAX_EXPANSION_CHARS = 1024 * 1024
 
 
@@ -151,6 +163,13 @@ class _Walk:
     depth: int
     on_plural_error: Callable[[PluralIssue], None] | None
     budget: _Budget
+    #: Every reference is literal from here down (`_splice_construct`). Set for the
+    #: subtree of a construct whose textual fixpoint ran out of passes: the plugin runs ONE
+    #: fixpoint of 51 passes and then reads text, so whatever it left unexpanded stays
+    #: unexpanded — in the body, in a nested construct, in a plural slot. Without this a
+    #: leftover would earn a fresh allowance from every walker that met it. (About the
+    #: references, not the dataclass — that `frozen=True` is immutability.)
+    frozen: bool = False
 
 
 def render_ast(ast: ParsedAst, ctx: RenderCtx) -> str:
@@ -359,6 +378,12 @@ def render_nodes(nodes: Sequence[Node], walk: _Walk) -> str:
                 break
 
             if isinstance(node, EnumerationNode):
+                spliced = _splice_construct(node.raw, "{", "}", job.walk)
+                if spliced is not None:
+                    stack.append(job)
+                    stack.append(_Seq(nodes=spliced[0], out=job.out, walk=spliced[1]))
+                    suspended = True
+                    break
                 if not node.options:
                     continue
                 picked = node.options[_random_int(job.walk.rng, 0, len(node.options) - 1)]
@@ -375,6 +400,12 @@ def render_nodes(nodes: Sequence[Node], walk: _Walk) -> str:
                 break
 
             if isinstance(node, PermutationNode):
+                spliced = _splice_construct(node.raw, "[", "]", job.walk)
+                if spliced is not None:
+                    stack.append(job)
+                    stack.append(_Seq(nodes=spliced[0], out=job.out, walk=spliced[1]))
+                    suspended = True
+                    break
                 if not node.options:
                     continue
                 parts: list[list[str]] = [[] for _ in node.options]
@@ -393,12 +424,12 @@ def render_nodes(nodes: Sequence[Node], walk: _Walk) -> str:
                 suspended = True
                 break
 
-            text, children = _render_plural(node, job.walk)
+            text, children, child_walk = _render_plural(node, job.walk)
             if children is None:
                 job.out.append(text)
                 continue
             stack.append(job)
-            stack.append(_Seq(nodes=children, out=job.out, walk=job.walk))
+            stack.append(_Seq(nodes=children, out=job.out, walk=child_walk))
             suspended = True
             break
 
@@ -427,30 +458,59 @@ def _resolve_variable(name: str, walk: _Walk) -> tuple[str, Sequence[Node] | Non
     that keeps the re-expansion of a value on the caller's stack rather than this one's.
     """
     value = walk.vars.get(name.lower())
-    if value is None:
+    if value is None or walk.frozen:
         return f"%{name}%", None
+    # Out of budget ⇒ the reference stays literal, exactly as an undefined name does. No
+    # new output shape, and the promise that render never raises on content survives.
+    #
+    # Checked BEFORE the plain-value shortcut below, so every substitution is charged, as
+    # it is in the plugin. Until 0.4.0 a plain value was free — harmless while a plain
+    # value could only ever be a leaf, and the one door left open once a re-read construct
+    # (`_splice_construct`) could hand this function references its fixpoint had cut off:
+    # 2**12 of them, each to a 1 KiB value, expanded here for nothing (found in the
+    # reference's review, spintax-js#78).
+    if walk.budget.left <= 0:
+        return f"%{name}%", None
+    walk.budget.left -= len(value)
     # At the cap, stop expanding and return what we have. Lenient by contract: partial
     # output, never an exception — the plugin throws here and resolves to empty.
     if walk.depth >= MAX_VARIABLE_DEPTH or not _HAS_CONSTRUCT_RE.search(value):
         return value, None
-    # Out of budget ⇒ the reference stays literal, exactly as an undefined name does. No
-    # new output shape, and the promise that render never raises on content survives.
-    if walk.budget.left <= 0:
-        return f"%{name}%", None
-    walk.budget.left -= len(value)
     # `parse_sequence`, NOT `parse_template`: a value must not be comment-stripped or
     # directive-extracted a second time. Those are one-time passes over the body.
     return "", _parser.parse_sequence(value)
 
 
-def _expand_vars_only(text: str, walk: _Walk) -> str:
+def _passes_left(walk: _Walk) -> int:
+    """The passes a textual fixpoint may run from this point of the walk.
+
+    The plugin's loop is `<= MAX_VARIABLE_DEPTH` — 51 passes, once, over the whole text —
+    and a construct or slot reached through a macro re-parse has already spent `depth` of
+    those hops in `_resolve_variable`. Never below one.
+    """
+    return max(1, MAX_VARIABLE_DEPTH - walk.depth + 1)
+
+
+class _Fixpoint(NamedTuple):
+    text: str
+    #: A pass came back unchanged before the pass budget ran out. Not converged means the
+    #: text was still changing on the last allowed pass — a cycle, or a chain deeper than
+    #: the budget — and the caller must then keep every leftover reference literal
+    #: (`_Walk.frozen`), because the plugin never expands again after its one fixpoint.
+    converged: bool
+
+
+def _expand_vars_fixpoint(text: str, walk: _Walk, passes: int) -> _Fixpoint:
     """Substitute `%var%` to a fixpoint, leaving enumerations and permutations literal.
 
     Plurals run after variable expansion but before enum/perm, so their checks have to see
-    the same half-resolved state the plugin sees.
+    the same half-resolved state the plugin sees; a re-read construct (`_splice_construct`)
+    needs the same pass for the same reason.
     """
+    if walk.frozen:
+        return _Fixpoint(text, True)
     out = text
-    for _ in range(MAX_VARIABLE_DEPTH):
+    for _ in range(passes):
         changed = False
 
         def substitute(m: re.Match[str]) -> str:
@@ -467,8 +527,68 @@ def _expand_vars_only(text: str, walk: _Walk) -> str:
 
         out = _VARIABLE_RE.sub(substitute, out)
         if not changed:
-            break
-    return out
+            return _Fixpoint(out, True)
+    return _Fixpoint(out, False)
+
+
+def _splice_construct(
+    raw: str | None, open_ch: str, close_ch: str, walk: _Walk
+) -> tuple[Sequence[Node], _Walk] | None:
+    """Splice the direct `%var%` references of a construct into its body as TEXT and
+    re-read the construct.
+
+    The plugin's own order — Stage 6a conditionals → 6b expansion → 6c conditionals — run
+    over this one body, then the brackets go back on and the parser reads the result. Only
+    constructs the parser marked (`raw`) get here; every other one keeps the tree it was
+    parsed into, and with it the exact RNG order the corpus pins.
+
+    Why textual: `[<…>%list%]` with `%list% = a|b|c` is ONE option to the parser, because
+    the tree is built before any value exists, and `_resolve_variable` hands a
+    construct-free value back as finished text — so the `|` that separates elements in
+    every PHP engine was never seen here, and a 57-name list rendered as one element
+    (spintax-py#3). Same for `{%list%}`.
+
+    Returns `None` when there is nothing to do — the parser left no `raw` (no direct
+    reference), the walk is frozen, or the body would not change: an undefined name, a
+    reference the budget cut off. The caller then renders the nodes it already has, which
+    is the ordinary path for every construct in a template. That last case is also what
+    terminates the re-read: after a converged fixpoint every reference left is one
+    expansion cannot touch, so a re-read construct changes nothing and falls through.
+
+    Hop budget: the plugin's fixpoint is `<= MAX_VARIABLE_DEPTH` — 51 passes — and it runs
+    once, over text; a construct reached through a macro re-parse has already spent
+    `depth` of those hops in `_resolve_variable`, so it gets `51 - depth` passes here and
+    the total is 51 in every shape. When the passes run out still changing, whatever is
+    left is FROZEN for the whole subtree: the mutual cycle leaves `%b%`, `#set %b% = x%b%y`
+    leaves 51 pairs, a 51-deep chain into `x|y` reaches the body as text and IS split —
+    inside a bracket exactly as outside one — and nothing below earns a fresh allowance.
+    (The reference's first cut rendered that subtree at the depth cap instead, which
+    spliced a leftover once more as finished text: a 52nd hop, and one that hid a
+    structural value from the split.)
+    """
+    # `walk.frozen` here is the faithful translation of the reference's own early return, and
+    # — like `_HTML_TAG_RE`'s `\Z` — it is defensive rather than load-bearing, measured as
+    # such: removing it changes no output on the corpus, on 1500 generated templates, or on
+    # 252 combinations built specifically to reach it (a non-converging macro leaving a
+    # conditional beside a live reference, under every wrapper). It cannot bite today because
+    # both doors into a frozen subtree have already resolved their conditionals — a splice
+    # runs the pass twice over the body, and a plural form holding `{` never reaches the pick
+    # (`plural.nested-brackets` re-emits it fullwidth first). Kept because the property
+    # depends on those two facts holding in other functions: make the form slot conditional-
+    # aware, or drop one of the splice's passes, and this becomes the only thing standing
+    # between a frozen subtree and a re-resolved conditional.
+    if raw is None or walk.frozen:
+        return None
+    expanded = _expand_vars_fixpoint(
+        _resolve_conditionals_in_text(raw, walk), walk, _passes_left(walk)
+    )
+    body = _resolve_conditionals_in_text(expanded.text, walk)
+    if body == raw:
+        return None
+    # The brackets go back on so an unbalanced value degrades exactly as the plugin's
+    # innermost regex does: `{a}b}` is `a` followed by the literal `b}`, in both engines.
+    nodes = _parser.parse_sequence(open_ch + body + close_ch)
+    return nodes, (walk if expanded.converged else replace(walk, frozen=True))
 
 
 def _takes_then(name: str, inverted: bool, walk: _Walk) -> bool:
@@ -483,8 +603,13 @@ def _conditional_branch(node: ConditionalNode, walk: _Walk) -> Sequence[Node]:
     return node.then if _takes_then(node.name, node.inverted, walk) else node.otherwise
 
 
-def _resolve_count_conditionals(text: str, walk: _Walk) -> str:
-    """Resolve conditionals in the plural COUNT slot, textually (spintax-js#67).
+def _resolve_conditionals_in_text(text: str, walk: _Walk) -> str:
+    """Resolve conditionals in a piece of text, textually — the branch is substituted,
+    never rendered.
+
+    Two callers: the plural COUNT slot (spintax-js#67, where this was born) and the body
+    of a construct being re-read after a direct `%var%` splice (`_splice_construct`,
+    0.4.0), which needs the plugin's Stage 6a/6c around its expansion for the same reason.
 
     The plugin runs its conditional stage over the whole text before plurals, so
     ``#set %n% = {?flag?1|2}`` reaches the count slot as a plain number and the block
@@ -570,13 +695,25 @@ def _match_braces(text: str) -> list[int]:
     return close
 
 
-def _render_plural(node: PluralNode, walk: _Walk) -> tuple[str, Sequence[Node] | None]:
+def _render_plural(
+    node: PluralNode, walk: _Walk
+) -> tuple[str, Sequence[Node] | None, _Walk]:
     """Order matters: bracket check, then numeric erase, then arity, then the pick.
 
-    Returns finished text, or the nodes of the picked form for the caller to walk.
+    Returns finished text, or the nodes of the picked form for the caller to walk — and
+    the walk to render them under, which is FROZEN when the form slot's passes ran out.
+
+    Both slots get the same pass arithmetic as a re-read construct (51 hops in every
+    shape), and a form list whose passes ran out renders its pick frozen: until 0.4.0 the
+    slots ran a flat 50 and the picked form re-entered the walk unfrozen, so a 51-deep
+    chain in the count slot erased a block the plugin renders, and a 52-deep chain in a
+    form resolved to its end where the plugin leaves `%a52%` (spintax-js#78, review).
     """
-    count_raw = _resolve_count_conditionals(_expand_vars_only(node.count_raw, walk), walk)
-    forms_raw = _expand_vars_only(node.forms_raw, walk)
+    passes = _passes_left(walk)
+    count_pass = _expand_vars_fixpoint(node.count_raw, walk, passes)
+    forms_pass = _expand_vars_fixpoint(node.forms_raw, walk, passes)
+    count_raw = _resolve_conditionals_in_text(count_pass.text, walk)
+    forms_raw = forms_pass.text
     base = _plurals.normalize_base_lang(walk.locale)
 
     def report(issue: PluralIssue) -> None:
@@ -596,7 +733,7 @@ def _render_plural(node: PluralNode, walk: _Walk) -> tuple[str, Sequence[Node] |
                 locale=base,
             )
         )
-        return _fullwidth_verbatim(count_raw, forms_raw), None
+        return _fullwidth_verbatim(count_raw, forms_raw), None, walk
 
     count = count_raw.strip(PHP_TRIM_CHARS)
     if not _INTEGER_RE.fullmatch(count):
@@ -610,7 +747,7 @@ def _render_plural(node: PluralNode, walk: _Walk) -> tuple[str, Sequence[Node] |
                 locale=base,
             )
         )
-        return "", None
+        return "", None, walk
 
     forms = [f.strip(PHP_TRIM_CHARS) for f in forms_raw.split("|")]
     expected = _plurals.arity(base)
@@ -625,11 +762,12 @@ def _render_plural(node: PluralNode, walk: _Walk) -> tuple[str, Sequence[Node] |
                 got=len(forms),
             )
         )
-        return _fullwidth_verbatim(count_raw, forms_raw), None
+        return _fullwidth_verbatim(count_raw, forms_raw), None, walk
 
     # The picked form re-enters the pipeline — its own enums and perms resolve after this.
     picked = _plurals.plural_for(base, int(count), forms)
-    return "", _parser.parse_sequence(picked)
+    child_walk = walk if forms_pass.converged else replace(walk, frozen=True)
+    return "", _parser.parse_sequence(picked), child_walk
 
 
 def _raw_construct(count_raw: str, forms_raw: str) -> str:

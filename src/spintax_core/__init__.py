@@ -279,5 +279,13 @@ def neutralize(value: str) -> str:
 
     Text-safe, not HTML escaping. Its safety restore is mandatory and survives
     ``post_process=False`` — that flag skips cosmetics only.
+
+    **The pipe is not shielded**, and that is a family-wide contract rather than an
+    oversight: `|` means nothing outside a construct, and inside one it separates options
+    in every engine — the reference engines expand variables before they read a bracket,
+    and this one splices a direct reference the same way (0.4.0). So a neutralized value
+    the *author* writes inside `{…}`/`[…]` is still split on its pipes; its brackets,
+    braces, `%` and `#` are not. A host that must keep a value atomic there should strip
+    or replace `|` itself.
     """
     return _neutralize.neutralize(value)
