@@ -12,6 +12,7 @@ their misuse will be caught, and it silently will not be.
 
 from __future__ import annotations
 
+import re
 from importlib import metadata
 from pathlib import Path
 
@@ -57,3 +58,31 @@ def test_the_classifier_and_the_marker_agree() -> None:
             "pyproject.toml claims Typing :: Typed but py.typed is missing — "
             "downstream type checkers will ignore every annotation in this package"
         )
+
+
+def test_the_readme_does_not_pin_a_corpus_count() -> None:
+    """The README is the PyPI long description, and PyPI descriptions are immutable per
+    release — a number written here can only be corrected by shipping a version.
+
+    This is a guard against a recurrence, not a hypothetical. The README said "All 168 of
+    them pass" and "168 corpus fixtures pass" while the corpus stood at 277, and the
+    GitHub repository description carried the same stale number; one release earlier the
+    description still read "Pre-code: spec only", three versions after the engine shipped.
+    The shelf-facing surface drifts precisely because nothing reads it.
+
+    So: state the property, never the count. "Every corpus fixture passes, 0 xfailed,
+    0 skipped" stays true as the corpus grows; "168 fixtures pass" is a claim with a
+    shelf life. Release notes and commit messages are the right home for a number, since
+    both are point-in-time records.
+
+    Deliberately narrow — it matches a digit that *modifies* the word, so prose like
+    "gated by the shared golden corpus" is untouched and only a count trips it.
+    """
+    readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
+    pinned = re.findall(r"\b\d[\d,\s]*(?=\s*(?:corpus\s+)?fixtures?\b)", readme, re.IGNORECASE)
+    pinned += re.findall(r"(?<=\bAll\s)\d+\b", readme)
+
+    assert not pinned, (
+        f"README.md pins a fixture count ({pinned}); it ships to PyPI immutably and has "
+        "gone stale twice. State the property instead — see this test's docstring."
+    )

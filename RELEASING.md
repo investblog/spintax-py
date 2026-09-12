@@ -18,7 +18,11 @@ release is decided; the `announce` job publishes it verbatim.
 1. `main` is green in CI. Note that ruff is installed **unpinned** (by design — the
    four-interpreter matrix exists to turn tool drift into a named failure): a fresh ruff
    release can red the verify job on code the previous ruff accepted. Fix the findings,
-   don't pin (the 0.16 precedent: nine findings, all mechanical).
+   don't pin. Two precedents now, both mechanical: 0.16 brought nine findings, and 0.16.3
+   added `UP031` to the default set and flagged three `%`-formats in untouched test code —
+   that one sat red on `main` from 2026-08-18 to 2026-09-12, because nothing pushes on its
+   own and CI has no schedule. A red `main` nobody is looking at is the real cost of the
+   unpinned linter, not the findings; check Actions before assuming green.
 2. If the release covers a cross-engine fix, its corpus fixtures are already on
    `spintax-js@main` — the verify job pulls fixtures from there, so a fixture landing
    *after* the tag never gated the tagged artifact.
