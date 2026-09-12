@@ -256,8 +256,8 @@ def test_a_diamond_feeding_a_cycle_reports_once_per_name() -> None:
     """
     lines = ["#set %c1% = %c2%", "#set %c2% = %c1%"]
     for i in range(200):
-        src = "c1" if i == 0 else "d%d" % (i - 1)
-        lines.append("#set %%d%d%% = %%%s%% %%%s%%" % (i, src, src))
+        src = "c1" if i == 0 else f"d{i - 1}"
+        lines.append(f"#set %d{i}% = %{src}% %{src}%")
 
     circular = [d for d in engine.validate("\n".join(lines)) if d.code == "variable.circular-reference"]
 
@@ -270,7 +270,7 @@ def test_a_giant_cycle_keeps_its_diagnostic_text_linear() -> None:
     half of why it was immune; the JS and PHP engines cap theirs instead.
     """
     n = 2000
-    src = "\n".join("#set %%n%d%% = %%n%d%%" % (i, (i + 1) % n) for i in range(n))
+    src = "\n".join(f"#set %n{i}% = %n{(i + 1) % n}%" for i in range(n))
 
     circular = [d for d in engine.validate(src) if d.code == "variable.circular-reference"]
 
