@@ -35,13 +35,22 @@ from ._ast import (
 )
 from ._charclasses import (
     ASCII_DIGIT,
+    ASCII_SPACE,
     ASCII_WORD,
-    JS_SPACE,
     NOT_AFTER_WORD,
     PHP_TRIM_CHARS,
     js_ci_ascii,
     js_ci_unicode,
 )
+
+#: The whitespace of every pattern in this file.
+#:
+#: The plugin writes all of them WITHOUT `/u` — byte mode — so their `\s` is ASCII, while
+#: Python's is Unicode and JavaScript's is Unicode whatever the flags (spintax-js#81). A
+#: no-break space is therefore not config whitespace: `[<minsize<NBSP>=<NBSP>1>a|b|c]` is a
+#: single literal separator, as in PHP, and `[<minsize=2<NBSP>>a|b]` has a size that is not
+#: a run of digits. The post-process goes the other way — see `_postprocess`.
+_S = f"[{ASCII_SPACE}]"
 
 _VARIABLE_RE = re.compile(f"%({ASCII_WORD}+)%")
 _CONDITIONAL_NAME_RE = re.compile(f"[A-Za-z_]{ASCII_WORD}*")
@@ -56,26 +65,24 @@ _PLURAL_PREFIX = "plural "
 # is the faithful translation, and because the property holding depends on a trim that
 # lives in another function — narrow the charlist there and this would start to matter
 # silently.
-_HTML_TAG_RE = re.compile(f"^([a-zA-Z][a-zA-Z0-9-]*)(?:{JS_SPACE}+[^>]*)?/?\\Z")
-_PER_ELEM_HTML_RE = re.compile(f"^[a-zA-Z][a-zA-Z0-9]*{JS_SPACE}")
+#: ONE whitespace character, not a run: `[^>]*` takes whitespace too, so the same strings
+#: match — and `[ws]+[^>]*` let the two runs trade characters, every split retried when a
+#: quoted `>` in the config makes the anchor fail. Quadratic in the config, which a macro
+#: can make a megabyte long.
+_HTML_TAG_RE = re.compile(f"^([a-zA-Z][a-zA-Z0-9-]*)(?:{_S}[^>]*)?/?\\Z")
+_PER_ELEM_HTML_RE = re.compile(f"^[a-zA-Z][a-zA-Z0-9]*{_S}")
 
 _CONFIG_KEY_RE = re.compile(
     f"{NOT_AFTER_WORD}(?:{js_ci_ascii('minsize')}|{js_ci_ascii('maxsize')}"
-    f"|{js_ci_ascii('sep')}|{js_ci_ascii('lastsep')}){JS_SPACE}*="
+    f"|{js_ci_ascii('sep')}|{js_ci_ascii('lastsep')}){_S}*="
 )
-_MINSIZE_RE = re.compile(
-    f"{js_ci_ascii('minsize')}{JS_SPACE}*={JS_SPACE}*({ASCII_DIGIT}+)"
-)
-_MAXSIZE_RE = re.compile(
-    f"{js_ci_ascii('maxsize')}{JS_SPACE}*={JS_SPACE}*({ASCII_DIGIT}+)"
-)
+_MINSIZE_RE = re.compile(f"{js_ci_ascii('minsize')}{_S}*={_S}*({ASCII_DIGIT}+)")
+_MAXSIZE_RE = re.compile(f"{js_ci_ascii('maxsize')}{_S}*={_S}*({ASCII_DIGIT}+)")
 #: The lookbehind is what keeps `lastsep="…"` from also matching as `sep`.
 _SEP_RE = re.compile(
-    f'(?<!{js_ci_ascii("last")}){js_ci_ascii("sep")}{JS_SPACE}*={JS_SPACE}*"([^"]*)"'
+    f'(?<!{js_ci_ascii("last")}){js_ci_ascii("sep")}{_S}*={_S}*"([^"]*)"'
 )
-_LASTSEP_RE = re.compile(
-    f'{js_ci_ascii("lastsep")}{JS_SPACE}*={JS_SPACE}*"([^"]*)"'
-)
+_LASTSEP_RE = re.compile(f'{js_ci_ascii("lastsep")}{_S}*={_S}*"([^"]*)"')
 
 
 def parse_template(src: str) -> ParsedAst:
@@ -242,31 +249,79 @@ def _plan_brace_construct(content: str) -> _Plan:
 
 
 def has_direct_reference(lists: Sequence[Sequence[Node]]) -> bool:
-    """Does a construct body hold a `%var%` that expansion would splice at THIS
-    construct's own level?
+    """Does a construct body hold something the reference engines see as TEXT before they
+    split it?
 
-    One at the top level of an option counts, and so does one inside a conditional's
-    branches: the reference engines resolve `{?…}` before they expand, so a branch's text
-    lands in the body ahead of the split. Nested enumerations / permutations / plurals are
-    not entered — a value inside them is spliced when THEY render, and a `|` it carries
-    belongs to them.
+    Two things do, and both sit at the top level of an option:
+
+    - a `%var%` — expansion runs over the whole text before any bracket is read, so a `|`
+      in the value separates options there (spintax-js#78);
+    - a `{?…}` conditional — the plugin resolves it at Stage 6a, so the taken branch lands
+      in the body ahead of the split. A `|` it carries separates options, an empty branch
+      leaves an empty permutation element that is dropped, and whitespace at a branch's
+      edge is the element's edge.
+
+    0.4.0 marked a conditional only when a `%var%` sat in its branches, so `[{?f?a|b|x}|c]`
+    rendered a raw `|` and `[{?f?live}|slots|poker]` kept a blank element — it printed
+    `Есть покер, слоты и.` for a list item gated by a flag, which is an ordinary template
+    (spintax-js#80).
+
+    Nested enumerations / permutations / plurals are not entered: a value inside them is
+    spliced when THEY render, and a `|` it carries belongs to them. A conditional marks on
+    sight, so there is no branch left to descend into either — the scan is FLAT, and that
+    is not only simplicity. Descending re-read a branch at every level of a nested chain.
 
     Iterative, like every walk here: a deep chain of conditionals is content, and the
     parser must not raise on content.
     """
-    stack: list[Sequence[Node]] = list(lists)
-    while stack:
-        for node in stack.pop():
-            if isinstance(node, VariableNode):
+    return any(
+        isinstance(node, VariableNode | ConditionalNode) for list_ in lists for node in list_
+    )
+
+
+#: A `%var%` reference written inside a permutation's `<config>` header or a separator.
+_REFERENCE_RE = re.compile(f"%{ASCII_WORD}+%")
+
+
+def _holds_conditional(text: str) -> bool:
+    """Is there a whole `{?…}` here that the renderer's conditional pass would resolve?
+
+    A bare `{?` is NOT enough. `<{?}>` is a literal separator, and marking it made every
+    level of `[<{?}>a|[<{?}>a|…]]` rescan the nested body for a conditional that is not
+    there — twice the time on deep nesting, found in review upstream. So the braces are
+    matched and the head is recognized before anything is marked.
+    """
+    if "{?" not in text:
+        return False
+    opens: list[int] = []
+    for i, ch in enumerate(text):
+        if ch == "{":
+            opens.append(i)
+        elif ch == "}" and opens:
+            open_at = opens.pop()
+            if (
+                text[open_at + 1 : open_at + 2] == "?"
+                and recognize_conditional(text, open_at + 1, i) is not None
+            ):
                 return True
-            if isinstance(node, ConditionalNode):
-                stack.append(node.then)
-                stack.append(node.otherwise)
     return False
 
 
-#: A `%var%` reference written inside a separator string — config or per-element.
-_REFERENCE_RE = re.compile(f"%{ASCII_WORD}+%")
+def _holds_text_for_reread(text: str) -> bool:
+    """Is this raw string one the reference engines resolve BEFORE any bracket is read?
+
+    They expand variables and resolve conditionals over the whole template first, so to
+    them a permutation's `<…>` header and its per-element separators are as much text as an
+    element is. `minsize=%n%`, `maxsize=%n%`, an unquoted `sep=%S%`, a whole
+    `lastsep="{?en? and | и }"` — each takes its value from the context, and always has in
+    PHP.
+
+    0.4.0 tested the PARSED `sep` and `lastsep` for references only. A size reference never
+    arrives there (a size that is not digits parses to nothing) and neither does an
+    unquoted separator (it parses to the default), so none of those was ever read as text
+    (spintax-js#80).
+    """
+    return _REFERENCE_RE.search(text) is not None or _holds_conditional(text)
 
 
 class ConditionalHead(NamedTuple):
@@ -391,12 +446,11 @@ def _plan_permutation(raw_inner: str) -> _Plan:
     config, content = _extract_permutation_config(raw_inner)
     elements = _extract_per_element_separators(split_top_level(content))
     separators = [sep for _text, sep in elements]
-    # The reference engines expand the config and the per-element separators too — to
-    # them it is all text — so a reference written there is as direct as one in an element.
-    separator_has_ref = (
-        _REFERENCE_RE.search(config.sep) is not None
-        or (config.lastsep is not None and _REFERENCE_RE.search(config.lastsep) is not None)
-        or any(sep is not None and _REFERENCE_RE.search(sep) is not None for sep in separators)
+    # The RAW header — exactly what precedes the content — not the parsed `sep` and
+    # `lastsep`. See `_holds_text_for_reread` for why that distinction is the whole fix.
+    header = raw_inner[: len(raw_inner) - len(content)]
+    text_needs_reread = _holds_text_for_reread(header) or any(
+        sep is not None and _holds_text_for_reread(sep) for sep in separators
     )
 
     def build(parts: list[list[Node]]) -> Node:
@@ -404,7 +458,7 @@ def _plan_permutation(raw_inner: str) -> _Plan:
             PermOption(nodes=tuple(nodes), separator=sep)
             for nodes, sep in zip(parts, separators, strict=True)
         )
-        direct = separator_has_ref or has_direct_reference([o.nodes for o in options])
+        direct = text_needs_reread or has_direct_reference([o.nodes for o in options])
         return PermutationNode(config=config, options=options, raw=raw_inner if direct else None)
 
     return [text for text, _sep in elements], build
@@ -476,7 +530,7 @@ def _looks_like_html_start_tag(tag_text: str, remaining: str) -> bool:
     if trimmed.endswith("/"):
         return True
     tag_name = (m.group(1) or "").lower()
-    closing = re.compile(f"</{js_ci_unicode(re.escape(tag_name))}{JS_SPACE}*>", re.IGNORECASE)
+    closing = re.compile(f"</{js_ci_unicode(re.escape(tag_name))}{_S}*>", re.IGNORECASE)
     return closing.search(remaining) is not None
 
 

@@ -48,8 +48,8 @@ from ._charclasses import (
     ASCII_WORD,
     JS_LINE_END,
     JS_LINE_START,
-    JS_NOT_SPACE,
     PHP_TRIM_CHARS,
+    UCP_NOT_SPACE,
 )
 from ._errors import IncludeResolverError
 from ._rng import Rng
@@ -107,7 +107,11 @@ _VARIABLE_RE = re.compile(f"%({ASCII_WORD}+)%")
 #: `\Z` rather than `$`: the reference has no `m` flag here, so it anchors at the very end
 #: and must not accept a trailing newline.
 _INTEGER_RE = re.compile(f"-?{ASCII_DIGIT}+\\Z")
-_NOT_BLANK_RE = re.compile(JS_NOT_SPACE)
+#: A character outside PHP's `\s`. The plugin's `is_truthy` tests `/\S/u`, and `/u` is UCP
+#: there — so this is NOT JavaScript's `\S`, which disagrees on exactly two kinds of value:
+#: U+FEFF alone is truthy to PHP and blank to JavaScript, U+0085 or U+180E alone the other
+#: way round. Which branch renders turns on it (spintax-js#81).
+_NOT_BLANK_RE = re.compile(UCP_NOT_SPACE)
 _HAS_CONSTRUCT_RE = re.compile(r"[{\[%]")
 _HAS_BRACKET_RE = re.compile(r"[{}\[\]]")
 
@@ -791,10 +795,24 @@ def _finish_permutation(job: _JoinPermutation) -> str:
     That ordering is the RNG contract, not an implementation detail: children draw first,
     then the size pick, then the shuffle. It matches the plugin exactly, which is why the
     permutation rng-strategy fixtures can assert exact output.
+
+    **An element is its RENDERED text, trimmed, and one that renders empty is no element**
+    (spintax-js#80). The plugin resolves every nested enumeration and permutation before it
+    splits this one, so the parts it splits are already that text — each trimmed, the empty
+    ones dropped along with the separator they carried. The parse does the same to the raw
+    parts, but `[slots|{live casino|}|poker]` is three parts there and only two elements
+    once `{live casino|}` picks its empty option; kept, it printed `slots, , poker`, and
+    `[<minsize=3;maxsize=3>a|{b|}|c]` counted three and printed `a  c`. The re-read of a
+    marked construct does not reach this: it drops a part that is empty as TEXT, and
+    `{b|}` is not empty until it is rendered.
+
+    The size pick and the shuffle count what remains, as PHP's do. An element whose text is
+    neither empty nor padded changes nothing, draws included.
     """
     elements = [
-        _Element(text="".join(part), sep=sep)
+        element
         for part, sep in zip(job.parts, job.separators, strict=True)
+        if (element := _Element(text="".join(part).strip(PHP_TRIM_CHARS), sep=sep)).text
     ]
     total = len(elements)
     if total == 0:

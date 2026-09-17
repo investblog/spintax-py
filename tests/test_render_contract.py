@@ -166,7 +166,7 @@ def test_context_lookup_ignores_case() -> None:
     assert render("%name%", context={"NAME": "v"}, post_process=False) == "v"
 
 
-# ── truthiness sits on the JS/Python whitespace fault line ────────────────────
+# ── truthiness sits on a three-way whitespace fault line ──────────────────────
 
 
 @pytest.mark.parametrize(
@@ -175,14 +175,19 @@ def test_context_lookup_ignores_case() -> None:
         ("a", "yes"),
         (" ", "no"),
         ("", "no"),
-        # U+FEFF is whitespace to JavaScript and NOT to Python; U+001C is the reverse.
-        # Under Python's `\S` both of these flip, and nothing in the corpus would notice.
-        # Both verified against the reference.
-        ("﻿", "no"),
+        # The plugin's `is_truthy` tests `/\S/u`, and `/u` is PCRE2_UCP — so the set is
+        # PHP's, not Python's and not JavaScript's, and all three differ (spintax-js#81).
+        # U+FEFF is blank to JavaScript alone, so it is TRUTHY here; U+001C is blank to
+        # Python alone, so it is truthy too; U+0085 and U+180E are blank to PHP alone, so
+        # they are falsy. Nothing in the corpus notices the first two — both measured
+        # against the reference, which is where these four came from.
+        ("﻿", "yes"),
         ("\x1c", "yes"),
+        ("\x85", "no"),
+        ("᠎", "no"),
     ],
 )
-def test_truthiness_follows_javascript_s_idea_of_blank(value: str, expected: str) -> None:
+def test_truthiness_follows_php_s_idea_of_blank(value: str, expected: str) -> None:
     assert render("{?V?yes|no}", context={"V": value}, post_process=False) == expected
 
 

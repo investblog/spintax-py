@@ -1,11 +1,11 @@
 {
- "reference_version": "0.7.0",
+ "reference_version": "0.9.0",
  "note": "Generated — do not hand-edit. See generate_parser_parity.cjs.",
  "cases": [
   {
    "template": "",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "",
     "setDefs": {},
     "defDefs": {},
@@ -15,7 +15,7 @@
   {
    "template": "plain text",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "plain text",
     "setDefs": {},
     "defDefs": {},
@@ -30,7 +30,7 @@
   {
    "template": "%var%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "%var%",
     "setDefs": {},
     "defDefs": {},
@@ -45,7 +45,7 @@
   {
    "template": "%Var_1%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "%Var_1%",
     "setDefs": {},
     "defDefs": {},
@@ -60,7 +60,7 @@
   {
    "template": "% not a var %",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "% not a var %",
     "setDefs": {},
     "defDefs": {},
@@ -75,7 +75,7 @@
   {
    "template": "%unclosed",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "%unclosed",
     "setDefs": {},
     "defDefs": {},
@@ -90,7 +90,7 @@
   {
    "template": "100%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "100%",
     "setDefs": {},
     "defDefs": {},
@@ -105,7 +105,7 @@
   {
    "template": "a%b%c",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "a%b%c",
     "setDefs": {},
     "defDefs": {},
@@ -128,7 +128,7 @@
   {
    "template": "%%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "%%",
     "setDefs": {},
     "defDefs": {},
@@ -143,7 +143,7 @@
   {
    "template": "%a%%b%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "%a%%b%",
     "setDefs": {},
     "defDefs": {},
@@ -162,7 +162,7 @@
   {
    "template": "%1abc%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "%1abc%",
     "setDefs": {},
     "defDefs": {},
@@ -177,7 +177,7 @@
   {
    "template": "%_leading%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "%_leading%",
     "setDefs": {},
     "defDefs": {},
@@ -192,7 +192,7 @@
   {
    "template": "{a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -220,7 +220,7 @@
   {
    "template": "{a|b|c}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|b|c}",
     "setDefs": {},
     "defDefs": {},
@@ -254,7 +254,7 @@
   {
    "template": "{}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{}",
     "setDefs": {},
     "defDefs": {},
@@ -271,7 +271,7 @@
   {
    "template": "{a}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a}",
     "setDefs": {},
     "defDefs": {},
@@ -293,7 +293,7 @@
   {
    "template": "{|}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{|}",
     "setDefs": {},
     "defDefs": {},
@@ -311,7 +311,7 @@
   {
    "template": "{|a}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{|a}",
     "setDefs": {},
     "defDefs": {},
@@ -334,7 +334,7 @@
   {
    "template": "{a|}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|}",
     "setDefs": {},
     "defDefs": {},
@@ -357,7 +357,7 @@
   {
    "template": "{ a | b }",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{ a | b }",
     "setDefs": {},
     "defDefs": {},
@@ -385,7 +385,7 @@
   {
    "template": "a{b|c}d",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "a{b|c}d",
     "setDefs": {},
     "defDefs": {},
@@ -421,7 +421,7 @@
   {
    "template": "{a|{b|c}}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|{b|c}}",
     "setDefs": {},
     "defDefs": {},
@@ -462,7 +462,7 @@
   {
    "template": "{{a|b}|c}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{{a|b}|c}",
     "setDefs": {},
     "defDefs": {},
@@ -503,7 +503,7 @@
   {
    "template": "{a|b|}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|b|}",
     "setDefs": {},
     "defDefs": {},
@@ -532,7 +532,7 @@
   {
    "template": "{a|b",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|b",
     "setDefs": {},
     "defDefs": {},
@@ -547,7 +547,7 @@
   {
    "template": "a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -562,7 +562,7 @@
   {
    "template": "[a|b",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a|b",
     "setDefs": {},
     "defDefs": {},
@@ -577,7 +577,7 @@
   {
    "template": "a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -592,7 +592,7 @@
   {
    "template": "}{",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "}{",
     "setDefs": {},
     "defDefs": {},
@@ -607,7 +607,7 @@
   {
    "template": "][",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "][",
     "setDefs": {},
     "defDefs": {},
@@ -622,7 +622,7 @@
   {
    "template": "{a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -637,7 +637,7 @@
   {
    "template": "[a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -652,7 +652,7 @@
   {
    "template": "{{a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{{a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -684,7 +684,7 @@
   {
    "template": "{a|b}}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|b}}",
     "setDefs": {},
     "defDefs": {},
@@ -716,7 +716,7 @@
   {
    "template": "{",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{",
     "setDefs": {},
     "defDefs": {},
@@ -731,7 +731,7 @@
   {
    "template": "}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "}",
     "setDefs": {},
     "defDefs": {},
@@ -746,7 +746,7 @@
   {
    "template": "[",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[",
     "setDefs": {},
     "defDefs": {},
@@ -761,7 +761,7 @@
   {
    "template": "]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "]",
     "setDefs": {},
     "defDefs": {},
@@ -776,7 +776,7 @@
   {
    "template": "{a]|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a]|b}",
     "setDefs": {},
     "defDefs": {},
@@ -798,7 +798,7 @@
   {
    "template": "{a}|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a}|b}",
     "setDefs": {},
     "defDefs": {},
@@ -824,7 +824,7 @@
   {
    "template": "{?V?a]|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?V?a]|b}",
     "setDefs": {},
     "defDefs": {},
@@ -852,7 +852,7 @@
   {
    "template": "{?V?a}|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?V?a}|b}",
     "setDefs": {},
     "defDefs": {},
@@ -879,7 +879,7 @@
   {
    "template": "{?V?a[|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?V?a[|b}",
     "setDefs": {},
     "defDefs": {},
@@ -902,7 +902,7 @@
   {
    "template": "{a[|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a[|b}",
     "setDefs": {},
     "defDefs": {},
@@ -924,7 +924,7 @@
   {
    "template": "{?VAR?then|else}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?VAR?then|else}",
     "setDefs": {},
     "defDefs": {},
@@ -952,7 +952,7 @@
   {
    "template": "{?!VAR?then}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?!VAR?then}",
     "setDefs": {},
     "defDefs": {},
@@ -975,7 +975,7 @@
   {
    "template": "{?VAR?then}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?VAR?then}",
     "setDefs": {},
     "defDefs": {},
@@ -998,7 +998,7 @@
   {
    "template": "{?VAR?}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?VAR?}",
     "setDefs": {},
     "defDefs": {},
@@ -1016,7 +1016,7 @@
   {
    "template": "{?VAR?|else}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?VAR?|else}",
     "setDefs": {},
     "defDefs": {},
@@ -1039,7 +1039,7 @@
   {
    "template": "{?_ok?a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?_ok?a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -1067,7 +1067,7 @@
   {
    "template": "{?V1?a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?V1?a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -1095,7 +1095,7 @@
   {
    "template": "{?VAR}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?VAR}",
     "setDefs": {},
     "defDefs": {},
@@ -1117,7 +1117,7 @@
   {
    "template": "{??x|y}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{??x|y}",
     "setDefs": {},
     "defDefs": {},
@@ -1145,7 +1145,7 @@
   {
    "template": "{?1BAD?x|y}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?1BAD?x|y}",
     "setDefs": {},
     "defDefs": {},
@@ -1173,7 +1173,7 @@
   {
    "template": "{?VAR|x}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?VAR|x}",
     "setDefs": {},
     "defDefs": {},
@@ -1201,7 +1201,7 @@
   {
    "template": "{?}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?}",
     "setDefs": {},
     "defDefs": {},
@@ -1223,7 +1223,7 @@
   {
    "template": "{?!?a}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?!?a}",
     "setDefs": {},
     "defDefs": {},
@@ -1245,7 +1245,7 @@
   {
    "template": "{?VAR?a|b|c}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?VAR?a|b|c}",
     "setDefs": {},
     "defDefs": {},
@@ -1273,7 +1273,7 @@
   {
    "template": "{?A?{x|y}|z}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?A?{x|y}|z}",
     "setDefs": {},
     "defDefs": {},
@@ -1314,7 +1314,7 @@
   {
    "template": "{?A?a|{x|y}}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?A?a|{x|y}}",
     "setDefs": {},
     "defDefs": {},
@@ -1355,7 +1355,7 @@
   {
    "template": "{plural 2: one|few|many}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural 2: one|few|many}",
     "setDefs": {},
     "defDefs": {},
@@ -1371,7 +1371,7 @@
   {
    "template": "{plural %n%: a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural %n%: a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -1387,7 +1387,7 @@
   {
    "template": "{plural 0: a|b|c}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural 0: a|b|c}",
     "setDefs": {},
     "defDefs": {},
@@ -1403,7 +1403,7 @@
   {
    "template": "{plural 2 one|few}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural 2 one|few}",
     "setDefs": {},
     "defDefs": {},
@@ -1431,7 +1431,7 @@
   {
    "template": "{plural: a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural: a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -1459,7 +1459,7 @@
   {
    "template": "{plural 1: {a|b}|c}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural 1: {a|b}|c}",
     "setDefs": {},
     "defDefs": {},
@@ -1475,7 +1475,7 @@
   {
    "template": "{plural 1: a:b|c}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural 1: a:b|c}",
     "setDefs": {},
     "defDefs": {},
@@ -1491,7 +1491,7 @@
   {
    "template": "{plural : a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural : a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -1507,7 +1507,7 @@
   {
    "template": "{plural x: a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural x: a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -1523,7 +1523,7 @@
   {
    "template": "{plural 1:}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural 1:}",
     "setDefs": {},
     "defDefs": {},
@@ -1539,7 +1539,7 @@
   {
    "template": "{plural 1: a}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural 1: a}",
     "setDefs": {},
     "defDefs": {},
@@ -1555,7 +1555,7 @@
   {
    "template": "{pluralx 1: a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{pluralx 1: a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -1583,7 +1583,7 @@
   {
    "template": "[a|b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a|b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -1632,7 +1632,7 @@
   {
    "template": "[a]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a]",
     "setDefs": {},
     "defDefs": {},
@@ -1663,7 +1663,7 @@
   {
    "template": "[]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[]",
     "setDefs": {},
     "defDefs": {},
@@ -1684,7 +1684,7 @@
   {
    "template": "[<sep=\", \">a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<sep=\", \">a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -1724,7 +1724,7 @@
   {
    "template": "[<lastsep=\" and \">a|b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<lastsep=\" and \">a|b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -1773,7 +1773,7 @@
   {
    "template": "[<minsize=2 maxsize=3>a|b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<minsize=2 maxsize=3>a|b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -1822,7 +1822,7 @@
   {
    "template": "[<minsize=2>a|b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<minsize=2>a|b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -1871,7 +1871,7 @@
   {
    "template": "[<maxsize=1>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<maxsize=1>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -1911,7 +1911,7 @@
   {
    "template": "[<, >a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<, >a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -1951,7 +1951,7 @@
   {
    "template": "[< >a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[< >a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -1991,7 +1991,7 @@
   {
    "template": "[<>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -2031,7 +2031,7 @@
   {
    "template": "[<sep=\"|\">a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<sep=\"|\">a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -2071,7 +2071,7 @@
   {
    "template": "[<lastsep=\"|\">a|b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<lastsep=\"|\">a|b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -2120,7 +2120,7 @@
   {
    "template": "[<sep=\"a|b\">x|y]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<sep=\"a|b\">x|y]",
     "setDefs": {},
     "defDefs": {},
@@ -2160,7 +2160,7 @@
   {
    "template": "[<MINSIZE=2 SEP=\", \">a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<MINSIZE=2 SEP=\", \">a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -2200,7 +2200,7 @@
   {
    "template": "[< sep = \"x\" >a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[< sep = \"x\" >a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -2240,7 +2240,7 @@
   {
    "template": "[<minsize=0>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<minsize=0>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -2280,7 +2280,7 @@
   {
    "template": "[<minsize=99>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<minsize=99>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -2320,7 +2320,7 @@
   {
    "template": "[<minsize=2 minsize=3>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<minsize=2 minsize=3>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -2360,7 +2360,7 @@
   {
    "template": "[<sep=\", \" lastsep=\" and \">a|b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<sep=\", \" lastsep=\" and \">a|b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -2409,7 +2409,7 @@
   {
    "template": "[<lastsep=\", \" sep=\" and \">a|b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<lastsep=\", \" sep=\" and \">a|b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -2458,7 +2458,7 @@
   {
    "template": "[<li>a|b</li>]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<li>a|b</li>]",
     "setDefs": {},
     "defDefs": {},
@@ -2498,7 +2498,7 @@
   {
    "template": "[<br/>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<br/>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -2538,7 +2538,7 @@
   {
    "template": "[<div class=x>a|b</div>]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<div class=x>a|b</div>]",
     "setDefs": {},
     "defDefs": {},
@@ -2578,7 +2578,7 @@
   {
    "template": "[<p>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<p>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -2618,7 +2618,7 @@
   {
    "template": "[a<, >b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a<, >b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -2658,7 +2658,7 @@
   {
    "template": "[a<, >b<; >c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a<, >b<; >c]",
     "setDefs": {},
     "defDefs": {},
@@ -2689,7 +2689,7 @@
   {
    "template": "[a</b>|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a</b>|c]",
     "setDefs": {},
     "defDefs": {},
@@ -2729,7 +2729,7 @@
   {
    "template": "[a<b class=x>|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a<b class=x>|c]",
     "setDefs": {},
     "defDefs": {},
@@ -2769,7 +2769,7 @@
   {
    "template": "[a<br/>|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a<br/>|c]",
     "setDefs": {},
     "defDefs": {},
@@ -2809,7 +2809,7 @@
   {
    "template": "[a<>b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a<>b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -2849,7 +2849,7 @@
   {
    "template": "[a<x>|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a<x>|c]",
     "setDefs": {},
     "defDefs": {},
@@ -2889,7 +2889,7 @@
   {
    "template": "[a< >b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a< >b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -2929,7 +2929,7 @@
   {
    "template": "[ a | b ]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[ a | b ]",
     "setDefs": {},
     "defDefs": {},
@@ -2969,7 +2969,7 @@
   {
    "template": "[\ta|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[\ta|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3009,7 +3009,7 @@
   {
    "template": "[\u000ba|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[\u000ba|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3049,7 +3049,7 @@
   {
    "template": "[\u0000a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[\u0000a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3089,7 +3089,7 @@
   {
    "template": "[ a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[ a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3129,7 +3129,7 @@
   {
    "template": "[ a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[ a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3169,7 +3169,7 @@
   {
    "template": "[﻿a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[﻿a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3209,7 +3209,7 @@
   {
    "template": "[< sep=\"x\">a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[< sep=\"x\">a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3249,7 +3249,7 @@
   {
    "template": "[<minsize\u001c=2>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<minsize\u001c=2>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3289,7 +3289,7 @@
   {
    "template": "[<minsize﻿=2>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<minsize﻿=2>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3297,10 +3297,10 @@
      {
       "type": "permutation",
       "config": {
-       "minsize": 2,
+       "minsize": null,
        "maxsize": null,
-       "sep": " ",
-       "lastsep": null
+       "sep": "minsize﻿=2",
+       "lastsep": "minsize﻿=2"
       },
       "options": [
        {
@@ -3329,7 +3329,7 @@
   {
    "template": "[<sep\u001c=\"x\">a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<sep\u001c=\"x\">a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3369,7 +3369,7 @@
   {
    "template": "[<sep﻿=\"x\">a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<sep﻿=\"x\">a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3379,8 +3379,8 @@
       "config": {
        "minsize": null,
        "maxsize": null,
-       "sep": "x",
-       "lastsep": null
+       "sep": "sep﻿=\"x\"",
+       "lastsep": "sep﻿=\"x\""
       },
       "options": [
        {
@@ -3409,7 +3409,7 @@
   {
    "template": "[<minsize=\u001c2>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<minsize=\u001c2>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3449,7 +3449,7 @@
   {
    "template": "[<minsize=﻿2>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<minsize=﻿2>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3457,7 +3457,7 @@
      {
       "type": "permutation",
       "config": {
-       "minsize": 2,
+       "minsize": null,
        "maxsize": null,
        "sep": " ",
        "lastsep": null
@@ -3489,7 +3489,7 @@
   {
    "template": "[<div>a|b</div\u001c>]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<div>a|b</div\u001c>]",
     "setDefs": {},
     "defDefs": {},
@@ -3529,7 +3529,7 @@
   {
    "template": "[<div>a|b</div﻿>]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<div>a|b</div﻿>]",
     "setDefs": {},
     "defDefs": {},
@@ -3539,15 +3539,15 @@
       "config": {
        "minsize": null,
        "maxsize": null,
-       "sep": " ",
-       "lastsep": null
+       "sep": "div",
+       "lastsep": "div"
       },
       "options": [
        {
         "nodes": [
          {
           "type": "literal",
-          "value": "<div>a"
+          "value": "a"
          }
         ],
         "separator": null
@@ -3569,7 +3569,7 @@
   {
    "template": "[a<\u001cx>b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a<\u001cx>b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -3609,7 +3609,7 @@
   {
    "template": "[a<﻿x>b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a<﻿x>b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -3649,7 +3649,7 @@
   {
    "template": "%перем%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "%перем%",
     "setDefs": {},
     "defDefs": {},
@@ -3664,7 +3664,7 @@
   {
    "template": "{?перем?a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?перем?a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -3692,7 +3692,7 @@
   {
    "template": "[<minsize=٢>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<minsize=٢>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3732,7 +3732,7 @@
   {
    "template": "[<ésep=\"x\">a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<ésep=\"x\">a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -3772,7 +3772,7 @@
   {
    "template": "%café%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "%café%",
     "setDefs": {},
     "defDefs": {},
@@ -3787,7 +3787,7 @@
   {
    "template": "{?café?a|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?café?a|b}",
     "setDefs": {},
     "defDefs": {},
@@ -3815,7 +3815,7 @@
   {
    "template": "/# c #/text",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "/# c #/text",
     "setDefs": {},
     "defDefs": {},
@@ -3830,7 +3830,7 @@
   {
    "template": "a/#\nmulti\n#/b",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "a/#\nmulti\n#/b",
     "setDefs": {},
     "defDefs": {},
@@ -3845,7 +3845,7 @@
   {
    "template": "/#a#/{x|y}/#b#/",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "/#a#/{x|y}/#b#/",
     "setDefs": {},
     "defDefs": {},
@@ -3873,7 +3873,7 @@
   {
    "template": "/# unterminated",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "/# unterminated",
     "setDefs": {},
     "defDefs": {},
@@ -3888,7 +3888,7 @@
   {
    "template": "{a|/#c#/b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|/#c#/b}",
     "setDefs": {},
     "defDefs": {},
@@ -3916,7 +3916,7 @@
   {
    "template": "/##/",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "/##/",
     "setDefs": {},
     "defDefs": {},
@@ -3926,7 +3926,7 @@
   {
    "template": "/#/#nested#/#/",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "/#/#nested#/#/",
     "setDefs": {},
     "defDefs": {},
@@ -3941,7 +3941,7 @@
   {
    "template": "#set %x% = 1\n%x%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "#set %x% = 1\n%x%",
     "setDefs": {
      "x": "1"
@@ -3962,7 +3962,7 @@
   {
    "template": "#def %y% = {a|b}\n%y%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "#def %y% = {a|b}\n%y%",
     "setDefs": {},
     "defDefs": {
@@ -3983,7 +3983,7 @@
   {
    "template": "#set %x% = 1\n#set %x% = 2\n%x%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "#set %x% = 1\n#set %x% = 2\n%x%",
     "setDefs": {
      "x": "2"
@@ -4004,7 +4004,7 @@
   {
    "template": "#set %x% =\n%x%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "#set %x% =\n%x%",
     "setDefs": {
      "x": ""
@@ -4025,7 +4025,7 @@
   {
    "template": "  #set %x% = 1\n%x%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "  #set %x% = 1\n%x%",
     "setDefs": {
      "x": "1"
@@ -4046,7 +4046,7 @@
   {
    "template": "#set %X% = 1\n%x%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "#set %X% = 1\n%x%",
     "setDefs": {
      "x": "1"
@@ -4067,7 +4067,7 @@
   {
    "template": "{#set %x% = 1\na|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{#set %x% = 1\na|b}",
     "setDefs": {},
     "defDefs": {},
@@ -4104,7 +4104,7 @@
   {
    "template": "#set %x% = {a|b}\n%x%%x%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "#set %x% = {a|b}\n%x%%x%",
     "setDefs": {
      "x": "{a|b}"
@@ -4129,7 +4129,7 @@
   {
    "template": "#def %a% = 1\n#set %b% = 2\n%a%%b%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "#def %a% = 1\n#set %b% = 2\n%a%%b%",
     "setDefs": {
      "b": "2"
@@ -4156,7 +4156,7 @@
   {
    "template": "#set %x% = A\r%x%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "#set %x% = A\r%x%",
     "setDefs": {
      "x": "A"
@@ -4177,7 +4177,7 @@
   {
    "template": "#set %x% = A\r\n%x%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "#set %x% = A\r\n%x%",
     "setDefs": {
      "x": "A"
@@ -4198,7 +4198,7 @@
   {
    "template": "#set %x% = A %x%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "#set %x% = A %x%",
     "setDefs": {
      "x": "A"
@@ -4219,7 +4219,7 @@
   {
    "template": "a\rb",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "a\rb",
     "setDefs": {},
     "defDefs": {},
@@ -4234,7 +4234,7 @@
   {
    "template": "a\r\nb",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "a\r\nb",
     "setDefs": {},
     "defDefs": {},
@@ -4249,7 +4249,7 @@
   {
    "template": "a b",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "a b",
     "setDefs": {},
     "defDefs": {},
@@ -4264,7 +4264,7 @@
   {
    "template": "a b",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "a b",
     "setDefs": {},
     "defDefs": {},
@@ -4279,7 +4279,7 @@
   {
    "template": "a\n\n\n\nb",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "a\n\n\n\nb",
     "setDefs": {},
     "defDefs": {},
@@ -4294,7 +4294,7 @@
   {
    "template": "a\n\nb",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "a\n\nb",
     "setDefs": {},
     "defDefs": {},
@@ -4309,7 +4309,7 @@
   {
    "template": "#set %x% = 1\n\n\n\nb",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "#set %x% = 1\n\n\n\nb",
     "setDefs": {
      "x": "1"
@@ -4326,7 +4326,7 @@
   {
    "template": "{a|[b|c]}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|[b|c]}",
     "setDefs": {},
     "defDefs": {},
@@ -4379,7 +4379,7 @@
   {
    "template": "[{a|b}|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[{a|b}|c]",
     "setDefs": {},
     "defDefs": {},
@@ -4432,7 +4432,7 @@
   {
    "template": "{?V?[a|b]|c}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?V?[a|b]|c}",
     "setDefs": {},
     "defDefs": {},
@@ -4485,7 +4485,7 @@
   {
    "template": "[<sep=\", \">{a|b}|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<sep=\", \">{a|b}|c]",
     "setDefs": {},
     "defDefs": {},
@@ -4538,7 +4538,7 @@
   {
    "template": "%v%{a|b}[c|d]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "%v%{a|b}[c|d]",
     "setDefs": {},
     "defDefs": {},
@@ -4599,7 +4599,7 @@
   {
    "template": "{plural %n%: {a|b}|c}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural %n%: {a|b}|c}",
     "setDefs": {},
     "defDefs": {},
@@ -4615,7 +4615,7 @@
   {
    "template": "{a|b}{c|d}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|b}{c|d}",
     "setDefs": {},
     "defDefs": {},
@@ -4660,7 +4660,7 @@
   {
    "template": "[a|b][c|d]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a|b][c|d]",
     "setDefs": {},
     "defDefs": {},
@@ -4729,7 +4729,7 @@
   {
    "template": "{{{a|b}}}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{{{a|b}}}",
     "setDefs": {},
     "defDefs": {},
@@ -4771,7 +4771,7 @@
   {
    "template": "[[[a|b]]]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[[[a|b]]]",
     "setDefs": {},
     "defDefs": {},
@@ -4843,7 +4843,7 @@
   {
    "template": "{%L%}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{%L%}",
     "setDefs": {},
     "defDefs": {},
@@ -4866,7 +4866,7 @@
   {
    "template": "{a|%L%}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|%L%}",
     "setDefs": {},
     "defDefs": {},
@@ -4895,7 +4895,7 @@
   {
    "template": "[%L%]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[%L%]",
     "setDefs": {},
     "defDefs": {},
@@ -4927,7 +4927,7 @@
   {
    "template": "[a|%L%|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a|%L%|b]",
     "setDefs": {},
     "defDefs": {},
@@ -4977,7 +4977,7 @@
   {
    "template": "[%nope%|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[%nope%|b]",
     "setDefs": {},
     "defDefs": {},
@@ -5018,7 +5018,7 @@
   {
    "template": "{a|{%L%}}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|{%L%}}",
     "setDefs": {},
     "defDefs": {},
@@ -5054,7 +5054,7 @@
   {
    "template": "[a|{%L%}]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a|{%L%}]",
     "setDefs": {},
     "defDefs": {},
@@ -5102,7 +5102,7 @@
   {
    "template": "[{?flag?%L%|none}|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[{?flag?%L%|none}|c]",
     "setDefs": {},
     "defDefs": {},
@@ -5156,7 +5156,7 @@
   {
    "template": "{?flag?%L%|none}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{?flag?%L%|none}",
     "setDefs": {},
     "defDefs": {},
@@ -5184,7 +5184,7 @@
   {
    "template": "{{?flag?{?deep?%L%}}|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{{?flag?{?deep?%L%}}|b}",
     "setDefs": {},
     "defDefs": {},
@@ -5229,7 +5229,7 @@
   {
    "template": "[<sep=\"%S%\">a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<sep=\"%S%\">a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -5270,7 +5270,7 @@
   {
    "template": "[<sep=\"-\";lastsep=\"%S%\">a|b|c]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<sep=\"-\";lastsep=\"%S%\">a|b|c]",
     "setDefs": {},
     "defDefs": {},
@@ -5320,7 +5320,7 @@
   {
    "template": "[<%S%>a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<%S%>a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -5361,7 +5361,7 @@
   {
    "template": "[a <%S%> | b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a <%S%> | b]",
     "setDefs": {},
     "defDefs": {},
@@ -5402,7 +5402,7 @@
   {
    "template": "[a|b <%S%>]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[a|b <%S%>]",
     "setDefs": {},
     "defDefs": {},
@@ -5451,7 +5451,7 @@
   {
    "template": "[<sep=\"100%\">a|b]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[<sep=\"100%\">a|b]",
     "setDefs": {},
     "defDefs": {},
@@ -5491,7 +5491,7 @@
   {
    "template": "{a|100%|b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|100%|b}",
     "setDefs": {},
     "defDefs": {},
@@ -5525,7 +5525,7 @@
   {
    "template": "{plural %n%: a|%b%}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{plural %n%: a|%b%}",
     "setDefs": {},
     "defDefs": {},
@@ -5541,7 +5541,7 @@
   {
    "template": "{a|{plural %n%: x|y}}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|{plural %n%: x|y}}",
     "setDefs": {},
     "defDefs": {},
@@ -5570,7 +5570,7 @@
   {
    "template": "[%x%|{plural 1: a|b}]",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[%x%|{plural 1: a|b}]",
     "setDefs": {},
     "defDefs": {},
@@ -5612,7 +5612,7 @@
   {
    "template": "{\n#set %x% = A\n|%x%}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{\n#set %x% = A\n|%x%}",
     "setDefs": {
      "x": "A"
@@ -5643,7 +5643,7 @@
   {
    "template": "{a|#set %x% = b}",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{a|#set %x% = b}",
     "setDefs": {},
     "defDefs": {},
@@ -5680,7 +5680,7 @@
   {
    "template": "{%L%",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "{%L%",
     "setDefs": {},
     "defDefs": {},
@@ -5699,7 +5699,7 @@
   {
    "template": "[%L%|b",
    "ast": {
-    "astVersion": 3,
+    "astVersion": 4,
     "source": "[%L%|b",
     "setDefs": {},
     "defDefs": {},

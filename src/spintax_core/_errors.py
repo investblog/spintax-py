@@ -35,7 +35,8 @@ class AstVersionError(SpintaxError):
     built before `AST_VERSION` 2 carries no `#def` map, so rendering it would quietly
     drop every definition and produce plausible output that is wrong; one built before
     `AST_VERSION` 3 carries no `raw`, so a pipe-joined value inside `{…}`/`[…]` would
-    quietly render as one option again.
+    quietly render as one option again; one built before 4 has `raw` but not on every
+    construct that needs it, which is the same defect on a narrower set of templates.
     """
 
 

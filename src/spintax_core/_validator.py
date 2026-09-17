@@ -23,12 +23,15 @@ _KNOWN_CONFIG_KEYS = frozenset({"minsize", "maxsize", "sep", "lastsep"})
 # spelled out rather than trusted.
 _W = _directives.ASCII_WORD
 
-#: `\s` is Unicode in both engines — but not the SAME Unicode. Python's includes
-#: U+001C–U+001F and U+0085; JavaScript's includes U+FEFF and excludes those five. Six
-#: characters, and U+FEFF is not exotic: it arrives by copy-paste. Leaving `\s` alone
-#: was therefore not neutrality, it was a fourth divergence sitting beside the three
-#: this file already fixed.
-_S = _charclasses.JS_SPACE
+#: The permutation-config gap, which is ASCII.
+#:
+#: `\s` is Unicode in Python and Unicode-but-a-different-set in JavaScript, and BOTH are
+#: wrong here: the plugin writes these patterns without `/u`, so its `\s` is byte-mode
+#: ASCII (spintax-js#81). The validator has to agree with the parser character for
+#: character or the two disagree about what a config is — `[<foo<NBSP>=1>a|b]` is valid
+#: because the `<…>` is a literal separator, and `[<minsize=2<NBSP>>a|b]` is
+#: `permutation.minsize-not-integer` because the no-break space belongs to the value.
+_S = f"[{_charclasses.ASCII_SPACE}]"
 
 _CONFIG_PREFIX_RE = re.compile(r"\[<([^>]*?)>")
 #: Redundant with the key loop below — every path into a diagnostic already requires a

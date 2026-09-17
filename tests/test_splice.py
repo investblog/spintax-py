@@ -130,7 +130,16 @@ def test_an_element_that_becomes_empty_is_dropped_before_the_shuffle() -> None:
 
 
 def test_a_taken_branch_is_trimmed_at_an_elements_edge() -> None:
-    assert rw("[{?flag? padded |x}|b]", "last", {"flag": "1"}) == " padded  b"
+    """The branch's own padding is the ELEMENT's padding, so the element trim takes it.
+
+    Re-measured at `@spintax/core` 0.9.0: this returned `' padded  b'` until spintax-js#80
+    made a whole `{?…}` directly in `[…]` mark the construct for the re-read whatever its
+    branches hold. The plugin resolves conditionals at Stage 6a, before any bracket is
+    read, so the taken branch lands in the body ahead of the split and its edges are the
+    element's edges.
+    """
+    assert rw("[{?flag? padded |x}|b]", "last", {"flag": "1"}) == "padded b"
+    assert rw("[{?flag? padded |x}|b]", "first", {"flag": "1"}) == "b padded"
 
 
 def test_a_value_that_is_only_a_pipe_yields_empty_options() -> None:

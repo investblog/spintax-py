@@ -35,7 +35,13 @@ from ._errors import AstVersionError
 #: reference is spliced into at render time (spintax-py#3). A handle from version 2 carries
 #: no `raw`, so rendering it would silently keep a pipe-joined value as ONE option — the
 #: defect 0.4.0 fixed.
-AST_VERSION = 3
+#:
+#: 4 — the key that decides which constructs carry `raw` got WIDER (spintax-js#80): a whole
+#: `{?…}` directly in `{…}`/`[…]` marks the construct whatever its branches hold, and so
+#: does a reference or a conditional anywhere in a permutation's `<config>` header or in a
+#: per-element separator. The node SHAPE is version 3's; a handle built by 0.4.0 simply
+#: lacks `raw` exactly where the wider key puts it, and would render the old output.
+AST_VERSION = 4
 
 
 class Ast:
