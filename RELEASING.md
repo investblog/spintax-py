@@ -32,9 +32,22 @@ release is decided; the `announce` job publishes it verbatim.
 
 ## Versioning
 
-While 0.x / Beta: a behaviour fix toward the family contract is a **patch** (the `0.1.2`
-precedent — parse/render sentinel consistency); anything that widens or changes the
-public API is a minor.
+While 0.x / Beta, the line is **how much output moves**, not whether the public API did:
+
+- **patch** — a behaviour fix whose output changes for a narrow, nameable case. The
+  `0.1.2` precedent: parse/render sentinel consistency, one authored U+E000.
+- **minor** — a behaviour fix whose output changes for a whole CLASS of templates, or that
+  moves `AST_VERSION`. Two precedents, both parity fixes with no API change at all: `0.4.0`
+  (a `%var%` inside `{…}`/`[…]` splices as text — every template of that shape re-renders)
+  and `0.5.0` (UCP character classes, the one-case TLD, the wider re-read key; `AST_VERSION`
+  3 → 4). The reference called its equivalent of the latter a minor for the same reason.
+- **minor** — anything that widens or changes the public API.
+
+An earlier draft of this section said a behaviour fix toward the family contract is a patch
+full stop, citing only `0.1.2`. By then `0.4.0` had already contradicted it, and the rule
+sent the next release to the wrong number twice before being re-derived from the tags. If a
+future fix does not fit the split above, follow what the tags did, not this paragraph —
+then fix this paragraph.
 
 ## Cutting a release
 
