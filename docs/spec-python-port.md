@@ -3,22 +3,22 @@
 Status: **SHIPPED — P0 through P4 complete** ([`plan-p1.md`](plan-p1.md),
 [`plan-p2.md`](plan-p2.md), [`plan-p3.md`](plan-p3.md)). **`spintax-core` is published on
 [PyPI](https://pypi.org/project/spintax-core/)** (first release 0.1.0, 2026-07-20; see the git tags
-for the current version). All 168 corpus fixtures pass, 0 xfailed, 0 skipped. Every entry point —
+for the current version). Every corpus fixture passes, 0 xfailed, 0 skipped. Every entry point —
 `parse`, `render`, `validate`, `extract`, `analyze`, `neutralize` — is built and takes a `str` or a
 parsed `Ast`. Idea captured 2026-07-13; revised 2026-07-19 for engine 3.0.0 (`#def`, `#set` reverted
 to macro, BCS plurals). All questions below are answered or recorded as deliberate; this file is now
 a record of the decisions, not a plan of open ones.
 Owner: 301st
-Canonical location: this file, `W:\projects\spintax-py\docs\spec-python-port.md`.
+Canonical location: this file, `C:\projects\spintax\spintax-py\docs\spec-python-port.md`.
 
 > **Cross-repo paths.** This is the third engine in the Spintax family. Unless a path is
 > absolute, it is local to this repo. The other repos:
 >
 > | repo | what | license |
 > | --- | --- | --- |
-> | `W:\projects\spintax` | WordPress plugin — the **origin** PHP engine | GPL |
-> | `W:\projects\spintax-js` | `@spintax/core` (TS/npm) + **the golden corpus** | MIT |
-> | `W:\spintax-java` | Java origin | — |
+> | `C:\projects\spintax\spintax` | WordPress plugin — the **origin** PHP engine | GPL |
+> | `C:\projects\spintax\spintax-js` | `@spintax/core` (TS/npm) + **the golden corpus** | MIT |
+> | _(not checked out here)_ | Java origin | — |
 > | this repo | `spintax-core` (Python/PyPI) | MIT |
 
 ## 1. Why
@@ -64,30 +64,40 @@ WP-free PHPUnit runner against the real plugin engine.
   a single `#set` or `#def`; a `{plural}` count that resolves through a `#set` macro still holding
   spintax is an error, not a silent empty render
 - the **post-process pipeline** (shielding / spacing / capitalization)
-- **a `%var%` directly inside `{…}`/`[…]` is spliced as TEXT before the construct is split**
-  (`splice/*`, 19 fixtures, `@spintax/core` 0.7.0 / this port 0.4.0, spintax-py#3). The plugin
-  expands variables over the whole text before any bracket is read, so a value `a|b|c` inside
+- **a `%var%` or a whole `{?…}` directly inside `{…}`/`[…]` is spliced as TEXT before the
+  construct is split** (`splice/*`, `@spintax/core` 0.7.0 / this port 0.4.0, spintax-py#3;
+  **widened** by `@spintax/core` 0.8.0 / this port 0.5.0, spintax-js#80). The plugin expands
+  variables over the whole text before any bracket is read, so a value `a|b|c` inside
   `[<…>%list%]` is three elements and inside `{%list%}` three options; a conditional's taken
   branch lands in the body first (Stage 6a), and `<sep="%S%">` / a per-element `<%S%>` take
   their value. A tree walk has to re-read the construct from its expanded text — the parser
-  keeps `raw` on a construct with a *direct* reference (an option's top level, a conditional's
-  branches, a separator string; never inside a nested construct, which splices at its own
-  level), and the renderer re-reads it in the plugin's order: conditionals → variable fixpoint
-  → conditionals → parse. The hop budget is the plugin's 51 in every shape (`_passes_left`),
-  and what a fixpoint leaves unexpanded is frozen for the subtree. What does NOT split: a
-  reference at top level, an undefined name (one literal element), a nested construct's list.
+  keeps `raw` on a construct with a *direct* reference, and the renderer re-reads it in the
+  plugin's order: conditionals → variable fixpoint → conditionals → parse. The hop budget is
+  the plugin's 51 in every shape (`_passes_left`), and what a fixpoint leaves unexpanded is
+  frozen for the subtree. What does NOT split: a reference at top level, an undefined name
+  (one literal element), a nested construct's list.
 
-  **Two edges of that rule are the family's, not this port's — measured identical on
-  `@spintax/core` 0.7.0, and both follow from a tree walk marking `raw` per construct rather
-  than expanding the whole text as PHP does.** A reference in a *size* or unquoted config key
-  (`[<minsize=%n%>a|b|c]`, `[<sep=%S%>a|b]`) does not mark the construct, so it is never
-  expanded, where the plugin's whole-text pass would have substituted it before the bracket
-  was read. And a nested construct whose value carries an *unbalanced* bracket
-  (`[a|{%L%}]` with `L = x}|y`) splices at its own level, where the plugin's expand-then-parse
-  order would have let the stray `}` rewrite the OUTER element boundaries. Neither is reachable
-  from a `splice/*` fixture. Do not "fix" either here alone: the parity fixture pins the
-  reference's tree and a unilateral change would break parity in the direction of PHP while
-  breaking it against the engine this port is measured on. They belong upstream first.
+  **What counts as "direct" is the whole rule, and 0.4.0 drew it too narrow.** It is: a `%var%`
+  **or a `ConditionalNode`** at an option's top level — a conditional marks *on sight*, whatever
+  its branches hold, with no descent into them — **or** a reference or a whole `{?…}` anywhere in
+  the RAW `<config>` header or in a per-element separator. The parsed `sep`/`lastsep` are the
+  wrong thing to test: a size reference never reaches them (a non-digit size parses to nothing)
+  and an unquoted separator parses to the default. And an element is its *rendered* text,
+  trimmed, with the empty ones dropped along with the separator they carried, before the size
+  pick and the shuffle — the parse-time drop cannot see that, because `{b|}` is not empty until
+  it is rendered.
+
+  **One edge of that rule is still the family's, not this port's** — it follows from a tree walk
+  marking `raw` per construct rather than expanding the whole text as PHP does. A nested
+  construct whose value carries an *unbalanced* bracket (`[a|{%L%}]` with `L = x}|y`, which
+  renders `x|y} a`) splices at its own level, where the plugin's expand-then-parse order would
+  have let the stray `}` rewrite the OUTER element boundaries. It is not reachable from a
+  `splice/*` fixture. Do not "fix" it here alone: the parity fixture pins the reference's tree
+  and a unilateral change would break parity in the direction of PHP while breaking it against
+  the engine this port is measured on. It belongs upstream first. (The *other* edge recorded
+  here until 0.5.0 — a reference in a size or unquoted config key being silently ignored — did
+  go upstream, and is what spintax-js#80 fixed; the fix is mirrored above. Measured
+  2026-09-17: `[<minsize=%n%>a|b|c]` with `n=1` now renders one element in both engines.)
 
 **Allowed to diverge:** RNG selection results, internal architecture, diagnostic message strings,
 performance. Seeded rendering must be reproducible **within** this engine; cross-engine
@@ -145,7 +155,7 @@ def render_with(input: str | Ast, rng: Rng, **opts: object) -> str: ...
 **`render_with` is the only renderer**; `render` must be a thin wrapper that builds an `Rng` and
 delegates to it. This is a contract, not a convenience:
 
-- The corpus injects a choice source — 19 fixtures carry an explicit `rng` (`first` / `last` / a
+- The corpus injects a choice source — many fixtures carry an explicit `rng` (`first` / `last` / a
   sequence) and the reference harness defaults the rest to `first`. Without the seam those cases
   cannot run at all, and the remaining ones become coin flips.
 - The seam is what makes `#set` vs `#def` observable. The semantics differ only in **how many
@@ -266,8 +276,9 @@ you know the edges of.
 fixture put a `%var%` inside `{…}`/`[…]` — 258 cases, not one — so every tree-walk engine of the
 family rendered a pipe-joined value inside a bracket as ONE element while both textual PHP engines
 were right all along, and it reached production (131 published rows across 15 tenants, spintax-js#78).
-A corpus cannot see what a bracket does to a value it never puts there. Closed by the 19 `splice/*`
-fixtures (§3), but the lesson is the shape of the gap, not the case: when a new construct or value
+A corpus cannot see what a bracket does to a value it never puts there. Closed by the `splice/*`
+fixtures (§3) — and widened again by spintax-js#80, which found the same gap one level in, at a
+config header and a conditional's branches. The lesson is the shape of the gap, not the case: when a new construct or value
 kind lands, ask what the corpus never *combines*, not only what it never *mentions*. The port's own
 check for this class is the differential stand described in CLAUDE.md — random templates rendered
 on the reference with an injected RNG strategy, byte-compared to this port.
@@ -408,10 +419,33 @@ about wrongly first:
   meant different things in the two engines. Hence `js_ci_unicode` (keep the flag, exclude the
   Turkic pair via scoped `(?-i:…)`) and `js_ci_ascii` (drop the flag, spell the case out).
 
+**AMENDED 2026-09-17, for the change that will ship as 0.5.0 — the question above is the right
+one asked of the wrong engine.**
+Everything above is still true of JavaScript, and it is no longer what decides a class. The origin
+is PHP, and PHP compiles a pattern carrying `/u` with **PCRE2_UCP**: `\s`, `\d`, `\w` and `\b` are
+Unicode there. Every tree-walk port, this one included, had read them as ASCII and written that
+belief into its comments, so `и т.д.` rendered `и т. Д.` and `пример.рф` split while both PHP
+engines left them intact (spintax-js#81). So a ported pattern asks ONE question — *does the PHP
+source carry `/u`?* — and the answer, not the JavaScript dialect, picks the class:
+
+- **post-process**: all UCP (`UCP_SPACE`, `UCP_WORD`), except the decimal shield, which the plugin
+  writes without `/u` and which therefore stays ASCII. Conditional truthiness is PHP's `/\S/u` too,
+  so U+FEFF alone is **truthy** and U+0085 alone is blank.
+- **permutation config**: all ASCII (`ASCII_SPACE`), in the parser and the validator alike.
+
+Two consequences worth naming. First, **a TLD is a label in ONE case** (spintax-js#79): the domain
+and email shields now carry no `re.IGNORECASE` at all, because a case-insensitive flag makes Python
+fold a Unicode property — matching capitals with `\p{Ll}` — where PCRE2 leaves it alone. That also
+retires the Turkic guard on `JS_WORD_BOUNDARY`, which has no case-insensitive caller left.
+Second, **widening a character class is a cost change, not only a parity one**: the wider classes
+newly admit text the ASCII ones rejected outright, which is why the shields and capitalizers are
+scanners now rather than `re.sub` calls (see the `_postprocess.py` docstring for the measurements).
+
 The post-process and config patterns are **rewritten**, never transliterated from the TS source,
 and the shared fixtures plus `tests/test_case_folding.py` are what keep them honest. This is the
 single most likely place for a silent parity break; do it with the corpus wired and fuzz against the
-reference, never blind.
+reference, never blind — and note that the belief this amendment corrects survived four engines and
+a green corpus, because no fixture had asked.
 
 ### Q6 — `#include` resolution ✅ ANSWERED
 Stays **synchronous and host-injected** (`Callable[[str], str | None]`), same as TS. Async sources
