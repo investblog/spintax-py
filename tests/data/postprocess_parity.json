@@ -1,5 +1,5 @@
 {
- "reference_version": "0.3.1+6a4c39b",
+ "reference_version": "0.9.0+987b080",
  "note": "Generated — do not hand-edit.",
  "cases": [
   {
@@ -40,7 +40,7 @@
   },
   {
    "template": "visit пример.рф now",
-   "text": "Visit пример. Рф now"
+   "text": "Visit пример.рф now"
   },
   {
    "template": "3.14 is pi",
@@ -60,11 +60,11 @@
   },
   {
    "template": "и т.д. далее",
-   "text": "И т. Д. Далее"
+   "text": "И т.д. далее"
   },
   {
    "template": "и т. д. далее",
-   "text": "И т. Д. Далее"
+   "text": "И т. д. далее"
   },
   {
    "template": "см. стр. 5",
@@ -1736,7 +1736,7 @@
   },
   {
    "template": "?5a¡ ß.com:¡cY7…приме6,<…/9",
-   "text": "?5a¡ß. Com: ¡cY7…Приме6,<…/9"
+   "text": "?5a¡ß.com: ¡cY7…Приме6,<…/9"
   },
   {
    "template": "bi-:4> \t8\n;7½ß7…¡приме:примеaYß,b.7a42http://x.io>9приме¿719 ",
@@ -1752,7 +1752,7 @@
   },
   {
    "template": "ß1X.comĸc-",
-   "text": "SS1X.comĸc-"
+   "text": "ß1X.comĸc-"
   },
   {
    "template": "?8¿?7приме4…4ß>Yhttp://x.io/¿http://x.ioYĸ7-примеc3.com½X2ß;примеb-0;@i5b",
@@ -1760,7 +1760,7 @@
   },
   {
    "template": "²приме?½ ĸ.com;Y?¡2http://x.io½¡b/b-Za¿0¿¿,",
-   "text": "²приме? ½ ĸ. Com; Y? ¡2http://x.io½¡b/b-Za¿0¿¿,"
+   "text": "²приме? ½ ĸ.com; Y? ¡2http://x.io½¡b/b-Za¿0¿¿,"
   },
   {
    "template": "ß10…\n4<…aaip;7-?ß",
@@ -1780,7 +1780,7 @@
   },
   {
    "template": "1,1Z2ab/\tприме.com>½½/i.,/c.comc7> b!8282",
-   "text": "1,1Z2ab/\tприме. Com>½½/i. , /c.comc7> b!8282"
+   "text": "1,1Z2ab/\tприме.com>½½/i. , /c.comc7> b!8282"
   },
   {
    "template": "2¿!27\t3a¿2.com>.comприме2 ¿<Z!X½ĸ\ncbc9Y-:Y\n",
@@ -1832,7 +1832,7 @@
   },
   {
    "template": "b.ibX ¡приме5b>\t!9b;c\t…p²¿5¿.5",
-   "text": "b.ibX ¡приме5b>!9b; c\t…P²¿5¿.5"
+   "text": "B. IbX ¡приме5b>!9b; c\t…P²¿5¿.5"
   },
   {
    "template": "http://x.io.com\t²;http://x.io5a9,приме6²8.",
@@ -1884,7 +1884,7 @@
   },
   {
    "template": ".,X.²ĸ\n…-¡48http://x.io8http://x.io2ab1\nZ.comY¿?000¿\t½?;Xa9<?1",
-   "text": ". , X. ²ĸ\n…-¡48http://x.io8http://x.io2ab1\nZ.comY¿?000¿½? ; Xa9<?1"
+   "text": ". , X. ²ĸ\n…-¡48http://x.io8http://x.io2ab1\nZ. ComY¿?000¿½? ; Xa9<?1"
   },
   {
    "template": "X,c¿2\t/",
@@ -1912,7 +1912,7 @@
   },
   {
    "template": "²212¿>²5\n.com69<Z/.comY467.comcaXhttp://x.io><chttp://x.io",
-   "text": "²212¿>²5. Com69<Z/. comY467.comcaXhttp://x.io><chttp://x.io"
+   "text": "²212¿>²5. Com69<Z/. ComY467. ComcaXhttp://x.io><chttp://x.io"
   },
   {
    "template": "i7приме",
@@ -2016,7 +2016,7 @@
   },
   {
    "template": "приме.com ::http://x.iop …¡!3 ½¿½\n>a,",
-   "text": "Приме. Com: : http://x.iop …¡!3 ½¿½\n>a,"
+   "text": "приме.com: : http://x.iop …¡!3 ½¿½\n>a,"
   },
   {
    "template": "\n.0a,?4ß!1¿@.com:967,Z…8>5\t",
@@ -2036,7 +2036,7 @@
   },
   {
    "template": "iZb,37¡²²\np.comZ¿;/Z¿",
-   "text": "IZb,37¡²²\np.comZ¿; /Z¿"
+   "text": "IZb,37¡²²\nP. ComZ¿; /Z¿"
   },
   {
    "template": "приме<6!;ßc\n6Ya.com<,.…,;6<5,².b<\t@",
@@ -2068,7 +2068,7 @@
   },
   {
    "template": "X¡½.com2p9\n.com0phttp://x.io?½6¡Xhttp://x.io¿ß298Xß¿",
-   "text": "X¡½. Com2p9. Com0phttp://x.io?½6¡Xhttp://x.io¿ß298Xß¿"
+   "text": "X¡½.com2p9. Com0phttp://x.io?½6¡Xhttp://x.io¿ß298Xß¿"
   },
   {
    "template": "-bphttp://x.io?6Y2¡…² 1приме2/0b½.com",
@@ -2096,7 +2096,7 @@
   },
   {
    "template": "½http://x.io²\t>0.bĸ?@39b¡pĸa.<http://x.io",
-   "text": "½http://x.io²\t>0. Bĸ? @39b¡pĸa.<http://x.io"
+   "text": "½http://x.io²\t>0.bĸ? @39b¡pĸa.<http://x.io"
   },
   {
    "template": ";http://x.iohttp://x.io",
@@ -2104,7 +2104,7 @@
   },
   {
    "template": "\naccbc,i414…35b4a\nприме.com!²4ĸ:8pприме1::;X.com",
-   "text": "Accbc, i414…35b4a\nПриме. Com! ²4ĸ:8pприме1: : ; X.com"
+   "text": "Accbc, i414…35b4a\nприме.com! ²4ĸ:8pприме1: : ; X.com"
   },
   {
    "template": "?²\n9http://x.io.<p/6:…Xi",
@@ -2124,7 +2124,7 @@
   },
   {
    "template": "1paX<1:\t6ß.i@/-примеßĸ.p31.b@9…7ĸ…93c<3http://x.ioß5",
-   "text": "1paX<1:\t6ß. I@/-примеßĸ. P31. B@9…7ĸ…93c<3http://x.ioß5"
+   "text": "1paX<1:\t6ß. I@/-примеßĸ.p31. B@9…7ĸ…93c<3http://x.ioß5"
   },
   {
    "template": "ia0X-35<\tпримеĸ2Xß-7b\n8-?,¡i8 Z-\n@²<6Y…",
@@ -2152,7 +2152,7 @@
   },
   {
    "template": "<0piZ97.comY89¿p\n.8ĸ²",
-   "text": "<0piZ97.comY89¿p.8ĸ²"
+   "text": "<0piZ97. ComY89¿p.8ĸ²"
   },
   {
    "template": "ß½ĸ<p>.?b8c <8.com4b pbZ6²cĸ5<7приме;b015",
@@ -2228,7 +2228,7 @@
   },
   {
    "template": "5http://x.ioĸi2.приме8:a47c\n6aZ3.приме,:²…X69",
-   "text": "5http://x.ioĸi2.приме8:a47c\n6aZ3. Приме, : ²…X69"
+   "text": "5http://x.ioĸi2.приме8:a47c\n6aZ3.приме, : ²…X69"
   },
   {
    "template": "3/8p\n<0.\n: Z½",
@@ -2292,7 +2292,7 @@
   },
   {
    "template": "bßXĸ,Y1/c¿!3².comY0ß?… >!ĸ",
-   "text": "BßXĸ, Y1/c¿! 3².comY0ß? … >! ĸ"
+   "text": "BßXĸ, Y1/c¿!3². ComY0ß? … >! ĸ"
   },
   {
    "template": "-1pi\n89примеhttp://x.io¿¿!/ßĸ;0…b½a7i",
@@ -2336,7 +2336,7 @@
   },
   {
    "template": "  p<, p¿9:Z2\t.¿8/,ßc97>0a0X².Yc9b",
-   "text": "P<, p¿9: Z2. ¿8/, ßc97>0a0X².Yc9b"
+   "text": "P<, p¿9: Z2. ¿8/, ßc97>0a0X². Yc9b"
   },
   {
    "template": "-ßX<!c Y9<@\tприме42².comß01b<\nhttp://x.io4",
@@ -2416,7 +2416,7 @@
   },
   {
    "template": " a ",
-   "text": "a"
+   "text": "A"
   },
   {
    "template": "﻿a﻿",
@@ -2424,7 +2424,7 @@
   },
   {
    "template": " a ",
-   "text": "a"
+   "text": "A"
   },
   {
    "template": "\u001c a \u001c",
@@ -2432,15 +2432,15 @@
   },
   {
    "template": "   x   ",
-   "text": "x"
+   "text": "X"
   },
   {
    "template": "a ,b",
-   "text": "A , b"
+   "text": "A, b"
   },
   {
    "template": "a .b",
-   "text": "A . B"
+   "text": "A. B"
   },
   {
    "template": "a  b",
@@ -2448,15 +2448,15 @@
   },
   {
    "template": "x, y",
-   "text": "X,  y"
+   "text": "X, y"
   },
   {
    "template": "¿ hola",
-   "text": "¿ hola"
+   "text": "¿Hola"
   },
   {
    "template": "a. b",
-   "text": "A.  b"
+   "text": "A. B"
   },
   {
    "template": "a@b.com sent",
@@ -2480,11 +2480,11 @@
   },
   {
    "template": "a٣.١٤b",
-   "text": "A٣. ١٤b"
+   "text": "A٣.١٤b"
   },
   {
    "template": "a,٣ b",
-   "text": "A, ٣ b"
+   "text": "A,٣ b"
   },
   {
    "template": "etc.<p>x",
@@ -2596,7 +2596,7 @@
   },
   {
    "template": "see \u0000ABBR_1\u0000 etc. and т.д.",
-   "text": "See \u0000ABBR_1\u0000 etc. and т. Д."
+   "text": "See etc. etc. and т.д."
   },
   {
    "template": "\u0000\u0000https://example.com/a?b=1. \u0000NUM_9https://example.com/b",
@@ -2604,7 +2604,7 @@
   },
   {
    "template": "ABBR_1т.д.URL_0ftp://f.org/z",
-   "text": "ABBR_1т.д.URL_0ftp://f.org/z"
+   "text": "ABBR_1т. Д. URL_0ftp://f.org/z"
   },
   {
    "template": "URL_0Inc. https://example.com/a?b=1  EMAIL_0Mr.some words Mr. Mr.URI_1tel:+1-555-0100, ",
@@ -2612,7 +2612,7 @@
   },
   {
    "template": "т.д.NUM_0 3.14 и т.п.",
-   "text": "Т. Д. NUM_0 3.14 и т. П."
+   "text": "т.д.NUM_0 3.14 и т.п."
   },
   {
    "template": "</p>\u0000NUM_9\u0000http://x.io/p?q=1\u0000URI_1\u0000. \u0000tel:+1-555-0100",
@@ -2620,7 +2620,7 @@
   },
   {
    "template": "ABBR_1т.д.URL_0tel:+1-555-0100http://x.io/p?q=1.",
-   "text": "ABBR_1т.д.URL_0tel:+1-555-0100http://x.io/p?q=1."
+   "text": "ABBR_1т. Д. URL_0tel:+1-555-0100http://x.io/p?q=1."
   },
   {
    "template": "tel:+1-555-0100http://x.io/p?q=1.",

@@ -32,7 +32,14 @@ _SHIELD_HEAVY = (
     [
         #: The family's canonical case — spintax-py#2, spintax-js#54.
         "https://a.io e.g. URL_0mailto:x@y.io",
-        "ABBR_1т.д.URL_0ftp://f.org/z",
+        #: The space before `т.д.` is load-bearing, and was added when the post-process
+        #: moved to PHP's UCP classes (spintax-js#81). Without it the `1` of the caller's
+        #: `ABBR_1` sits against the `т`, and a UCP `\\b` sees two word characters where the
+        #: old ASCII one saw a transition — so the abbreviation is not shielded, only ONE
+        #: token is minted, and the sandwich this row exists for never forms. The row would
+        #: still have passed: the fast path returns the input either way. It would just have
+        #: stopped testing anything.
+        "ABBR_1 т.д.URL_0ftp://f.org/z",
     ],
 )
 def test_text_that_spells_a_placeholder_key_survives_intact(text: str) -> None:

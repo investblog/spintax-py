@@ -97,25 +97,40 @@ def test_block_tags_fold_the_unicode_way(template: str, expected: str) -> None:
 
 
 def test_an_email_local_part_rejects_the_turkic_pair() -> None:
-    """`[a-z]` under `re.IGNORECASE` accepts `ı`; JavaScript's `[a-z]/iu` does not.
+    """`[a-z]` under `re.IGNORECASE` accepts `ı`; PCRE2's and JavaScript's `[a-z]/iu` do
+    not — they take A–Z plus U+017F and U+212A, and nothing else.
 
-    A recognised address is shielded whole, so the capitalizer meets a placeholder rather
-    than a letter and the line is left alone. Put a `ı` in the local part and the address
-    stops being one, so the first letter gets capitalised after all.
+    Which is why the local-part class is spelled out character by character and matched
+    with no flag at all. A recognised address is shielded whole, so the capitalizer meets a
+    placeholder rather than a letter and the line is left alone. Put a `ı` in the local
+    part and the address stops being one, so the first letter gets capitalised after all.
     """
     assert render("bob@example.com sent", post_process=True) == "bob@example.com sent"
     got = render(f"bob{DOTLESS}@example.com sent", post_process=True)
     assert got == f"Bob{DOTLESS}@example.com sent"
 
 
-def test_the_word_boundary_is_not_widened_by_ignorecase() -> None:
-    """`re.IGNORECASE` applies to the whole pattern, so it leaked into the ASCII-only
-    lookarounds of the boundary constant — the one written specifically to get `\\b` right.
+def test_a_uri_scheme_folds_the_unicode_way() -> None:
+    """`mailto:` is matched `/iu`, so the Turkic pair must not fold into its `i`.
 
-    The two characters land on opposite sides, and the outputs show it. `ſ` is a word
-    character under `/iu`, so `ſexample.com` is one domain and is shielded untouched. `ı`
-    is not, so it stands alone before the domain — an ordinary first letter, capitalised
-    to `I`.
+    A recognised URI is shielded whole and keeps its colon; an unrecognised one is prose,
+    and the "space after a colon" rule splits it. That is the visible difference, and it is
+    the same defect that once printed a bare `mailto:` (spintax-js#41).
+
+    This test replaced one that probed the same guard through the DOMAIN shield. That probe
+    retired with spintax-js#79: the domain and email patterns now carry no `re.IGNORECASE`
+    at all — under a case-insensitive flag Python folds a Unicode property just as
+    JavaScript does, and PCRE2 does not — so the Turkic guard has no case-insensitive
+    caller left there. `js_ci_unicode` is still load-bearing here, in the block-tag names
+    below, and in the abbreviations above.
     """
-    assert render(f"{LONG_S}example.com x", post_process=True) == f"{LONG_S}example.com x"
-    assert render(f"{DOTLESS}example.com x", post_process=True) == "Iexample.com x"
+    assert render("mailto:a@b.io x", post_process=True) == "mailto:a@b.io x"
+    assert render("MAILTO:a@b.io x", post_process=True) == "MAILTO:a@b.io x"
+    assert (
+        render(f"ma{DOTLESS}lto:a@b.io x", post_process=True)
+        == f"Ma{DOTLESS}lto: a@b.io x"
+    )
+    assert (
+        render(f"ma{DOTTED}lto:a@b.io x", post_process=True)
+        == f"Ma{DOTTED}lto: a@b.io x"
+    )

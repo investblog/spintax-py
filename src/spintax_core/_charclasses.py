@@ -1,24 +1,65 @@
-"""Character classes where Python's regex dialect is WIDER than JavaScript's.
+"""Character classes, written out so they match what the engine being ported matches.
 
-Every constant here exists because the obvious Python escape silently accepts more than
-the reference does. `\\w`, `\\d` and `\\b` are ASCII in JavaScript — always, `u` flag
-included — and Unicode in Python; `\\s` differs in both directions. Left alone, this port
-would quietly accept syntax the other engines reject, which is the worst kind of parity
-bug: nothing fails, the engines just disagree about what a template means.
+Every constant here exists because the obvious Python escape silently accepts a different
+set than the pattern it is translating. Left alone, this port would quietly accept syntax
+the other engines reject, which is the worst kind of parity bug: nothing fails, the
+engines just disagree about what a template means.
 
-PHP is a third dialect again — `/u` turns on PCRE_UCP, so PHP's `\\w` is Unicode and
-already diverges from TypeScript. That is upstream's problem; this file only guarantees
-Python matches the reference it is porting.
+**Three dialects, and every pattern belongs to exactly one.** The plugin is the origin, so
+the question a ported pattern asks is *does the PHP source carry `/u`?*
 
-Held here rather than in whichever module needed it first: `_directives`, `_validator` and
-`_parser` all want them now, and a constant copied into three files is a constant that
-will drift in two of them.
+- **`/u` — PCRE2_UCP.** `\\s`, `\\d`, `\\w` and `\\b` are Unicode there: `\\s` takes NBSP and
+  the rest of `\\p{Z}`, `\\b` counts a letter of any script. Take the class from `UCP_SPACE`
+  / `UCP_WORD` below.
+- **no `/u` — byte mode.** The same shorthands are ASCII. Take `ASCII_SPACE`,
+  `ASCII_DIGIT`, `ASCII_WORD`.
+- **JavaScript**, where a pattern was written for `@spintax/core` rather than translated
+  from PHP — a third set again: its `\\s` takes U+FEFF and misses U+0085 and U+180E, and
+  its `\\w`, `\\d` and `\\b` stay ASCII even under `u`. Take `JS_SPACE`, `JS_WORD_BOUNDARY`.
+
+Python is none of the three. Its `\\w`, `\\d` and `\\b` are Unicode, its `\\s` is Unicode
+plus the ASCII separators, and `re.IGNORECASE` folds more than either engine does — so a
+class that is not spelled out here is a class that means something else.
+
+The post-process was once written on the belief that PHP's `/u` was NOT UCP. That is how
+`и т.д.` rendered `и т. Д.` and `пример.рф` rendered `пример. Рф` in every tree-walk
+engine while both PHP engines left them intact (spintax-js#81).
+
+**Which Unicode version these speak, and why it is the runtime's.** A class written as
+`[^\\W\\d_]` or `\\d` resolves against the tables the RUNNING interpreter carries: Python 3.10
+ships Unicode 13, 3.11 ships 14, 3.12 ships 15.0 and 3.13 ships 15.1. So `go.𮯰a` (U+2EBF0,
+assigned in 15.1) is not a domain on 3.12 and is one on 3.13 — measured, not reasoned.
+
+That is deliberate, and it is what the reference does. `@spintax/core` writes `\\p{L}` and
+`\\p{N}`, which V8 resolves against the ICU bundled with the Node that is running, and it
+supports `node >= 18` — Unicode 14 through 16. An engine's alphabet following its runtime
+is the model; pinning one here would not buy parity with the reference, it would only pick
+a different version to be wrong about, and freeze it.
+
+The BAKED tables below are the exception, and only because Python's `re` cannot name the
+property at all. They are therefore the one place where a version skew is a real risk, and
+they are guarded rather than trusted: `tests/test_charclass_tables.py` composes each class
+the way this module composes it and asserts it against the running `unicodedata`. A table
+missing a character this interpreter knows is a failure whichever direction it bites —
+subtraction inverts the polarity, so `_LU_LT` missing a new `Lu` would read that letter as
+a lower-case TLD, and the test sees it as assigned surplus in the composed class.
+
+Held here rather than in whichever module needed it first: `_directives`, `_validator`,
+`_parser` and `_postprocess` all want them now, and a constant copied into four files is a
+constant that will drift in three of them.
 """
 
 from __future__ import annotations
 
 #: JavaScript's `\w` — and therefore its `\b`, which is defined in terms of it.
 ASCII_WORD = "[A-Za-z0-9_]"
+
+#: PHP's `\s` in BYTE mode — a pattern written WITHOUT `/u`. A fragment for inside `[…]`.
+#:
+#: The permutation-config patterns are the ones that want it: the plugin writes all of them
+#: without `/u`, so `[<minsize<NBSP>=<NBSP>1>a|b|c]` is a single literal separator there and
+#: not a size. Python's `\s` and JavaScript's are both Unicode here and both wrong.
+ASCII_SPACE = " \\t\\n\\x0b\\f\\r"
 
 #: A lookbehind standing in for JavaScript's `\b` at the START of a token. Python's `\b`
 #: would treat a preceding Unicode letter as a word character and find no boundary there.
@@ -118,6 +159,30 @@ JS_SPACE = (
 #: with this — a variable holding only U+FEFF is falsy to the reference and would be
 #: truthy under Python's `\S`, flipping which branch renders.
 JS_NOT_SPACE = "[^" + JS_SPACE[1:]
+
+#: PCRE2 UCP `\s` — what `\s` means in a PHP pattern that carries `/u`. `\p{Z}` plus `\h`
+#: and `\v`: U+0009–U+000D, U+0020, U+0085, U+00A0, U+1680, U+180E, U+2000–U+200A, U+2028,
+#: U+2029, U+202F, U+205F, U+3000. A fragment for inside `[…]`.
+#:
+#: Neither `JS_SPACE` nor Python's `\s`: it has U+0085 and U+180E, which JavaScript's lacks,
+#: and not U+FEFF, which JavaScript's has. The whole post-process runs on this set, and so
+#: does conditional truthiness — a value of U+FEFF alone is TRUTHY, one of U+0085 alone is
+#: blank, and reading those the other way round flips which branch renders.
+UCP_SPACE = (
+    "\\t\\n\\x0b\\f\\r \\x85\\xa0\\u1680\\u180e\\u2000-\\u200a"
+    "\\u2028\\u2029\\u202f\\u205f\\u3000"
+)
+
+#: PCRE2 UCP `\S`. Negated from the class above rather than written out, because two
+#: hand-kept lists of the same characters drift.
+UCP_NOT_SPACE = f"[^{UCP_SPACE}]"
+
+#: The same set as `UCP_SPACE`, as characters — for a scanner that reads a string one
+#: character at a time instead of running a regex. `tests/test_charclass_tables.py` asserts
+#: the two agree, which is the only thing keeping a second hand-kept list honest.
+UCP_SPACE_CHARS = frozenset(
+    "\t\n\x0b\f\r \x85\xa0 ᠎    　"
+) | frozenset(chr(cp) for cp in range(0x2000, 0x200B))
 
 #: What JavaScript calls a LineTerminator. Python's `re` knows only `\n`, which is why a
 #: line-anchored pattern needs the three constants below rather than `^`, `$` and `.`.
@@ -309,6 +374,217 @@ _LL = (
 #: code points outside `Ll`, and every repair built on `upper() != c` fails on U+0138 `ĸ`,
 #: a lowercase letter with no uppercase pair.
 JS_LOWERCASE_LETTER = f"[{_LL}]"
+
+#: Categories `Mn` and `Pc`, as a ranged class. GENERATED — see
+#: `tests/test_charclass_tables.py`, which rebuilds this from the running `unicodedata`
+#: and fails if it has drifted.
+_MN_PC = (
+    "\\U0000005f\\U00000300-\\U0000036f\\U00000483-\\U00000487\\U00000591-\\U000005bd\\U000005bf"
+    "\\U000005c1-\\U000005c2\\U000005c4-\\U000005c5\\U000005c7\\U00000610-\\U0000061a"
+    "\\U0000064b-\\U0000065f\\U00000670\\U000006d6-\\U000006dc\\U000006df-\\U000006e4"
+    "\\U000006e7-\\U000006e8\\U000006ea-\\U000006ed\\U00000711\\U00000730-\\U0000074a"
+    "\\U000007a6-\\U000007b0\\U000007eb-\\U000007f3\\U000007fd\\U00000816-\\U00000819"
+    "\\U0000081b-\\U00000823\\U00000825-\\U00000827\\U00000829-\\U0000082d\\U00000859-\\U0000085b"
+    "\\U00000898-\\U0000089f\\U000008ca-\\U000008e1\\U000008e3-\\U00000902\\U0000093a\\U0000093c"
+    "\\U00000941-\\U00000948\\U0000094d\\U00000951-\\U00000957\\U00000962-\\U00000963\\U00000981"
+    "\\U000009bc\\U000009c1-\\U000009c4\\U000009cd\\U000009e2-\\U000009e3\\U000009fe"
+    "\\U00000a01-\\U00000a02\\U00000a3c\\U00000a41-\\U00000a42\\U00000a47-\\U00000a48"
+    "\\U00000a4b-\\U00000a4d\\U00000a51\\U00000a70-\\U00000a71\\U00000a75\\U00000a81-\\U00000a82"
+    "\\U00000abc\\U00000ac1-\\U00000ac5\\U00000ac7-\\U00000ac8\\U00000acd\\U00000ae2-\\U00000ae3"
+    "\\U00000afa-\\U00000aff\\U00000b01\\U00000b3c\\U00000b3f\\U00000b41-\\U00000b44\\U00000b4d"
+    "\\U00000b55-\\U00000b56\\U00000b62-\\U00000b63\\U00000b82\\U00000bc0\\U00000bcd\\U00000c00"
+    "\\U00000c04\\U00000c3c\\U00000c3e-\\U00000c40\\U00000c46-\\U00000c48\\U00000c4a-\\U00000c4d"
+    "\\U00000c55-\\U00000c56\\U00000c62-\\U00000c63\\U00000c81\\U00000cbc\\U00000cbf\\U00000cc6"
+    "\\U00000ccc-\\U00000ccd\\U00000ce2-\\U00000ce3\\U00000d00-\\U00000d01\\U00000d3b-\\U00000d3c"
+    "\\U00000d41-\\U00000d44\\U00000d4d\\U00000d62-\\U00000d63\\U00000d81\\U00000dca"
+    "\\U00000dd2-\\U00000dd4\\U00000dd6\\U00000e31\\U00000e34-\\U00000e3a\\U00000e47-\\U00000e4e"
+    "\\U00000eb1\\U00000eb4-\\U00000ebc\\U00000ec8-\\U00000ece\\U00000f18-\\U00000f19\\U00000f35"
+    "\\U00000f37\\U00000f39\\U00000f71-\\U00000f7e\\U00000f80-\\U00000f84\\U00000f86-\\U00000f87"
+    "\\U00000f8d-\\U00000f97\\U00000f99-\\U00000fbc\\U00000fc6\\U0000102d-\\U00001030"
+    "\\U00001032-\\U00001037\\U00001039-\\U0000103a\\U0000103d-\\U0000103e\\U00001058-\\U00001059"
+    "\\U0000105e-\\U00001060\\U00001071-\\U00001074\\U00001082\\U00001085-\\U00001086\\U0000108d"
+    "\\U0000109d\\U0000135d-\\U0000135f\\U00001712-\\U00001714\\U00001732-\\U00001733"
+    "\\U00001752-\\U00001753\\U00001772-\\U00001773\\U000017b4-\\U000017b5\\U000017b7-\\U000017bd"
+    "\\U000017c6\\U000017c9-\\U000017d3\\U000017dd\\U0000180b-\\U0000180d\\U0000180f"
+    "\\U00001885-\\U00001886\\U000018a9\\U00001920-\\U00001922\\U00001927-\\U00001928\\U00001932"
+    "\\U00001939-\\U0000193b\\U00001a17-\\U00001a18\\U00001a1b\\U00001a56\\U00001a58-\\U00001a5e"
+    "\\U00001a60\\U00001a62\\U00001a65-\\U00001a6c\\U00001a73-\\U00001a7c\\U00001a7f"
+    "\\U00001ab0-\\U00001abd\\U00001abf-\\U00001ace\\U00001b00-\\U00001b03\\U00001b34"
+    "\\U00001b36-\\U00001b3a\\U00001b3c\\U00001b42\\U00001b6b-\\U00001b73\\U00001b80-\\U00001b81"
+    "\\U00001ba2-\\U00001ba5\\U00001ba8-\\U00001ba9\\U00001bab-\\U00001bad\\U00001be6"
+    "\\U00001be8-\\U00001be9\\U00001bed\\U00001bef-\\U00001bf1\\U00001c2c-\\U00001c33"
+    "\\U00001c36-\\U00001c37\\U00001cd0-\\U00001cd2\\U00001cd4-\\U00001ce0\\U00001ce2-\\U00001ce8"
+    "\\U00001ced\\U00001cf4\\U00001cf8-\\U00001cf9\\U00001dc0-\\U00001dff\\U0000203f-\\U00002040"
+    "\\U00002054\\U000020d0-\\U000020dc\\U000020e1\\U000020e5-\\U000020f0\\U00002cef-\\U00002cf1"
+    "\\U00002d7f\\U00002de0-\\U00002dff\\U0000302a-\\U0000302d\\U00003099-\\U0000309a\\U0000a66f"
+    "\\U0000a674-\\U0000a67d\\U0000a69e-\\U0000a69f\\U0000a6f0-\\U0000a6f1\\U0000a802\\U0000a806"
+    "\\U0000a80b\\U0000a825-\\U0000a826\\U0000a82c\\U0000a8c4-\\U0000a8c5\\U0000a8e0-\\U0000a8f1"
+    "\\U0000a8ff\\U0000a926-\\U0000a92d\\U0000a947-\\U0000a951\\U0000a980-\\U0000a982\\U0000a9b3"
+    "\\U0000a9b6-\\U0000a9b9\\U0000a9bc-\\U0000a9bd\\U0000a9e5\\U0000aa29-\\U0000aa2e"
+    "\\U0000aa31-\\U0000aa32\\U0000aa35-\\U0000aa36\\U0000aa43\\U0000aa4c\\U0000aa7c\\U0000aab0"
+    "\\U0000aab2-\\U0000aab4\\U0000aab7-\\U0000aab8\\U0000aabe-\\U0000aabf\\U0000aac1"
+    "\\U0000aaec-\\U0000aaed\\U0000aaf6\\U0000abe5\\U0000abe8\\U0000abed\\U0000fb1e"
+    "\\U0000fe00-\\U0000fe0f\\U0000fe20-\\U0000fe2f\\U0000fe33-\\U0000fe34\\U0000fe4d-\\U0000fe4f"
+    "\\U0000ff3f\\U000101fd\\U000102e0\\U00010376-\\U0001037a\\U00010a01-\\U00010a03"
+    "\\U00010a05-\\U00010a06\\U00010a0c-\\U00010a0f\\U00010a38-\\U00010a3a\\U00010a3f"
+    "\\U00010ae5-\\U00010ae6\\U00010d24-\\U00010d27\\U00010eab-\\U00010eac\\U00010efd-\\U00010eff"
+    "\\U00010f46-\\U00010f50\\U00010f82-\\U00010f85\\U00011001\\U00011038-\\U00011046\\U00011070"
+    "\\U00011073-\\U00011074\\U0001107f-\\U00011081\\U000110b3-\\U000110b6\\U000110b9-\\U000110ba"
+    "\\U000110c2\\U00011100-\\U00011102\\U00011127-\\U0001112b\\U0001112d-\\U00011134\\U00011173"
+    "\\U00011180-\\U00011181\\U000111b6-\\U000111be\\U000111c9-\\U000111cc\\U000111cf"
+    "\\U0001122f-\\U00011231\\U00011234\\U00011236-\\U00011237\\U0001123e\\U00011241\\U000112df"
+    "\\U000112e3-\\U000112ea\\U00011300-\\U00011301\\U0001133b-\\U0001133c\\U00011340"
+    "\\U00011366-\\U0001136c\\U00011370-\\U00011374\\U00011438-\\U0001143f\\U00011442-\\U00011444"
+    "\\U00011446\\U0001145e\\U000114b3-\\U000114b8\\U000114ba\\U000114bf-\\U000114c0"
+    "\\U000114c2-\\U000114c3\\U000115b2-\\U000115b5\\U000115bc-\\U000115bd\\U000115bf-\\U000115c0"
+    "\\U000115dc-\\U000115dd\\U00011633-\\U0001163a\\U0001163d\\U0001163f-\\U00011640\\U000116ab"
+    "\\U000116ad\\U000116b0-\\U000116b5\\U000116b7\\U0001171d-\\U0001171f\\U00011722-\\U00011725"
+    "\\U00011727-\\U0001172b\\U0001182f-\\U00011837\\U00011839-\\U0001183a\\U0001193b-\\U0001193c"
+    "\\U0001193e\\U00011943\\U000119d4-\\U000119d7\\U000119da-\\U000119db\\U000119e0"
+    "\\U00011a01-\\U00011a0a\\U00011a33-\\U00011a38\\U00011a3b-\\U00011a3e\\U00011a47"
+    "\\U00011a51-\\U00011a56\\U00011a59-\\U00011a5b\\U00011a8a-\\U00011a96\\U00011a98-\\U00011a99"
+    "\\U00011c30-\\U00011c36\\U00011c38-\\U00011c3d\\U00011c3f\\U00011c92-\\U00011ca7"
+    "\\U00011caa-\\U00011cb0\\U00011cb2-\\U00011cb3\\U00011cb5-\\U00011cb6\\U00011d31-\\U00011d36"
+    "\\U00011d3a\\U00011d3c-\\U00011d3d\\U00011d3f-\\U00011d45\\U00011d47\\U00011d90-\\U00011d91"
+    "\\U00011d95\\U00011d97\\U00011ef3-\\U00011ef4\\U00011f00-\\U00011f01\\U00011f36-\\U00011f3a"
+    "\\U00011f40\\U00011f42\\U00013440\\U00013447-\\U00013455\\U00016af0-\\U00016af4"
+    "\\U00016b30-\\U00016b36\\U00016f4f\\U00016f8f-\\U00016f92\\U00016fe4\\U0001bc9d-\\U0001bc9e"
+    "\\U0001cf00-\\U0001cf2d\\U0001cf30-\\U0001cf46\\U0001d167-\\U0001d169\\U0001d17b-\\U0001d182"
+    "\\U0001d185-\\U0001d18b\\U0001d1aa-\\U0001d1ad\\U0001d242-\\U0001d244\\U0001da00-\\U0001da36"
+    "\\U0001da3b-\\U0001da6c\\U0001da75\\U0001da84\\U0001da9b-\\U0001da9f\\U0001daa1-\\U0001daaf"
+    "\\U0001e000-\\U0001e006\\U0001e008-\\U0001e018\\U0001e01b-\\U0001e021\\U0001e023-\\U0001e024"
+    "\\U0001e026-\\U0001e02a\\U0001e08f\\U0001e130-\\U0001e136\\U0001e2ae\\U0001e2ec-\\U0001e2ef"
+    "\\U0001e4ec-\\U0001e4ef\\U0001e8d0-\\U0001e8d6\\U0001e944-\\U0001e94a\\U000e0100-\\U000e01ef"
+)
+
+#: PCRE2 UCP `\w` — what `\w`, and therefore `\b`, mean in a PHP pattern that carries
+#: `/u`: letters, numbers, non-spacing marks and connector punctuation. A fragment for
+#: inside `[…]`.
+#:
+#: Python's own `\w` is `L u N u _` — right for the first two categories and nothing else —
+#: so the marks and the remaining connectors are added from the baked table. (`_` is in
+#: `Pc`, so the table carries it twice over; a duplicate inside `[…]` costs nothing.)
+#:
+#: PCRE2 before 10.43 leaves out the marks and every connector but `_`, so a PHP host on an
+#: older library differs next to one of those; the corpus measures PHP 8.4 (10.44), and this
+#: follows it.
+UCP_WORD = f"\\w{_MN_PC}"
+
+#: Categories `Lu` and `Lt` — the letters that count as UPPER case. GENERATED, same as
+#: `_MN_PC` above and `_LL` below.
+_LU_LT = (
+    "\\U00000041-\\U0000005a\\U000000c0-\\U000000d6\\U000000d8-\\U000000de\\U00000100\\U00000102"
+    "\\U00000104\\U00000106\\U00000108\\U0000010a\\U0000010c\\U0000010e\\U00000110\\U00000112"
+    "\\U00000114\\U00000116\\U00000118\\U0000011a\\U0000011c\\U0000011e\\U00000120\\U00000122"
+    "\\U00000124\\U00000126\\U00000128\\U0000012a\\U0000012c\\U0000012e\\U00000130\\U00000132"
+    "\\U00000134\\U00000136\\U00000139\\U0000013b\\U0000013d\\U0000013f\\U00000141\\U00000143"
+    "\\U00000145\\U00000147\\U0000014a\\U0000014c\\U0000014e\\U00000150\\U00000152\\U00000154"
+    "\\U00000156\\U00000158\\U0000015a\\U0000015c\\U0000015e\\U00000160\\U00000162\\U00000164"
+    "\\U00000166\\U00000168\\U0000016a\\U0000016c\\U0000016e\\U00000170\\U00000172\\U00000174"
+    "\\U00000176\\U00000178-\\U00000179\\U0000017b\\U0000017d\\U00000181-\\U00000182\\U00000184"
+    "\\U00000186-\\U00000187\\U00000189-\\U0000018b\\U0000018e-\\U00000191\\U00000193-\\U00000194"
+    "\\U00000196-\\U00000198\\U0000019c-\\U0000019d\\U0000019f-\\U000001a0\\U000001a2\\U000001a4"
+    "\\U000001a6-\\U000001a7\\U000001a9\\U000001ac\\U000001ae-\\U000001af\\U000001b1-\\U000001b3"
+    "\\U000001b5\\U000001b7-\\U000001b8\\U000001bc\\U000001c4-\\U000001c5\\U000001c7-\\U000001c8"
+    "\\U000001ca-\\U000001cb\\U000001cd\\U000001cf\\U000001d1\\U000001d3\\U000001d5\\U000001d7"
+    "\\U000001d9\\U000001db\\U000001de\\U000001e0\\U000001e2\\U000001e4\\U000001e6\\U000001e8"
+    "\\U000001ea\\U000001ec\\U000001ee\\U000001f1-\\U000001f2\\U000001f4\\U000001f6-\\U000001f8"
+    "\\U000001fa\\U000001fc\\U000001fe\\U00000200\\U00000202\\U00000204\\U00000206\\U00000208"
+    "\\U0000020a\\U0000020c\\U0000020e\\U00000210\\U00000212\\U00000214\\U00000216\\U00000218"
+    "\\U0000021a\\U0000021c\\U0000021e\\U00000220\\U00000222\\U00000224\\U00000226\\U00000228"
+    "\\U0000022a\\U0000022c\\U0000022e\\U00000230\\U00000232\\U0000023a-\\U0000023b"
+    "\\U0000023d-\\U0000023e\\U00000241\\U00000243-\\U00000246\\U00000248\\U0000024a\\U0000024c"
+    "\\U0000024e\\U00000370\\U00000372\\U00000376\\U0000037f\\U00000386\\U00000388-\\U0000038a"
+    "\\U0000038c\\U0000038e-\\U0000038f\\U00000391-\\U000003a1\\U000003a3-\\U000003ab\\U000003cf"
+    "\\U000003d2-\\U000003d4\\U000003d8\\U000003da\\U000003dc\\U000003de\\U000003e0\\U000003e2"
+    "\\U000003e4\\U000003e6\\U000003e8\\U000003ea\\U000003ec\\U000003ee\\U000003f4\\U000003f7"
+    "\\U000003f9-\\U000003fa\\U000003fd-\\U0000042f\\U00000460\\U00000462\\U00000464\\U00000466"
+    "\\U00000468\\U0000046a\\U0000046c\\U0000046e\\U00000470\\U00000472\\U00000474\\U00000476"
+    "\\U00000478\\U0000047a\\U0000047c\\U0000047e\\U00000480\\U0000048a\\U0000048c\\U0000048e"
+    "\\U00000490\\U00000492\\U00000494\\U00000496\\U00000498\\U0000049a\\U0000049c\\U0000049e"
+    "\\U000004a0\\U000004a2\\U000004a4\\U000004a6\\U000004a8\\U000004aa\\U000004ac\\U000004ae"
+    "\\U000004b0\\U000004b2\\U000004b4\\U000004b6\\U000004b8\\U000004ba\\U000004bc\\U000004be"
+    "\\U000004c0-\\U000004c1\\U000004c3\\U000004c5\\U000004c7\\U000004c9\\U000004cb\\U000004cd"
+    "\\U000004d0\\U000004d2\\U000004d4\\U000004d6\\U000004d8\\U000004da\\U000004dc\\U000004de"
+    "\\U000004e0\\U000004e2\\U000004e4\\U000004e6\\U000004e8\\U000004ea\\U000004ec\\U000004ee"
+    "\\U000004f0\\U000004f2\\U000004f4\\U000004f6\\U000004f8\\U000004fa\\U000004fc\\U000004fe"
+    "\\U00000500\\U00000502\\U00000504\\U00000506\\U00000508\\U0000050a\\U0000050c\\U0000050e"
+    "\\U00000510\\U00000512\\U00000514\\U00000516\\U00000518\\U0000051a\\U0000051c\\U0000051e"
+    "\\U00000520\\U00000522\\U00000524\\U00000526\\U00000528\\U0000052a\\U0000052c\\U0000052e"
+    "\\U00000531-\\U00000556\\U000010a0-\\U000010c5\\U000010c7\\U000010cd\\U000013a0-\\U000013f5"
+    "\\U00001c90-\\U00001cba\\U00001cbd-\\U00001cbf\\U00001e00\\U00001e02\\U00001e04\\U00001e06"
+    "\\U00001e08\\U00001e0a\\U00001e0c\\U00001e0e\\U00001e10\\U00001e12\\U00001e14\\U00001e16"
+    "\\U00001e18\\U00001e1a\\U00001e1c\\U00001e1e\\U00001e20\\U00001e22\\U00001e24\\U00001e26"
+    "\\U00001e28\\U00001e2a\\U00001e2c\\U00001e2e\\U00001e30\\U00001e32\\U00001e34\\U00001e36"
+    "\\U00001e38\\U00001e3a\\U00001e3c\\U00001e3e\\U00001e40\\U00001e42\\U00001e44\\U00001e46"
+    "\\U00001e48\\U00001e4a\\U00001e4c\\U00001e4e\\U00001e50\\U00001e52\\U00001e54\\U00001e56"
+    "\\U00001e58\\U00001e5a\\U00001e5c\\U00001e5e\\U00001e60\\U00001e62\\U00001e64\\U00001e66"
+    "\\U00001e68\\U00001e6a\\U00001e6c\\U00001e6e\\U00001e70\\U00001e72\\U00001e74\\U00001e76"
+    "\\U00001e78\\U00001e7a\\U00001e7c\\U00001e7e\\U00001e80\\U00001e82\\U00001e84\\U00001e86"
+    "\\U00001e88\\U00001e8a\\U00001e8c\\U00001e8e\\U00001e90\\U00001e92\\U00001e94\\U00001e9e"
+    "\\U00001ea0\\U00001ea2\\U00001ea4\\U00001ea6\\U00001ea8\\U00001eaa\\U00001eac\\U00001eae"
+    "\\U00001eb0\\U00001eb2\\U00001eb4\\U00001eb6\\U00001eb8\\U00001eba\\U00001ebc\\U00001ebe"
+    "\\U00001ec0\\U00001ec2\\U00001ec4\\U00001ec6\\U00001ec8\\U00001eca\\U00001ecc\\U00001ece"
+    "\\U00001ed0\\U00001ed2\\U00001ed4\\U00001ed6\\U00001ed8\\U00001eda\\U00001edc\\U00001ede"
+    "\\U00001ee0\\U00001ee2\\U00001ee4\\U00001ee6\\U00001ee8\\U00001eea\\U00001eec\\U00001eee"
+    "\\U00001ef0\\U00001ef2\\U00001ef4\\U00001ef6\\U00001ef8\\U00001efa\\U00001efc\\U00001efe"
+    "\\U00001f08-\\U00001f0f\\U00001f18-\\U00001f1d\\U00001f28-\\U00001f2f\\U00001f38-\\U00001f3f"
+    "\\U00001f48-\\U00001f4d\\U00001f59\\U00001f5b\\U00001f5d\\U00001f5f\\U00001f68-\\U00001f6f"
+    "\\U00001f88-\\U00001f8f\\U00001f98-\\U00001f9f\\U00001fa8-\\U00001faf\\U00001fb8-\\U00001fbc"
+    "\\U00001fc8-\\U00001fcc\\U00001fd8-\\U00001fdb\\U00001fe8-\\U00001fec\\U00001ff8-\\U00001ffc"
+    "\\U00002102\\U00002107\\U0000210b-\\U0000210d\\U00002110-\\U00002112\\U00002115"
+    "\\U00002119-\\U0000211d\\U00002124\\U00002126\\U00002128\\U0000212a-\\U0000212d"
+    "\\U00002130-\\U00002133\\U0000213e-\\U0000213f\\U00002145\\U00002183\\U00002c00-\\U00002c2f"
+    "\\U00002c60\\U00002c62-\\U00002c64\\U00002c67\\U00002c69\\U00002c6b\\U00002c6d-\\U00002c70"
+    "\\U00002c72\\U00002c75\\U00002c7e-\\U00002c80\\U00002c82\\U00002c84\\U00002c86\\U00002c88"
+    "\\U00002c8a\\U00002c8c\\U00002c8e\\U00002c90\\U00002c92\\U00002c94\\U00002c96\\U00002c98"
+    "\\U00002c9a\\U00002c9c\\U00002c9e\\U00002ca0\\U00002ca2\\U00002ca4\\U00002ca6\\U00002ca8"
+    "\\U00002caa\\U00002cac\\U00002cae\\U00002cb0\\U00002cb2\\U00002cb4\\U00002cb6\\U00002cb8"
+    "\\U00002cba\\U00002cbc\\U00002cbe\\U00002cc0\\U00002cc2\\U00002cc4\\U00002cc6\\U00002cc8"
+    "\\U00002cca\\U00002ccc\\U00002cce\\U00002cd0\\U00002cd2\\U00002cd4\\U00002cd6\\U00002cd8"
+    "\\U00002cda\\U00002cdc\\U00002cde\\U00002ce0\\U00002ce2\\U00002ceb\\U00002ced\\U00002cf2"
+    "\\U0000a640\\U0000a642\\U0000a644\\U0000a646\\U0000a648\\U0000a64a\\U0000a64c\\U0000a64e"
+    "\\U0000a650\\U0000a652\\U0000a654\\U0000a656\\U0000a658\\U0000a65a\\U0000a65c\\U0000a65e"
+    "\\U0000a660\\U0000a662\\U0000a664\\U0000a666\\U0000a668\\U0000a66a\\U0000a66c\\U0000a680"
+    "\\U0000a682\\U0000a684\\U0000a686\\U0000a688\\U0000a68a\\U0000a68c\\U0000a68e\\U0000a690"
+    "\\U0000a692\\U0000a694\\U0000a696\\U0000a698\\U0000a69a\\U0000a722\\U0000a724\\U0000a726"
+    "\\U0000a728\\U0000a72a\\U0000a72c\\U0000a72e\\U0000a732\\U0000a734\\U0000a736\\U0000a738"
+    "\\U0000a73a\\U0000a73c\\U0000a73e\\U0000a740\\U0000a742\\U0000a744\\U0000a746\\U0000a748"
+    "\\U0000a74a\\U0000a74c\\U0000a74e\\U0000a750\\U0000a752\\U0000a754\\U0000a756\\U0000a758"
+    "\\U0000a75a\\U0000a75c\\U0000a75e\\U0000a760\\U0000a762\\U0000a764\\U0000a766\\U0000a768"
+    "\\U0000a76a\\U0000a76c\\U0000a76e\\U0000a779\\U0000a77b\\U0000a77d-\\U0000a77e\\U0000a780"
+    "\\U0000a782\\U0000a784\\U0000a786\\U0000a78b\\U0000a78d\\U0000a790\\U0000a792\\U0000a796"
+    "\\U0000a798\\U0000a79a\\U0000a79c\\U0000a79e\\U0000a7a0\\U0000a7a2\\U0000a7a4\\U0000a7a6"
+    "\\U0000a7a8\\U0000a7aa-\\U0000a7ae\\U0000a7b0-\\U0000a7b4\\U0000a7b6\\U0000a7b8\\U0000a7ba"
+    "\\U0000a7bc\\U0000a7be\\U0000a7c0\\U0000a7c2\\U0000a7c4-\\U0000a7c7\\U0000a7c9\\U0000a7d0"
+    "\\U0000a7d6\\U0000a7d8\\U0000a7f5\\U0000ff21-\\U0000ff3a\\U00010400-\\U00010427"
+    "\\U000104b0-\\U000104d3\\U00010570-\\U0001057a\\U0001057c-\\U0001058a\\U0001058c-\\U00010592"
+    "\\U00010594-\\U00010595\\U00010c80-\\U00010cb2\\U000118a0-\\U000118bf\\U00016e40-\\U00016e5f"
+    "\\U0001d400-\\U0001d419\\U0001d434-\\U0001d44d\\U0001d468-\\U0001d481\\U0001d49c"
+    "\\U0001d49e-\\U0001d49f\\U0001d4a2\\U0001d4a5-\\U0001d4a6\\U0001d4a9-\\U0001d4ac"
+    "\\U0001d4ae-\\U0001d4b5\\U0001d4d0-\\U0001d4e9\\U0001d504-\\U0001d505\\U0001d507-\\U0001d50a"
+    "\\U0001d50d-\\U0001d514\\U0001d516-\\U0001d51c\\U0001d538-\\U0001d539\\U0001d53b-\\U0001d53e"
+    "\\U0001d540-\\U0001d544\\U0001d546\\U0001d54a-\\U0001d550\\U0001d56c-\\U0001d585"
+    "\\U0001d5a0-\\U0001d5b9\\U0001d5d4-\\U0001d5ed\\U0001d608-\\U0001d621\\U0001d63c-\\U0001d655"
+    "\\U0001d670-\\U0001d689\\U0001d6a8-\\U0001d6c0\\U0001d6e2-\\U0001d6fa\\U0001d71c-\\U0001d734"
+    "\\U0001d756-\\U0001d76e\\U0001d790-\\U0001d7a8\\U0001d7ca\\U0001e900-\\U0001e921"
+)
+
+#: Guards that SUBTRACT a case category from a wider letter class.
+#:
+#: A domain's TLD is a label in one case (spintax-js#79), which wants `\p{Ll}\p{Lm}\p{Lo}`
+#: and `\p{Lu}\p{Lt}\p{Lm}\p{Lo}` — unions of categories Python cannot write inside
+#: `[…]`. Since the five letter categories partition `\p{L}`, each union is the whole of
+#: `\p{L}` minus the other case: put one of these in front of `JS_LETTER` (or of
+#: `JS_LETTER_OR_NUMBER`, to keep the numbers) and the result is exact.
+#:
+#: The obvious shortcut — `re.IGNORECASE` off and a `\p{Ll}` class — is what the reference
+#: could not use either: under a case-insensitive flag JavaScript folds a Unicode property
+#: and matches capitals with `\p{Ll}`, while PCRE2 leaves the property alone. Python folds
+#: like JavaScript, so `<p>ǅivot</p>` capitalized to `Ǆ` where PHP keeps the titlecase letter.
+NOT_UPPERCASE_LETTER = f"(?![{_LU_LT}])"
+NOT_LOWERCASE_LETTER = f"(?![{_LL}])"
+
 
 #: PHP's `trim` charlist. Narrower than both Python's `str.strip()` (Unicode whitespace)
 #: and JavaScript's — it is exactly these five characters, including NUL and vertical tab.

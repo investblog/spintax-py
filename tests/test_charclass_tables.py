@@ -1,9 +1,16 @@
 """The baked Unicode tables must cover every character the running interpreter has.
 
-`_charclasses` carries two generated ranged classes — categories `Nl`+`No` (to subtract
-from `[^\\W\\d_]` and land exactly on `\\p{L}`) and category `Ll`. They are baked because
-building them means walking all 1.1M code points, which costs about a quarter of a second
-and has no business happening at `import`.
+`_charclasses` carries four generated ranged classes, each standing in for a property
+Python's `re` cannot name:
+
+- `Nl`+`No`, subtracted from `[^\\W\\d_]` to land exactly on `\\p{L}`;
+- `Ll`, which has no table-free predicate at all;
+- `Mn`+`Pc`, added to `\\w` to make PCRE2's UCP `\\w`;
+- `Lu`+`Lt`, subtracted from `\\p{L}` to make `\\p{Ll}\\p{Lm}\\p{Lo}` — the one-case TLD of
+  spintax-js#79 — and from `\\p{L}\\p{N}` for its body class.
+
+They are baked because building them means walking all 1.1M code points, which costs about
+a quarter of a second and has no business happening at `import`.
 
 Python 3.10 ships Unicode 13.0.0, 3.11 ships 14.0.0, and 3.12+ ship 15.x, so the tables
 cannot equal the running `unicodedata` on every supported interpreter — and **should not**.
@@ -114,6 +121,71 @@ def test_js_lowercase_letter_is_exactly_category_ll() -> None:
         _codepoints_in(frozenset({"Ll"})),
         "JS_LOWERCASE_LETTER",
     )
+
+
+def test_ucp_word_is_exactly_what_pcre2_calls_a_word_character() -> None:
+    """PCRE2's UCP `\\w` — `L u N u Mn u Pc`. Python's own `\\w` is `L u N u _`, so the
+    marks and the remaining connectors come from the baked table.
+
+    This is the class the post-process `\\b` is built from, and reading it as ASCII is how
+    `и т.д.` rendered `и т. Д.` in every tree-walk engine (spintax-js#81).
+    """
+    _assert_covers(
+        _codepoints_matching(f"[{_charclasses.UCP_WORD}]"),
+        _codepoints_in(LETTER_CATEGORIES | NUMBER_CATEGORIES | frozenset({"Mn", "Pc"})),
+        "UCP_WORD",
+    )
+
+
+def test_the_tld_case_classes_partition_the_letters() -> None:
+    """`\\p{Ll}\\p{Lm}\\p{Lo}` and `\\p{Lu}\\p{Lt}\\p{Lm}\\p{Lo}` — the two readings of a TLD.
+
+    Python cannot union a category into `[…]`, so each is the whole of `\\p{L}` with the
+    other case subtracted by a lookahead. Asserted against the categories themselves, not
+    against each other: the two deliberately OVERLAP on `Lm` and `Lo`, which is what lets
+    `例子.中国` be a domain under either reading (spintax-js#79).
+    """
+    lower = _charclasses.NOT_UPPERCASE_LETTER + _charclasses.JS_LETTER
+    upper = _charclasses.NOT_LOWERCASE_LETTER + _charclasses.JS_LETTER
+    _assert_covers(
+        _codepoints_matching(lower),
+        _codepoints_in(frozenset({"Ll", "Lm", "Lo"})),
+        "NOT_UPPERCASE_LETTER + JS_LETTER",
+    )
+    _assert_covers(
+        _codepoints_matching(upper),
+        _codepoints_in(frozenset({"Lu", "Lt", "Lm", "Lo"})),
+        "NOT_LOWERCASE_LETTER + JS_LETTER",
+    )
+
+
+def test_the_tld_body_classes_keep_the_numbers() -> None:
+    """The same two readings with `\\p{N}` and `-` added, as the TLD's body class has them."""
+    lower = f"(?:-|{_charclasses.NOT_UPPERCASE_LETTER}{_charclasses.JS_LETTER_OR_NUMBER})"
+    upper = f"(?:-|{_charclasses.NOT_LOWERCASE_LETTER}{_charclasses.JS_LETTER_OR_NUMBER})"
+    hyphen = {ord("-")}
+    _assert_covers(
+        _codepoints_matching(lower),
+        _codepoints_in(frozenset({"Ll", "Lm", "Lo"}) | NUMBER_CATEGORIES) | hyphen,
+        "TLD lower body",
+    )
+    _assert_covers(
+        _codepoints_matching(upper),
+        _codepoints_in(frozenset({"Lu", "Lt", "Lm", "Lo"}) | NUMBER_CATEGORIES) | hyphen,
+        "TLD upper body",
+    )
+
+
+def test_the_ucp_space_class_and_its_character_set_agree() -> None:
+    """`UCP_SPACE` is run as a regex and `UCP_SPACE_CHARS` is read by the lead scanner.
+
+    Two hand-kept lists of the same characters drift, so this is the thing that keeps them
+    honest. A character in one and not the other would make the lead scanner and the
+    spacing patterns disagree about where a sentence begins.
+    """
+    assert _codepoints_matching(f"[{_charclasses.UCP_SPACE}]") == {
+        ord(ch) for ch in _charclasses.UCP_SPACE_CHARS
+    }
 
 
 @pytest.mark.parametrize(
