@@ -15,17 +15,21 @@
  * Driven through the INTERNAL renderWith so the same fixed draw source is injectable —
  * the public render() seeds its own RNG and could not be compared exactly.
  *
- * HOW TO REGENERATE, after bumping @spintax/core:
- *   cd W:/Projects/spintax-js && npm install && npm run build
- *   node W:/Projects/spintax-py/tests/data/generate_postprocess_parity.cjs
+ * HOW TO REGENERATE, after bumping @spintax/core — all three from THIS repo's root (the
+ * last resolves the checkout itself; see reference_repo.cjs):
+ *   npm --prefix ../spintax-js install
+ *   npm --prefix ../spintax-js run build
+ *   node tests/data/generate_postprocess_parity.cjs
  * Read the diff. A change here is a change in the reference's cosmetics and deserves an
  * explanation in the commit message, not a silent refresh.
  */
 const fs = require('fs');
 const path = require('path');
-const esbuild = require('W:/Projects/spintax-js/node_modules/esbuild');
 
-const CORE = 'W:/Projects/spintax-js/packages/core';
+const JS_REPO = require('./reference_repo.cjs')();
+const esbuild = require(path.join(JS_REPO, 'node_modules/esbuild'));
+
+const CORE = path.join(JS_REPO, 'packages/core');
 const bundled = path.join(__dirname, '.ref-pipeline.cjs');
 esbuild.buildSync({
   entryPoints: [`${CORE}/src/internal/pipeline.ts`],
@@ -41,7 +45,7 @@ const { renderWith } = require(bundled);
 const version = require(`${CORE}/package.json`).version;
 const git = (args) =>
   require('child_process')
-    .execFileSync('git', ['-C', 'W:/Projects/spintax-js', ...args], { encoding: 'utf8' })
+    .execFileSync('git', ['-C', JS_REPO, ...args], { encoding: 'utf8' })
     .trim();
 const head = git(['rev-parse', '--short', 'HEAD']);
 const dirty = git(['status', '--porcelain', 'packages/core/src']) ? '-dirty' : '';

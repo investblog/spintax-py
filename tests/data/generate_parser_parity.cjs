@@ -13,16 +13,18 @@
  * freezing is that this can go stale; `reference_version` is recorded so a mismatch is
  * visible, and refreshing is one command.
  *
- * HOW TO REGENERATE, after bumping @spintax/core:
- *   cd W:/Projects/spintax-js && npm run build
- *   node W:/Projects/spintax-py/tests/data/generate_parser_parity.cjs
+ * HOW TO REGENERATE, after bumping @spintax/core — both commands from THIS repo's root
+ * (the second resolves the checkout itself; see reference_repo.cjs):
+ *   npm --prefix ../spintax-js run build
+ *   node tests/data/generate_parser_parity.cjs
  * Then read the diff. A change here is a change in the reference's tree shape and
  * deserves an explanation in the commit message, not a silent refresh.
  */
 const fs = require('fs');
 const path = require('path');
 
-const CORE = 'W:/Projects/spintax-js/packages/core';
+const JS_REPO = require('./reference_repo.cjs')();
+const CORE = path.join(JS_REPO, 'packages/core');
 const core = require(`${CORE}/dist/index.cjs`);
 const version = require(`${CORE}/package.json`).version;
 
