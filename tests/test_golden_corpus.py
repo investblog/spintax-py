@@ -124,6 +124,18 @@ def _assert_validate(case: dict[str, Any], actual: list[engine.Diagnostic]) -> N
         )
         assert matched, f"no diagnostic matching {want!r}; got {[d.code for d in actual]}"
 
+    # `diagnosticCount` is EXACT, per code (spintax-js#74) — the one place multiplicity is
+    # the contract rather than a detail. The subset check above says nothing about how
+    # many, which is how a per-path emission reached two million diagnostics behind a green
+    # case upstream (spintax-js#59). A fixture that carries the field and is not read is
+    # worse than no fixture: it passes and asserts nothing.
+    for code, want_n in expect.get("diagnosticCount", {}).items():
+        got_n = sum(1 for d in actual if d.code == code)
+        assert got_n == want_n, (
+            f"{code}: expected exactly {want_n} diagnostic(s), got {got_n} "
+            f"({[d.code for d in actual]})"
+        )
+
 
 def _assert_extract(case: dict[str, Any], actual: engine.Extraction) -> None:
     # Order-normalized, and only the keys the fixture states are compared: most
