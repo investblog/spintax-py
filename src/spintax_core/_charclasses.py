@@ -375,6 +375,17 @@ _LL = (
 #: a lowercase letter with no uppercase pair.
 JS_LOWERCASE_LETTER = f"[{_LL}]"
 
+#: The Unicode version every baked table below was generated from.
+#:
+#: Recorded because the tables track the REFERENCE's Unicode, not Python's, so on an older
+#: interpreter they are deliberately ahead — and "ahead" is not only about characters that
+#: did not exist yet. A category can also SHRINK: U+1734 HANUNOO SIGN PAMUDPOD is `Mn` in
+#: Unicode 13 (Python 3.10) and `Mc` from 14 on, so it belongs to PCRE2's UCP `\w` there and
+#: not here. `tests/test_charclass_tables.py` compares this against the running
+#: `unicodedata` to tell a reclassification apart from a table that is genuinely missing a
+#: character — the second is always a bug, the first is the intended state.
+TABLES_UNICODE_VERSION = "15.0.0"
+
 #: Categories `Mn` and `Pc`, as a ranged class. GENERATED — see
 #: `tests/test_charclass_tables.py`, which rebuilds this from the running `unicodedata`
 #: and fails if it has drifted.

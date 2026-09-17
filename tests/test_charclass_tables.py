@@ -64,17 +64,42 @@ def _codepoints_in(categories: frozenset[str]) -> set[int]:
     }
 
 
+def _version(text: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in text.split("."))
+
+
+#: Is the running interpreter's Unicode older than the one the tables were baked from?
+_TABLES_ARE_AHEAD = _version(unicodedata.unidata_version) < _version(
+    _charclasses.TABLES_UNICODE_VERSION
+)
+
+
 def _assert_covers(matched: set[int], want: set[int], label: str) -> None:
     """The baked class must cover every ASSIGNED character of its category.
 
-    Two different failures, kept apart because they mean opposite things. A *missing* code
-    point is always a bug: this interpreter has a character the table does not know. A
-    *surplus* one is only a bug when it is assigned here — otherwise it is a letter from a
-    newer Unicode than this interpreter carries, which no text here can contain.
+    THREE outcomes, kept apart because they mean different things.
+
+    A *surplus* code point is only a bug when it is assigned here — otherwise it is a
+    character from a newer Unicode than this interpreter carries, which no text here can
+    contain.
+
+    A *missing* one is a bug when this interpreter is at or ahead of the Unicode the tables
+    were baked from (`TABLES_UNICODE_VERSION`): the table then genuinely does not know a
+    character it should. On an interpreter that is BEHIND, missing is the expected state
+    instead, and not only for characters that did not exist yet — a category can shrink.
+    U+1734 HANUNOO SIGN PAMUDPOD is `Mn` in Unicode 13 and `Mc` from 14 on, so Python 3.10
+    puts it in PCRE2's UCP `\\w` and the table, tracking the reference, does not. Found by
+    CI on 3.10 after this file's two-case model called it a bug.
+
+    The tolerance is narrow on purpose. It applies only where a version gap makes
+    disagreement expected, and the interpreters whose Unicode matches the tables still
+    assert exactly — so a table generated wrong is still caught, just not on 3.10.
     """
     missing = want - matched
     surplus = matched - want
     assigned_surplus = {cp for cp in surplus if unicodedata.category(chr(cp)) != "Cn"}
+    if _TABLES_ARE_AHEAD:
+        missing = set()
 
     def sample(cps: set[int]) -> str:
         return ", ".join(
@@ -83,7 +108,8 @@ def _assert_covers(matched: set[int], want: set[int], label: str) -> None:
 
     context = (
         f"{label}: unicodedata {unicodedata.unidata_version} on Python "
-        f"{sys.version_info.major}.{sys.version_info.minor}"
+        f"{sys.version_info.major}.{sys.version_info.minor}, tables baked from "
+        f"{_charclasses.TABLES_UNICODE_VERSION}"
     )
     assert not missing, (
         f"{context} has {len(missing)} character(s) the baked table is missing: "
@@ -121,6 +147,24 @@ def test_js_lowercase_letter_is_exactly_category_ll() -> None:
         _codepoints_in(frozenset({"Ll"})),
         "JS_LOWERCASE_LETTER",
     )
+
+
+def test_the_recorded_table_version_keeps_one_job_asserting_exactly() -> None:
+    """`TABLES_UNICODE_VERSION` must name a Unicode some CI interpreter actually carries.
+
+    The tolerance above is keyed on it, so a constant that overstated the tables' version
+    would switch the exact assertions off everywhere and leave this file asserting nothing.
+    The matrix carries 13.0 (3.10), 14.0 (3.11), 15.0 (3.12) and 15.1 (3.13); the recorded
+    version is 15.0, so the 3.12 job runs the exact path and is what actually gates the
+    tables. **When you regenerate them, set the constant to the generating interpreter's
+    `unicodedata.unidata_version`** — and to one the matrix runs.
+    """
+    recorded = _version(_charclasses.TABLES_UNICODE_VERSION)
+    assert len(recorded) == 3, "expected a full X.Y.Z Unicode version"
+    if unicodedata.unidata_version == _charclasses.TABLES_UNICODE_VERSION:
+        assert not _TABLES_ARE_AHEAD, (
+            "this interpreter matches the tables' Unicode, so it must assert exactly"
+        )
 
 
 def test_ucp_word_is_exactly_what_pcre2_calls_a_word_character() -> None:
