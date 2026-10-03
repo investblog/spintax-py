@@ -82,11 +82,17 @@ def normalize_base_lang(locale: str) -> str:
 
 
 def arity(base_lang: str) -> int:
-    """How many forms a locale expects: 3 for the Slavic family, 2 for everything else.
+    """How many forms a locale expects: 6 for Arabic, 3 for the Slavic family, 2 for the rest.
 
-    Everything else includes `pl`, `cs`, `sk`, `sl` and `bg`, whose real grammars are
-    not implemented — they are bucketed by the English rule rather than rejected.
+    Arabic takes CLDR's six (zero, one, two, few, many, other) and is strict like the
+    others: a two-form `ar` block is `plural.arity` (spintax-js#88), because accepting it
+    would keep the silent ungrammatical output the rule exists to stop.
+
+    The rest includes `pl`, `cs`, `sk`, `sl` and `bg`, whose real grammars are not
+    implemented — they are bucketed by the English rule rather than rejected.
     """
+    if base_lang == "ar":
+        return 6
     return 3 if base_lang in _THREE_FORM else 2
 
 
@@ -106,11 +112,23 @@ def plural_for(base_lang: str, n: int, forms: Sequence[str]) -> str:
     in the 12–14 band. Hence the `mod100` guards — a rule written on `mod10` alone gets
     every teen wrong, which is the classic way to ship "11 товара".
 
+    Arabic goes in CLDR order: zero (0), one (1), two (2), few (n % 100 in 3..10), many
+    (n % 100 in 11..99), other (the rest: 100–102, 200–202, …).
+
     The count is taken in absolute value, so -1 agrees like 1.
     """
     absolute = abs(n)
     mod10 = absolute % 10
     mod100 = absolute % 100
+
+    if base_lang == "ar":
+        if absolute <= 2:
+            return _at(forms, absolute)
+        if 3 <= mod100 <= 10:
+            return _at(forms, 3)
+        if mod100 >= 11:
+            return _at(forms, 4)
+        return _at(forms, 5)
 
     if base_lang in _THREE_FORM:
         if mod10 == 1 and mod100 != 11:

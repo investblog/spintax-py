@@ -602,3 +602,29 @@ NOT_LOWERCASE_LETTER = f"(?![{_LL}])"
 #: The plugin trims permutation config, element text, separators and plural forms, so
 #: using anything wider here changes which templates round-trip identically.
 PHP_TRIM_CHARS = " \t\n\r\0\x0b"
+
+
+#: Scripts written without spaces between words (spintax-js#87): Script=Han, Hiragana,
+#: Katakana, plus U+30FC and U+FF70 (the prolonged-sound marks, which are Script=Common).
+#: A permutation separator made only of these joins bare: `[<lastsep="和">A|B]` is `A和B`.
+#:
+#: GENERATED from the reference's own regex — Python's `re` has no `\p{Script=…}` and
+#: `unicodedata` has no Script property, so nothing here could rebuild it at test time.
+#: Node v24.19.0 (Unicode 17.0), one code point at a time through
+#: `/^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ーｰ]$/u`, collapsed
+#: into ranges. Unicode 17, not `TABLES_UNICODE_VERSION`: a script table only grows, and a
+#: newer one only adds ideographs to the unpadded side.
+UNSPACED_SCRIPT = (
+    "\\U00002e80-\\U00002e99\\U00002e9b-\\U00002ef3\\U00002f00-\\U00002fd5\\U00003005"
+    "\\U00003007\\U00003021-\\U00003029\\U00003038-\\U0000303b\\U00003041-\\U00003096"
+    "\\U0000309d-\\U0000309f\\U000030a1-\\U000030fa\\U000030fc-\\U000030ff"
+    "\\U000031f0-\\U000031ff\\U000032d0-\\U000032fe\\U00003300-\\U00003357"
+    "\\U00003400-\\U00004dbf\\U00004e00-\\U00009fff\\U0000f900-\\U0000fa6d"
+    "\\U0000fa70-\\U0000fad9\\U0000ff66-\\U0000ff9d\\U00016fe2-\\U00016fe3"
+    "\\U00016ff0-\\U00016ff6\\U0001aff0-\\U0001aff3\\U0001aff5-\\U0001affb"
+    "\\U0001affd-\\U0001affe\\U0001b000-\\U0001b122\\U0001b132\\U0001b150-\\U0001b152"
+    "\\U0001b155\\U0001b164-\\U0001b167\\U0001f200\\U00020000-\\U0002a6df"
+    "\\U0002a700-\\U0002b81d\\U0002b820-\\U0002cead\\U0002ceb0-\\U0002ebe0"
+    "\\U0002ebf0-\\U0002ee5d\\U0002f800-\\U0002fa1d\\U00030000-\\U0003134a"
+    "\\U00031350-\\U00033479"
+)

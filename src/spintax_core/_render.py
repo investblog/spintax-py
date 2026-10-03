@@ -50,6 +50,7 @@ from ._charclasses import (
     JS_LINE_START,
     PHP_TRIM_CHARS,
     UCP_NOT_SPACE,
+    UNSPACED_SCRIPT,
 )
 from ._errors import IncludeResolverError
 from ._rng import Rng
@@ -865,17 +866,24 @@ def _join_with_separators(
     return "".join(out)
 
 
+_UNSPACED_SCRIPT_RE = re.compile(f"[{UNSPACED_SCRIPT}]+")
+
+
 def _pad_separator(sep: str) -> str:
     """A purely alphabetic separator gets spaces around it; anything else passes through.
 
     `str.isalpha()` stands in for the reference's `\\p{L}+`, which Python's `re` has no
     escape for. Measured equal across the whole Unicode range: `isalpha()` is true for
     exactly the general categories `Lu Ll Lt Lm Lo`, with no disagreements.
+
+    Except when every letter belongs to a script written without spaces between words
+    (spintax-js#87): `和`, `および`, `と` join bare. CJK only — Hangul keeps the padding
+    (Korean spaces its words), and a mixed separator such as `and和` is padded.
     """
     trimmed = sep.strip(PHP_TRIM_CHARS)
     if trimmed == "":
         return sep
-    if trimmed.isalpha():
+    if trimmed.isalpha() and not _UNSPACED_SCRIPT_RE.fullmatch(trimmed):
         return f" {trimmed} "
     return sep
 

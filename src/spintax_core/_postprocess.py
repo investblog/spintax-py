@@ -301,8 +301,21 @@ _DOUBLE_SPACE_RE = re.compile(r"[ \t]{2,}")
 #: once per character. 100 000 form feeds took 25.8 s without the guard, and the UCP class
 #: gives NBSP and U+3000 runs the same trigger.
 _SPACE_BEFORE_PUNCT_RE = re.compile(f"(?<!{_S}){_S}+([,;:!?.])")
+#: What closes the quotation or aside a punctuation mark ends inside: `"Is it audited?", the
+#: figure`, `(see above.)`, `«Как дела?», и ушёл`. The two spacing passes below insert no
+#: space between a mark and a closer (spintax-js#85); what follows the closer is left as
+#: written.
+#:
+#: `)` and `]` never open, so they always close. A quote is not read by its shape — `“`
+#: opens English and closes German, `"` does both — but by what follows the whole run:
+#: whitespace, the end, a tag, the end of a tag (`title="Really?">`), `.,;:!?…`, `)`, `]` or
+#: a dash. The followers are a LIST, not "anything but a word": a shape it does not name
+#: (`(`, `$`, a shielded value) keeps the space it always got. Every shorter run ends at
+#: another quote, which is not on the list, so a run is only ever read whole.
+_QUOTES = "\"'«»‹›“”‘’"
+_CLOSER = f"[)\\]]|[{_QUOTES}]+(?={_S}|\\Z|<|/?>|[.,;:!?…)\\]—–])"
 #: `\d` is `\p{Nd}` in both dialects — the digit here is UCP, unlike the decimal shield's.
-_SPACE_AFTER_COMMA_RE = re.compile(f"([,;:])(?!\\d)(?!{_S}|\\Z|<)")
+_SPACE_AFTER_COMMA_RE = re.compile(f"([,;:])(?!\\d)(?!{_S}|\\Z|<|{_CLOSER})")
 #: A run of sentence punctuation is ONE sentence end. `...` and `?!` have to survive
 #: intact, so the space goes after the whole run. The `(?![.!?])` is what completes the
 #: run: a greedy `+` alone still backtracks INTO it to satisfy the lookaheads, turning
@@ -310,7 +323,7 @@ _SPACE_AFTER_COMMA_RE = re.compile(f"([,;:])(?!\\d)(?!{_S}|\\Z|<)")
 #: inside a run reaches the same end and the same lookaheads, so a run followed by a digit
 #: or a space was otherwise rejected once per mark: 32 000 dots before a digit took 12.0 s.
 _SPACE_AFTER_SENTENCE_RE = re.compile(
-    f"(?<![.!?])([.!?]+)(?![.!?])(?!\\d)(?!{_S}|\\Z|<)"
+    f"(?<![.!?])([.!?]+)(?![.!?])(?!\\d)(?!{_S}|\\Z|<|{_CLOSER})"
 )
 #: An opener binds to the word it opens: `¿ qué tal ?` becomes `¿qué tal?`. MUST run before
 #: capitalization, so those rules see a letter rather than a space.

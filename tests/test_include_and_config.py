@@ -7,13 +7,16 @@ never splicing a child at all, an off-by-one on the depth guard, no cycle detect
 terminator handling, and no sentinel stripping on the child. Two include tests existed and
 both asserted on the *absence* of a child, so both survived "includes never splice".
 
-The other two are corpus gaps rather than schema gaps. Every permutation fixture uses the
-default `<config>`, so the whole `minsize`/`maxsize`/`sep`/`lastsep` clamp table and the
-separator padding were unguarded; and the plural fixtures cover the two erasing paths but
-neither of the two that re-emit with fullwidth braces.
+The other two are corpus gaps rather than schema gaps. When this file was written every
+permutation fixture used the default `<config>`, so the whole `minsize`/`maxsize`/`sep`/
+`lastsep` clamp table and the separator padding were unguarded; and the plural fixtures
+covered the two erasing paths but neither of the two that re-emit with fullwidth braces.
+The corpus has since gained configured CJK separators and an Arabic arity fallback
+(spintax-js#87/#88); the cases here stay because they reach what those do not.
 
-Every expectation here is a measurement from `@spintax/core` 0.3.0 driven by the same
-fixed draw source, not a reading of this port's own code. That distinction earned itself:
+Every expectation here is a measurement from `@spintax/core` driven by the same fixed draw
+source — 0.3.0 for the original table, 0.11.0 for the CJK separators and the Arabic
+buckets — not a reading of this port's own code. That distinction earned itself:
 the first draft derived its expectations by reading, and eighteen were wrong — eighteen
 expectations, no implementation. Three that read plausibly and are false: a `first` draw
 source does NOT leave a permutation in source order (Fisher-Yates still runs), `[%p%]` is
@@ -206,6 +209,11 @@ def test_a_terminator_is_not_the_include_gap(terminator: str) -> None:
         # A purely alphabetic separator is space-padded; anything else passes through.
         ('[<sep="and">a|b|c]', "b and c and a"),
         ('[<sep="-">a|b|c]', "b-c-a"),
+        # ...except a separator written in a script with no spaces between words
+        # (spintax-js#87) — including an ideograph outside the BMP, which the corpus lacks.
+        ('[<sep="和">a|b|c]', "b和c和a"),
+        ('[<sep="\U00020000">a|b|c]', "b\U00020000c\U00020000a"),
+        ('[<sep="및">a|b|c]', "b 및 c 및 a"),
         # Sizes clamp to the element count, and never below one.
         ("[<maxsize=2>a|b|c]", "b"),
         ("[<minsize=2>a|b|c]", "b c"),
@@ -227,6 +235,16 @@ def test_permutation_config(template: str, expected: str) -> None:
 
 
 # ── plural: the lenient fallbacks ─────────────────────────────────────────────
+
+
+@pytest.mark.parametrize(
+    ("n", "expected"),
+    [(0, "z"), (1, "o"), (2, "t"), (3, "f"), (10, "f"), (11, "m"), (99, "m"),
+     (100, "x"), (102, "x"), (103, "f"), (111, "m"), (1000, "x"), (-2, "t")],
+)
+def test_arabic_takes_six_forms_in_cldr_order(n: int, expected: str) -> None:
+    """spintax-js#88. A region subtag reduces to `ar`, and 1000 lands on `other`."""
+    assert render(f"{{plural {n}: z|o|t|f|m|x}}", locale="ar-EG", post_process=False) == expected
 
 
 def test_an_arity_mismatch_re_emits_with_fullwidth_braces() -> None:

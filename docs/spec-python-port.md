@@ -124,7 +124,7 @@ def render(
     *,
     context: Mapping[str, str] | None = None,
     seed: int | str | None = None,          # omit ⇒ nondeterministic
-    locale: str | None = None,              # plural buckets; 3-form: ru/uk/be + sr/hr/bs
+    locale: str | None = None,              # plural buckets; 6-form: ar; 3-form: ru/uk/be + sr/hr/bs
     include_resolver: Callable[[str], str | None] | None = None,   # host-injected, SYNC
     post_process: bool = True,              # default ON, like the TS engine
     max_depth: int = 20,
