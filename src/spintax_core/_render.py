@@ -898,7 +898,8 @@ def _pad_separator(sep: str, lang: str, following: str) -> str:
     keeps the space before `و` and none after — `الكازينو والبث` — when `following`, the
     element the separator goes in front of, starts with a letter of that script. Before
     anything else (a Latin brand, a digit, a tatweel) both spaces stay. `following[:1]` is
-    the first CODE POINT, which is what the reference reads; a `str` has no surrogates.
+    the first CODE POINT, which is what the reference reads: a `str` indexes by code point,
+    where JavaScript has to pair two UTF-16 units to get one.
     """
     trimmed = sep.strip(PHP_TRIM_CHARS)
     if trimmed == "":

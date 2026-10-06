@@ -613,7 +613,8 @@ PHP_TRIM_CHARS = " \t\n\r\0\x0b"
 #: `unicodedata` has no Script property, so nothing here could rebuild it at test time.
 #: Node v24.19.0 (Unicode 17.0), one code point at a time through
 #: `/^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ーｰ\p{Script=Thai}\p{Script=Lao}
-#: \p{Script=Khmer}\p{Script=Myanmar}]$/u`, collapsed into ranges. Unicode 17, not
+#: \p{Script=Khmer}\p{Script=Myanmar}]$/u`, collapsed into ranges — by
+#: `tools/gen_script_tables.mjs`, which is also how to check it. Unicode 17, not
 #: `TABLES_UNICODE_VERSION`: a script table only grows, and a newer one only adds letters to
 #: the unpadded side.
 #:
