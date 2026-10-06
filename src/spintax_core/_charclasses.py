@@ -604,27 +604,67 @@ NOT_LOWERCASE_LETTER = f"(?![{_LL}])"
 PHP_TRIM_CHARS = " \t\n\r\0\x0b"
 
 
-#: Scripts written without spaces between words (spintax-js#87): Script=Han, Hiragana,
-#: Katakana, plus U+30FC and U+FF70 (the prolonged-sound marks, which are Script=Common).
-#: A permutation separator made only of these joins bare: `[<lastsep="和">A|B]` is `A和B`.
+#: Scripts written without spaces between words (spintax-js#87, #90): Script=Han, Hiragana,
+#: Katakana, Thai, Lao, Khmer, Myanmar, plus U+30FC and U+FF70 (the prolonged-sound marks,
+#: which are Script=Common). A permutation separator whose letters are all in here joins
+#: bare: `[<lastsep="和">A|B]` is `A和B`, and Thai `และ` likewise.
 #:
 #: GENERATED from the reference's own regex — Python's `re` has no `\p{Script=…}` and
 #: `unicodedata` has no Script property, so nothing here could rebuild it at test time.
 #: Node v24.19.0 (Unicode 17.0), one code point at a time through
-#: `/^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ーｰ]$/u`, collapsed
-#: into ranges. Unicode 17, not `TABLES_UNICODE_VERSION`: a script table only grows, and a
-#: newer one only adds ideographs to the unpadded side.
+#: `/^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ーｰ\p{Script=Thai}\p{Script=Lao}
+#: \p{Script=Khmer}\p{Script=Myanmar}]$/u`, collapsed into ranges. Unicode 17, not
+#: `TABLES_UNICODE_VERSION`: a script table only grows, and a newer one only adds letters to
+#: the unpadded side.
+#:
+#: **Script, not Script_Extensions.** U+3006 〆, U+303C 〼, U+3031–3035 and U+FF9E/FF9F are
+#: Script=Common, not here, and a separator made of them is padded. PCRE2 ≥ 10.40 reads
+#: `\p{Han}` as Script_Extensions, which is how the PHP engines got this wrong.
 UNSPACED_SCRIPT = (
+    "\\U00000e01-\\U00000e3a\\U00000e40-\\U00000e5b\\U00000e81-\\U00000e82\\U00000e84"
+    "\\U00000e86-\\U00000e8a\\U00000e8c-\\U00000ea3\\U00000ea5\\U00000ea7-\\U00000ebd"
+    "\\U00000ec0-\\U00000ec4\\U00000ec6\\U00000ec8-\\U00000ece\\U00000ed0-\\U00000ed9"
+    "\\U00000edc-\\U00000edf\\U00001000-\\U0000109f\\U00001780-\\U000017dd"
+    "\\U000017e0-\\U000017e9\\U000017f0-\\U000017f9\\U000019e0-\\U000019ff"
     "\\U00002e80-\\U00002e99\\U00002e9b-\\U00002ef3\\U00002f00-\\U00002fd5\\U00003005"
     "\\U00003007\\U00003021-\\U00003029\\U00003038-\\U0000303b\\U00003041-\\U00003096"
     "\\U0000309d-\\U0000309f\\U000030a1-\\U000030fa\\U000030fc-\\U000030ff"
     "\\U000031f0-\\U000031ff\\U000032d0-\\U000032fe\\U00003300-\\U00003357"
-    "\\U00003400-\\U00004dbf\\U00004e00-\\U00009fff\\U0000f900-\\U0000fa6d"
-    "\\U0000fa70-\\U0000fad9\\U0000ff66-\\U0000ff9d\\U00016fe2-\\U00016fe3"
+    "\\U00003400-\\U00004dbf\\U00004e00-\\U00009fff\\U0000a9e0-\\U0000a9fe"
+    "\\U0000aa60-\\U0000aa7f\\U0000f900-\\U0000fa6d\\U0000fa70-\\U0000fad9"
+    "\\U0000ff66-\\U0000ff9d\\U000116d0-\\U000116e3\\U00016fe2-\\U00016fe3"
     "\\U00016ff0-\\U00016ff6\\U0001aff0-\\U0001aff3\\U0001aff5-\\U0001affb"
     "\\U0001affd-\\U0001affe\\U0001b000-\\U0001b122\\U0001b132\\U0001b150-\\U0001b152"
     "\\U0001b155\\U0001b164-\\U0001b167\\U0001f200\\U00020000-\\U0002a6df"
     "\\U0002a700-\\U0002b81d\\U0002b820-\\U0002cead\\U0002ceb0-\\U0002ebe0"
     "\\U0002ebf0-\\U0002ee5d\\U0002f800-\\U0002fa1d\\U00030000-\\U0003134a"
     "\\U00031350-\\U00033479"
+)
+
+
+#: The letters of Script=Arabic and of Script=Hebrew (spintax-js#90). A proclitic conjunction —
+#: `و`/`ف` under `ar`, `ו` under `he` — attaches to the next element when that element's first
+#: code point is in its language's table. GENERATED like `UNSPACED_SCRIPT`, same Node and
+#: Unicode, through `/^(?=\p{L})\p{Script=Arabic}$/u` and `/^(?=\p{L})\p{Script=Hebrew}$/u`.
+#: Script again, not Script_Extensions: U+0640 (tatweel) is Script=Common and is NOT here.
+ARABIC_LETTER = (
+    "\\U00000620-\\U0000063f\\U00000641-\\U0000064a\\U0000066e-\\U0000066f"
+    "\\U00000671-\\U000006d3\\U000006d5\\U000006e5-\\U000006e6\\U000006ee-\\U000006ef"
+    "\\U000006fa-\\U000006fc\\U000006ff\\U00000750-\\U0000077f\\U00000870-\\U00000887"
+    "\\U00000889-\\U0000088f\\U000008a0-\\U000008c9\\U0000fb50-\\U0000fbb1"
+    "\\U0000fbd3-\\U0000fd3d\\U0000fd50-\\U0000fd8f\\U0000fd92-\\U0000fdc7"
+    "\\U0000fdf0-\\U0000fdfb\\U0000fe70-\\U0000fe74\\U0000fe76-\\U0000fefc"
+    "\\U00010ec2-\\U00010ec7\\U0001ee00-\\U0001ee03\\U0001ee05-\\U0001ee1f"
+    "\\U0001ee21-\\U0001ee22\\U0001ee24\\U0001ee27\\U0001ee29-\\U0001ee32"
+    "\\U0001ee34-\\U0001ee37\\U0001ee39\\U0001ee3b\\U0001ee42\\U0001ee47\\U0001ee49"
+    "\\U0001ee4b\\U0001ee4d-\\U0001ee4f\\U0001ee51-\\U0001ee52\\U0001ee54\\U0001ee57"
+    "\\U0001ee59\\U0001ee5b\\U0001ee5d\\U0001ee5f\\U0001ee61-\\U0001ee62\\U0001ee64"
+    "\\U0001ee67-\\U0001ee6a\\U0001ee6c-\\U0001ee72\\U0001ee74-\\U0001ee77"
+    "\\U0001ee79-\\U0001ee7c\\U0001ee7e\\U0001ee80-\\U0001ee89\\U0001ee8b-\\U0001ee9b"
+    "\\U0001eea1-\\U0001eea3\\U0001eea5-\\U0001eea9\\U0001eeab-\\U0001eebb"
+)
+HEBREW_LETTER = (
+    "\\U000005d0-\\U000005ea\\U000005ef-\\U000005f2\\U0000fb1d\\U0000fb1f-\\U0000fb28"
+    "\\U0000fb2a-\\U0000fb36\\U0000fb38-\\U0000fb3c\\U0000fb3e\\U0000fb40-\\U0000fb41"
+    "\\U0000fb43-\\U0000fb44\\U0000fb46-\\U0000fb4f"
 )

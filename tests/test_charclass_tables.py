@@ -242,6 +242,19 @@ def test_the_specific_characters_that_motivated_the_table(char: str, is_letter: 
     assert bool(re.fullmatch(_charclasses.JS_LETTER, char)) is is_letter
 
 
+@pytest.mark.parametrize("name", ["ARABIC_LETTER", "HEBREW_LETTER"])
+def test_the_proclitic_script_tables_hold_letters_only(name: str) -> None:
+    """spintax-js#90. Script has no Python predicate, so only the `(?=\\p{L})` half of the
+    generator's regex can be checked here: whatever the table holds that this interpreter
+    has assigned is a letter. A regeneration that dropped the lookahead would let a
+    harakat or a Hebrew point attach the conjunction."""
+    held = _codepoints_matching(f"[{getattr(_charclasses, name)}]")
+    not_letters = {
+        cp for cp in held if unicodedata.category(chr(cp)) not in LETTER_CATEGORIES | {"Cn"}
+    }
+    assert not not_letters, [hex(cp) for cp in sorted(not_letters)[:10]]
+
+
 def test_the_js_word_boundary_needs_a_transition() -> None:
     """Not a one-sided lookaround. Both sides matter, and out-of-string counts as non-word.
 

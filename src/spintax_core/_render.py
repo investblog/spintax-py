@@ -44,8 +44,10 @@ from ._ast import (
     VariableNode,
 )
 from ._charclasses import (
+    ARABIC_LETTER,
     ASCII_DIGIT,
     ASCII_WORD,
+    HEBREW_LETTER,
     JS_LINE_END,
     JS_LINE_START,
     PHP_TRIM_CHARS,
@@ -324,6 +326,8 @@ class _JoinPermutation:
     separators: list[str | None]
     config: PermConfig
     rng: Rng
+    #: Base language, for the proclitic conjunctions of `_pad_separator`.
+    lang: str
 
 
 def render_nodes(nodes: Sequence[Node], walk: _Walk) -> str:
@@ -422,6 +426,7 @@ def render_nodes(nodes: Sequence[Node], walk: _Walk) -> str:
                         separators=[o.separator for o in node.options],
                         config=node.config,
                         rng=job.walk.rng,
+                        lang=_plurals.normalize_base_lang(job.walk.locale),
                     )
                 )
                 for option, part in reversed(list(zip(node.options, parts, strict=True))):
@@ -837,7 +842,7 @@ def _finish_permutation(job: _JoinPermutation) -> str:
     pick = _random_int(job.rng, minimum, maximum)
     _shuffle(elements, job.rng)
     lastsep = config.lastsep if config.lastsep is not None else config.sep
-    return _join_with_separators(elements[:pick], config.sep, lastsep)
+    return _join_with_separators(elements[:pick], config.sep, lastsep, job.lang)
 
 
 def _shuffle(elements: list[_Element], rng: Rng) -> None:
@@ -848,7 +853,7 @@ def _shuffle(elements: list[_Element], rng: Rng) -> None:
 
 
 def _join_with_separators(
-    elements: Sequence[_Element], global_sep: str, global_lastsep: str
+    elements: Sequence[_Element], global_sep: str, global_lastsep: str, lang: str
 ) -> str:
     if not elements:
         return ""
@@ -862,27 +867,46 @@ def _join_with_separators(
         sep = element.sep
         if sep is None:
             sep = global_lastsep if i == last else global_sep
-        out.append(_pad_separator(sep) + element.text)
+        out.append(_pad_separator(sep, lang, element.text) + element.text)
     return "".join(out)
 
 
 _UNSPACED_SCRIPT_RE = re.compile(f"[{UNSPACED_SCRIPT}]+")
 
+#: Conjunctions written attached to the next word, by base language (spintax-js#90): Arabic
+#: `و` ("and") and `ف` ("and then"), Hebrew `ו` ("and"), each with the letters of its script.
+#: Keyed by language, not script — Persian and Urdu write the same `و` as a word of its own.
+#: Word conjunctions (`أو`, `ثم`, `או`) are not here.
+_PROCLITICS: dict[str, tuple[frozenset[str], re.Pattern[str]]] = {
+    "ar": (frozenset({"و", "ف"}), re.compile(f"[{ARABIC_LETTER}]")),
+    "he": (frozenset({"ו"}), re.compile(f"[{HEBREW_LETTER}]")),
+}
 
-def _pad_separator(sep: str) -> str:
+
+def _pad_separator(sep: str, lang: str, following: str) -> str:
     """A purely alphabetic separator gets spaces around it; anything else passes through.
 
     `str.isalpha()` stands in for the reference's `\\p{L}+`, which Python's `re` has no
     escape for. Measured equal across the whole Unicode range: `isalpha()` is true for
     exactly the general categories `Lu Ll Lt Lm Lo`, with no disagreements.
 
-    Except when every letter belongs to a script written without spaces between words
-    (spintax-js#87): `和`, `および`, `と` join bare. CJK only — Hangul keeps the padding
-    (Korean spaces its words), and a mixed separator such as `and和` is padded.
+    Except when every letter belongs to a script written without spaces between words:
+    `和`, `および`, `と` (spintax-js#87), Thai `และ`, Lao `ແລະ` (#90) join bare. Hangul keeps
+    the padding (Korean spaces its words), and a mixed separator such as `and和` is padded.
+
+    And except a proclitic conjunction in its language (#90): `[<lastsep="و">…]` under `ar`
+    keeps the space before `و` and none after — `الكازينو والبث` — when `following`, the
+    element the separator goes in front of, starts with a letter of that script. Before
+    anything else (a Latin brand, a digit, a tatweel) both spaces stay. `following[:1]` is
+    the first CODE POINT, which is what the reference reads; a `str` has no surrogates.
     """
     trimmed = sep.strip(PHP_TRIM_CHARS)
     if trimmed == "":
         return sep
+    proclitic = _PROCLITICS.get(lang)
+    if proclitic is not None and trimmed in proclitic[0]:
+        attached = proclitic[1].fullmatch(following[:1]) is not None
+        return f" {trimmed}" if attached else f" {trimmed} "
     if trimmed.isalpha() and not _UNSPACED_SCRIPT_RE.fullmatch(trimmed):
         return f" {trimmed} "
     return sep

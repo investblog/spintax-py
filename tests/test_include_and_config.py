@@ -16,7 +16,7 @@ The corpus has since gained configured CJK separators and an Arabic arity fallba
 
 Every expectation here is a measurement from `@spintax/core` driven by the same fixed draw
 source — 0.3.0 for the original table, 0.11.0 for the CJK separators and the Arabic
-buckets — not a reading of this port's own code. That distinction earned itself:
+buckets, 0.12.0 for the proclitic conjunctions — not a reading of this port's own code. That distinction earned itself:
 the first draft derived its expectations by reading, and eighteen were wrong — eighteen
 expectations, no implementation. Three that read plausibly and are false: a `first` draw
 source does NOT leave a permutation in source order (Fisher-Yates still runs), `[%p%]` is
@@ -232,6 +232,45 @@ def test_permutation_config(template: str, expected: str) -> None:
     table was guarded: mutations that dropped the padding, ignored `lastsep`, or clamped
     the minimum to zero instead of one all passed the full suite."""
     assert render_with(template, first, post_process=False) == expected
+
+
+@pytest.mark.parametrize(
+    ("template", "locale", "expected"),
+    [
+        # A per-element separator attaches like a configured one.
+        ("[الكازينو<، >|البث<و>|المراهنات]", "ar", "البث والمراهنات الكازينو"),
+        # (Two elements under `first` come out swapped, so the probe — the element the
+        # conjunction lands in front of — is written FIRST in each case below.)
+        # The LANGUAGE picks the conjunction, the next element's SCRIPT decides: a Persian
+        # letter is Script=Arabic, so under `ar` it attaches too.
+        ('[<lastsep="و">گربه|الكازينو]', "ar", "الكازينو وگربه"),
+        # A letter of the script, not any character of it: a harakat (Script=Inherited)
+        # or a ZWNJ in front keeps both spaces.
+        ('[<lastsep="و">َبث|الكازينو]', "ar", "الكازينو و َبث"),
+        ('[<lastsep="و">‌بث|الكازينو]', "ar", "الكازينو و ‌بث"),
+        # The Hebrew presentation forms are Script=Hebrew letters; a point (U+05B0) is not.
+        ('[<lastsep="ו">יִא|חתולים]', "he", "חתולים ויִא"),
+        ('[<lastsep="ו">ְא|חתולים]', "he", "חתולים ו ְא"),
+        # Each conjunction belongs to its own language only, and attaches to its own
+        # script only.
+        ('[<lastsep="ו">א|ב]', "ar", "ב ו א"),
+        ('[<lastsep="ו">الكازينو|חתולים]', "he", "חתולים ו الكازينو"),
+        ('[<lastsep="و">الكازينو|البث]', "he", "البث و الكازينو"),
+        ('[<lastsep="و">الكازينو|البث]', "arz", "البث و الكازينو"),
+        # Thai and Lao mixed are still all unspaced; one Latin letter brings the padding.
+        ('[<sep="และແລະ">a|b|c]', "", "bและແລະcและແລະa"),
+        ('[<sep="andและ">a|b|c]', "", "b andและ c andและ a"),
+        # Script, not Script_Extensions, past the case the corpus carries (〆).
+        ('[<sep="〼">a|b|c]', "", "b 〼 c 〼 a"),
+        ('[<sep="ﾞ">a|b|c]', "", "b ﾞ c ﾞ a"),
+    ],
+)
+def test_proclitic_and_unspaced_separators(template: str, locale: str, expected: str) -> None:
+    """spintax-js#90 past what the corpus reaches. Measured on `@spintax/core` 0.12.0's
+    `renderWith` with the same `first` draw source; the corpus has no per-element
+    separator, no non-Arabic-language letter after `و`, and no mark in front of the next
+    element."""
+    assert render_with(template, first, locale=locale, post_process=False) == expected
 
 
 # ── plural: the lenient fallbacks ─────────────────────────────────────────────
