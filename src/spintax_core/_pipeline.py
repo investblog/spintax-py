@@ -55,7 +55,7 @@ def render_with(
     if post_process:
         # Runs on the still-shielded form: neutralize sentinels are inert to it, which is
         # what lets the cosmetic pass reflow text without seeing a shielded brace as markup.
-        out = _postprocess.post_process(out)
+        out = _postprocess.post_process(out, ctx.locale)
 
     # Not conditional, and not cosmetic. `post_process=False` skips the pass above and
     # never this one — leaving it out would emit private-use code points to the caller.

@@ -143,6 +143,7 @@ from ._charclasses import (
     UCP_WORD,
     js_ci_unicode,
 )
+from ._plurals import normalize_base_lang
 
 #: Single-token abbreviations that would otherwise look like a sentence end. Multi-dot
 #: forms (`т.д.`) are handled by `_MULTI_ABBR_RE` instead.
@@ -213,8 +214,14 @@ _DOMAIN_PART = f"(?:{_LABEL}\\.)+{_TLD}"
 #: which would otherwise let a URI match run through the delimiters of a placeholder minted
 #: after it.
 _URI_BODY = f"[^\\x00{_WS}<>\"')\\]]"
+#:
+#: A `//` scheme is a URI even with no body: prose that names the protocol — `(https://)` —
+#: got a space after its colon from the punctuation pass, `(https: //)` (spintax-js#91).
+#: `mailto:`/`tel:` still need one, or a sentence-initial `Tel: 555` would be shielded from
+#: the capitalizer as a bare `tel`.
 _URI_RE = re.compile(
-    f"(?:(?:https?|ftp)://|(?:{js_ci_unicode('mailto')}|tel):){_URI_BODY}+", re.IGNORECASE
+    f"(?:(?:https?|ftp)://{_URI_BODY}*|(?:{js_ci_unicode('mailto')}|tel):{_URI_BODY}+)",
+    re.IGNORECASE,
 )
 #: Which prefix a match gets. Kept distinct even though one pass mints both: `URL` and `URI`
 #: are what the corpus fixtures and `_PLACEHOLDER_RE` speak.
@@ -261,7 +268,7 @@ _TRAILING_PUNCT = ".,;:!"
 #: built from it, so the two stay in step by construction rather than by memory: a new
 #: shield pass whose prefix the restore does not know would otherwise emit a raw
 #: `\x00…\x00` to the caller on the fast path, silently and with nothing to catch it.
-ShieldPrefix = Literal["URL", "URI", "EMAIL", "DOM", "NUM", "ABBR"]
+ShieldPrefix = Literal["URL", "URI", "EMAIL", "DOTTOK", "DOM", "NUM", "ABBR"]
 SHIELD_PREFIXES: tuple[ShieldPrefix, ...] = get_args(ShieldPrefix)
 
 #: Exactly the token shape `store` mints. Anchored on `\x00` at BOTH ends, and never
@@ -314,6 +321,25 @@ _SPACE_BEFORE_PUNCT_RE = re.compile(f"(?<!{_S}){_S}+([,;:!?.])")
 #: another quote, which is not on the list, so a run is only ever read whole.
 _QUOTES = "\"'«»‹›“”‘’"
 _CLOSER = f"[)\\]]|[{_QUOTES}]+(?={_S}|\\Z|<|/?>|[.,;:!?…)\\]—–])"
+
+#: A token that BEGINS with a dot — `.NET`, `.gitignore`, `.env.local`, `.xlsx`, `.5` —
+#: shielded, so the punctuation passes do not take its dot for a sentence end: `and .NET`
+#: was `and. NET`, `the .apk file` was `the. Apk file` (spintax-js#91). A token starts after
+#: the text start, whitespace, an opening bracket, a quote, a tag or a path separator
+#: (`src/.env`, `dir\\.env`) — an explicit set, not "no letter before": `See...and more` must
+#: keep its ellipsis. The tail takes dots (`.tar.gz`); the caller releases trailing
+#: punctuation (`.NET.`). Runs after EMAIL and before DOM, or `env.local` in `.env.local` is
+#: shielded as a domain first and the leading dot is left bare. The cost: a sentence typed
+#: with the space on the wrong side, `end .Next`, is no longer repaired.
+#:
+#: The reference's `(?<=^|S|[…])` is not a fixed-width lookbehind, so the text start is
+#: its own branch. `[^\W_]` is `[\p{L}\p{N}]` and `[\w.\-]` is `[\p{L}\p{N}_.\-]`: Python's
+#: `\w` is `str.isalnum()` plus `_`, i.e. L and N exactly. A plain `re.sub` is safe here,
+#: unlike the scanners above: a start fails in O(1) unless it is a dot, and a matching dot
+#: consumes its run once.
+_DOT_TOKEN_RE = re.compile(
+    f"(?:\\A|(?<=[{_WS}(\\[{{>/\\\\{_QUOTES}]))\\.{JS_LETTER_OR_NUMBER}[\\w.\\-]*"
+)
 #: `\d` is `\p{Nd}` in both dialects — the digit here is UCP, unlike the decimal shield's.
 _SPACE_AFTER_COMMA_RE = re.compile(f"([,;:])(?!\\d)(?!{_S}|\\Z|<|{_CLOSER})")
 #: A run of sentence punctuation is ONE sentence end. `...` and `?!` have to survive
@@ -544,7 +570,20 @@ def _after_block_tag() -> _Boundary:
     return nxt
 
 
-def _capitalize_after(text: str, next_boundary: _Boundary, leads: _Leads) -> str:
+def _upper_turkic(ch: str) -> str:
+    """Turkish and Azerbaijani pair dotted `i` with `İ` and dotless `ı` with `I`, so
+    `istanbul` opens a sentence as `İstanbul` (spintax-js#94). An explicit mapping, not a
+    locale-aware upper-case: that depends on the host's ICU data, and the engines have to
+    agree. `İ` is one code point, so the lead index still holds."""
+    return "İ" if ch == "i" else ch.upper()
+
+
+_TURKIC_LANGS = frozenset(("tr", "az"))
+
+
+def _capitalize_after(
+    text: str, next_boundary: _Boundary, leads: _Leads, upper: Callable[[str], str]
+) -> str:
     """One capitalizer pass: for each boundary `next_boundary` finds, upper-case the
     `\\p{Ll}` at the end of the lead after it.
 
@@ -571,7 +610,7 @@ def _capitalize_after(text: str, next_boundary: _Boundary, leads: _Leads) -> str
         if lower.match(ch) is None:
             continue
         out.append(text[emitted:at])
-        out.append(ch.upper())
+        out.append(upper(ch))
         emitted = at + 1
         frm = emitted
     if emitted == 0:
@@ -580,17 +619,22 @@ def _capitalize_after(text: str, next_boundary: _Boundary, leads: _Leads) -> str
     return "".join(out)
 
 
-def _capitalize_first(match: re.Match[str]) -> str:
-    """Upper-case the last group, keeping everything the pattern matched before it.
+def _capitalize_first(text: str, upper: Callable[[str], str]) -> str:
+    """Upper-case the first `\\p{Ll}` after the lead, keeping the lead as it is.
 
-    No category check here — the pattern already guarantees the letter is `Ll`. `str.upper`
+    No category check on the letter — the pattern already guarantees it is `Ll`. `str.upper`
     rather than `str.capitalize` because a single character can upper-case to two, and `ß`
     becoming `SS` is what the reference does too.
     """
-    return match.group(1) + match.group(2).upper()
+    # `count=1` mirrors a JavaScript `replace` without `/g`. Redundant under the `\A`
+    # anchor, and kept because the anchor is what makes it redundant.
+    return _cap_first_re().sub(lambda m: m.group(1) + upper(m.group(2)), text, count=1)
 
 
-def post_process(text: str) -> str:
+def post_process(text: str, locale: str = "") -> str:
+    """`locale` is the render's: only its base language is read, by the capitalizers
+    (spintax-js#94)."""
+    upper = _upper_turkic if normalize_base_lang(locale) in _TURKIC_LANGS else str.upper
     # Decided BEFORE shielding, and this is the only place it can be decided: once the
     # placeholders are in, a `\x00` the caller wrote is indistinguishable from one the
     # shield placed. See the module docstring for what it buys.
@@ -619,6 +663,7 @@ def post_process(text: str) -> str:
     # 1-5: shield. URIs in one pass, and before email and domain so the whole one survives.
     text = _URI_RE.sub(store_uri, text)
     text = _shield_emails(text, lambda m: store(m, "EMAIL"))
+    text = _DOT_TOKEN_RE.sub(lambda m: store_with_trailing_punct(m.group(), "DOTTOK"), text)
     text = _shield_domains(text, lambda m: store(m, "DOM"))
     text = _DECIMAL_RE.sub(lambda m: store(m.group(), "NUM"), text)
     text = _MULTI_ABBR_RE.sub(lambda m: store(m.group(), "ABBR"), text)
@@ -635,15 +680,13 @@ def post_process(text: str) -> str:
     text = _SPACE_AFTER_OPENER_RE.sub(r"\1", text)
 
     # 8: capitalize the first letter (skipping leading HTML tags and sentence openers).
-    # `count=1` mirrors a JavaScript `replace` without `/g`. Redundant under the `\A`
-    # anchor, and kept because the anchor is what makes it redundant.
-    text = _cap_first_re().sub(_capitalize_first, text, count=1)
+    text = _capitalize_first(text, upper)
     # 9-11: capitalize after sentence punctuation, after a block-level tag, after a line
     # break. One lead index serves all three.
     leads = _Leads()
-    text = _capitalize_after(text, _after_sentence_end, leads)
-    text = _capitalize_after(text, _after_block_tag(), leads)
-    text = _capitalize_after(text, _after_line_break, leads)
+    text = _capitalize_after(text, _after_sentence_end, leads, upper)
+    text = _capitalize_after(text, _after_block_tag(), leads, upper)
+    text = _capitalize_after(text, _after_line_break, leads, upper)
 
     # 12: restore, then trim. See the module docstring for why this is two restores.
     if caller_wrote_nul:

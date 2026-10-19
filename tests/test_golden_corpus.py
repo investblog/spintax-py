@@ -69,6 +69,10 @@ def _render_opts(case: dict[str, Any]) -> dict[str, Any]:
         opts["locale"] = case["locale"]
     if case.get("postProcess") is not None:
         opts["post_process"] = case["postProcess"]
+    includes = case.get("includes")
+    if includes is not None:
+        # A synchronous resolver over the fixture's map; an absent ref resolves to None.
+        opts["include_resolver"] = includes.get
     return opts
 
 

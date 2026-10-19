@@ -117,6 +117,12 @@ only the error cases pass, it is over-eager and the valid one will say so.
 `refs` / `sets` / `defs` / `includes` from the index step 3 already built. `sets` and `defs` are
 separate buckets — the whole point of the fixture we added upstream.
 
+### 8. Verbatim span — 1 code (added at 0.8.0, after P1)
+
+`verbatim.unclosed`, a **warning**, once, at the first `/!` with no `!/` after it (spintax-js#92,
+ADR 0001 rule 9). Its offset comes from the source scan, in the author's coordinates — not from a
+check over the projection — so it is placed without the projection's offset map.
+
 ## What the corpus will not catch
 
 Local tests are mandatory for these; a green corpus says nothing about any of them:
