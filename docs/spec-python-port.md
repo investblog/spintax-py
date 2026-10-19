@@ -256,8 +256,11 @@ them today, so an implementation can be wrong about them with the suite fully gr
   reopening the question for three engines and a published package, to support identifiers
   nobody has asked for. If a real template ever needs them, the narrower rule can be widened
   without breaking anything that already works — which is the whole reason for choosing it.
-- **Comments.** Not one of the fixtures contains a `/#` at all, so comment stripping — and
-  therefore every position that passes through it — is held up by local tests alone.
+- **Comments and verbatim spans.** Since `@spintax/core` 0.14.0 the corpus gates the scan
+  itself — `/# … #/` and `/! … !/` in one pass, opener precedence, `/!/`, `/!!/`, unclosed
+  openers (spintax-js ADR 0001). Positions are still ungated: every diagnostic mapped back
+  through a comment or a span is held up by local tests alone (`test_source.py`,
+  `test_verbatim.py`).
 - **Diagnostic ORDER.** `validate()` returns findings sorted by position; the reference returns
   them in check order. The corpus matches diagnostics by `any()`, so it cannot see the difference,
   and §3's allowed-to-diverge list does not mention ordering either way. Treated as a deliberate

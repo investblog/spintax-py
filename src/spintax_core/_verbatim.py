@@ -108,13 +108,6 @@ class Projection:
             return src_end - 1
         return min(src_start + delta, src_end)
 
-    def to_text(self, src_offset: int) -> int:
-        """Map a source offset of a character the projection kept as TEXT back into it."""
-        for text_start, src_start, src_end, token in self.segments:
-            if not token and src_start <= src_offset < src_end:
-                return text_start + (src_offset - src_start)
-        return len(self.text)
-
 
 def project(src: str) -> Projection:
     """Scan author source once, left to right.
