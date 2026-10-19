@@ -1,7 +1,8 @@
 """The full render pipeline, assembled exactly once.
 
-Order: strip stray sentinels → parse → tree-walk (vars, `#def`, `#include`) → cosmetic
-post-process, if on → mandatory safety-restore, always.
+Order: project the source (comments, `/! … !/` spans, stray sentinels) → parse →
+tree-walk (vars, `#def`, `#include`) → cosmetic post-process, if on → mandatory
+safety-restore, always → decode the spans, always.
 
 **Assembled once, here, and nowhere else.** Spec §5.1 records what it cost to do
 otherwise: the PHP port's corpus test reproduces the pipeline by hand, so what it
@@ -15,7 +16,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 
-from . import _neutralize, _parser, _postprocess, _render
+from . import _neutralize, _parser, _postprocess, _render, _verbatim
 from ._ast import Ast, ParsedAst, require_parsed
 from ._render import MAX_EXPANSION_CHARS, PluralIssue, RenderCtx, _Budget
 from ._rng import Rng
@@ -38,7 +39,7 @@ def render_with(
     on_plural_error: Callable[[PluralIssue], None] | None = None,
 ) -> str:
     ctx = RenderCtx(
-        runtime_context=context or {},
+        runtime_context=_runtime_values(context),
         rng=rng,
         locale=locale or "",
         resolver=include_resolver,
@@ -59,7 +60,20 @@ def render_with(
 
     # Not conditional, and not cosmetic. `post_process=False` skips the pass above and
     # never this one — leaving it out would emit private-use code points to the caller.
-    return _neutralize.safety_restore(out)
+    # Then the `/! … !/` spans come back, last of all, so neither stage saw their content
+    # (ADR 0001 rule 7).
+    return _verbatim.decode(_neutralize.safety_restore(out))
+
+
+def _runtime_values(context: Mapping[str, str] | None) -> Mapping[str, str]:
+    """The runtime context as the render sees it: the span range stripped from every value,
+    so data cannot carry a ready-made token past the template's sanitising (ADR 0001 rule
+    4). A value keeps the neutralize sentinels — those are how a host shields it."""
+    if not context:
+        return {}
+    if all(_verbatim.strip_span_range(v) == v for v in context.values()):
+        return context
+    return {k: _verbatim.strip_span_range(v) for k, v in context.items()}
 
 
 def _resolve_ast(source: str | Ast) -> ParsedAst:

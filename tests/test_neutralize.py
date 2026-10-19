@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from spintax_core import _neutralize
+from spintax_core import _neutralize, _verbatim
 
 STRUCTURAL = "{}[]%#"
 FIRST_SENTINEL = chr(0xE000)  # the shield for "{"
@@ -45,7 +45,7 @@ def test_an_author_typed_sentinel_is_stripped() -> None:
     Stripping is what makes `neutralize` the only door into the stream.
     """
     pasted = f"a{FIRST_SENTINEL}b"
-    assert _neutralize.strip_sentinels(pasted) == "ab"
+    assert _verbatim.project(pasted).text == "ab"
     assert _neutralize.safety_restore(pasted) == "a{b"
 
 

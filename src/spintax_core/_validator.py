@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterator
 
-from . import _charclasses, _directives, _plurals, _source
+from . import _charclasses, _directives, _plurals, _source, _verbatim
 from ._source import Source
 
 # Only these four keys are accepted inside a `[<…>]` config block.
@@ -750,7 +750,10 @@ def check_include_targets(text: str, known: list[str], out: list[Finding]) -> No
     """
     available = set(known)
     for m in _INCLUDE_RE.finditer(text):
-        target = m.group(1)
+        raw = m.group(1)
+        # The host is asked for the decoded ref (ADR 0001 rule 6), so that is what it must
+        # know — and what the message quotes. The span underlines the raw ref.
+        target = _verbatim.decode(raw)
         if target in available:
             continue
         out.append(
@@ -758,7 +761,7 @@ def check_include_targets(text: str, known: list[str], out: list[Finding]) -> No
                 "include.unknown-target",
                 f"#include target {target!r} does not match any known template.",
                 m.start() + m.group(0).index('"') + 1,
-                len(target),
+                len(raw),
                 target=target,
             )
         )

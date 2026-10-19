@@ -19,9 +19,10 @@ it does — a neutralized value the author places in `{…}` or `[…]` is still
 splices a direct reference the same way (0.4.0, spintax-py#3). Shielding it would be a
 family-wide contract change.
 
-**U+E000–U+E005 are reserved.** Author markup is stripped of them on the way in, so only
-`neutralize` can introduce one — otherwise `safety_restore` would rewrite a sentinel the
-author typed. A raw (non-neutralized) context value carrying these code points is
+**U+E000–U+E005 are reserved.** Author markup is stripped of them on the way in, outside
+`/! … !/` spans, in the one scan of the source (`_verbatim.project`), so only `neutralize`
+can introduce one — otherwise `safety_restore` would rewrite a sentinel the author typed.
+Inside a span they are content, and come back after the restore. A raw (non-neutralized) context value carrying these code points is
 therefore altered; hosts should neutralize or strip such data.
 """
 
@@ -64,11 +65,3 @@ def safety_restore(text: str) -> str:
     """
     return _RESTORE_RE.sub(lambda m: _RESTORE[m.group()], text)
 
-
-def strip_sentinels(text: str) -> str:
-    """Remove stray sentinels from author markup (template source and `#include` results).
-
-    Without this, an author who pastes a U+E000 gets it silently turned into `{` by
-    `safety_restore` — the engine would be rewriting text it never shielded.
-    """
-    return _RESTORE_RE.sub("", text)

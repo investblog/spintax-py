@@ -58,7 +58,8 @@ Strip the pipes yourself if a value must stay one option.
 
 Syntax — enumerations `{a|b}`, permutations `[<sep=", ">a|b]`, variables `%name%`,
 conditionals `{?VAR?yes|no}`, plural agreement `{plural 3: one|few|many}`, comments
-`/# … #/`, and the `#set` / `#def` / `#include` directives — is documented in full at
+`/# … #/`, verbatim spans `/! … !/` (emitted exactly as written — no spintax, no
+post-process inside), and the `#set` / `#def` / `#include` directives — is documented in full at
 **[spintax.net/docs](https://spintax.net/docs/)**.
 
 - **Spec:** [`docs/spec-python-port.md`](docs/spec-python-port.md) — the parity contract, the API

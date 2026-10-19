@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import re
 
-from . import _directives, _source
+from . import _directives, _source, _verbatim
 from ._validator import _CONDITIONAL_REF_RE, _INCLUDE_RE, _VARIABLE_RE
 
 _W = _directives.ASCII_WORD
@@ -44,7 +44,13 @@ def extract(src: str) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]
     defs = _collect(text, _DEF_DEF_RE, fold=True)
     # The include rule scans the terminator-EXACT view — its class carries `\n`, so a
     # normalised U+2028 would turn into gap whitespace. See _validator._INCLUDE_RE.
-    includes = _collect(source.text_exact, _INCLUDE_RE, fold=False)
+    # A span in a ref is reported decoded (ADR 0001 rule 6) — the host never sees a token —
+    # and de-duplicated after decoding, since that is the name the host resolves.
+    includes = tuple(
+        dict.fromkeys(
+            _verbatim.decode(r) for r in _collect(source.text_exact, _INCLUDE_RE, fold=False)
+        )
+    )
 
     body = _DEFINITION_LHS_RE.sub("", text)
     refs: dict[str, None] = {}

@@ -10,6 +10,7 @@ Nested nodes count. Literals do not.
 
 from __future__ import annotations
 
+from . import _verbatim
 from ._ast import (
     ConditionalNode,
     EnumerationNode,
@@ -59,4 +60,7 @@ def count_constructs(ast: ParsedAst, include_count: int) -> dict[str, int]:
 
     counts["set"] = len(ast.set_defs)
     counts["include"] = include_count
+    # `/! … !/` spans are text in the tree; the scan counts them, the empty one included
+    # (ADR 0001 rule 10). Not corpus-gated: `analyze` is not in the corpus.
+    counts["verbatim"] = _verbatim.project(ast.source).spans
     return counts

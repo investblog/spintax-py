@@ -1,9 +1,10 @@
-"""Source text with comments removed, and positions that still point at the original.
+"""Source text as the parser sees it, and positions that still point at the original.
 
-Validation runs over the comment-stripped text — that is what the other engines do,
-and it is why a construct split by a comment is seen as one construct. But removing
-text moves every offset after it, so a diagnostic computed on the stripped string
-would report a position the author cannot find.
+Validation runs over the parser's projection — comments removed, `/! … !/` spans encoded
+as tokens (`_verbatim`) — which is what the other engines do, and why a construct split
+by a comment is seen as one construct and a bracket inside a span is not seen at all. But
+the projection moves every offset after a comment or a span, so a diagnostic computed on
+it would report a position the author cannot find.
 
 The reference engine accepts that: its positions are explicitly best-effort and are
 not parity-gated. Here they are exact instead, which costs one list of segments.
@@ -18,9 +19,8 @@ import re
 from bisect import bisect_right
 from dataclasses import dataclass
 
-#: Comments are non-greedy and may span lines: `/# … #/`. Non-greedy matters — a greedy
-#: match would swallow everything between the first `/#` and the last `#/`.
-COMMENT_RE = re.compile(r"/#.*?#/", re.DOTALL)
+from . import _verbatim
+from ._verbatim import Projection
 
 #: JavaScript's `m` flag ends a line at `\r`, U+2028 and U+2029 as well as `\n`;
 #: Python's ends it only at `\n`, and its `.` happily matches a bare `\r`. Left alone, a
@@ -47,35 +47,31 @@ def normalize_terminators(text: str) -> str:
 
 @dataclass(frozen=True, slots=True)
 class Source:
-    """The original text, its comment-stripped view, and the map between them.
+    """The original text, its projection, and the map between them.
 
-    ``text`` is the **scanning** view: comments removed and line terminators normalised.
-    It is what the validator and `extract` read, and neither of them returns template
-    text to a caller. A renderer must not emit from it — see `normalize_terminators`.
+    ``text`` is the **scanning** view: the projection (comments removed, `/! … !/` spans
+    encoded as tokens — see `_verbatim`) with line terminators normalised. It is what the
+    validator and `extract` read, and neither of them returns template text to a caller. A
+    renderer must not emit from it — see `normalize_terminators`.
     """
 
     original: str
     text: str
-    #: The comment-stripped view with the author's terminators INTACT. For the one rule
-    #: whose character class carries `\n` inside it — `#include`'s gap — the normalised
-    #: view is a trap: a U+2028 rewritten to `\n` for anchoring becomes gap whitespace,
-    #: and `#include "x"` turns into an include the reference calls plain text.
-    #: Normalisation is one character for one, so offsets here and in ``text`` are the
-    #: same offsets; ``to_original`` serves both.
+    #: The projection with the author's terminators INTACT. For the one rule whose
+    #: character class carries `\n` inside it — `#include`'s gap — the normalised view is a
+    #: trap: a U+2028 rewritten to `\n` for anchoring becomes gap whitespace, and
+    #: `#include "x"` turns into an include the reference calls plain text. Normalisation is
+    #: one character for one, so offsets here and in ``text`` are the same offsets;
+    #: ``to_original`` serves both.
     text_exact: str
-    #: (stripped_start, original_start) for each surviving run, in order.
-    _spans: tuple[tuple[int, int], ...]
+    #: The scan this view came from: the offset map, the span count, the unclosed `/!`.
+    projection: Projection
     #: Offsets of every line start in `original`, for position lookup.
     _line_starts: tuple[int, ...]
 
     def to_original(self, offset: int) -> int:
         """Map an offset in `text` back to its offset in `original`."""
-        starts = [s for s, _ in self._spans]
-        i = bisect_right(starts, offset) - 1
-        if i < 0:
-            return 0
-        stripped_start, original_start = self._spans[i]
-        return original_start + (offset - stripped_start)
+        return self.projection.to_source(offset)
 
     def position(self, offset: int) -> tuple[int, int]:
         """1-based (line, column) in the ORIGINAL source for an offset in `text`."""
@@ -88,29 +84,8 @@ class Source:
 
 
 def read(src: str) -> Source:
-    """Strip comments from `src`, keeping a map back to the original offsets."""
-    spans: list[tuple[int, int]] = []
-    out: list[str] = []
-    stripped_len = 0
-    cursor = 0
-
-    for m in COMMENT_RE.finditer(src):
-        if m.start() > cursor:
-            chunk = src[cursor : m.start()]
-            spans.append((stripped_len, cursor))
-            out.append(chunk)
-            stripped_len += len(chunk)
-        cursor = m.end()
-
-    if cursor < len(src):
-        chunk = src[cursor:]
-        spans.append((stripped_len, cursor))
-        out.append(chunk)
-
-    # A wholly-empty result still needs one span, or to_original(0) has nothing to
-    # anchor on and every position collapses to the start of the file.
-    if not spans:
-        spans.append((0, 0))
+    """Project `src` (see `_verbatim.project`), keeping a map back to the original offsets."""
+    projection = _verbatim.project(src)
 
     # Count lines over the SAME terminator set the scanning text is normalised to. Doing
     # it on `\n` alone would leave the engine treating a bare CR as a line break for the
@@ -123,11 +98,10 @@ def read(src: str) -> Source:
         if ch == "\n":
             line_starts.append(i + 1)
 
-    stripped = "".join(out)
     return Source(
         original=src,
-        text=_LINE_TERMINATORS_RE.sub("\n", stripped),
-        text_exact=stripped,
-        _spans=tuple(spans),
+        text=_LINE_TERMINATORS_RE.sub("\n", projection.text),
+        text_exact=projection.text,
+        projection=projection,
         _line_starts=tuple(line_starts),
     )

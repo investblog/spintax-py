@@ -31,7 +31,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from typing import NamedTuple
 
-from . import _parser, _plurals
+from . import _parser, _plurals, _verbatim
 from ._ast import (
     ConditionalNode,
     EnumerationNode,
@@ -76,6 +76,9 @@ MAX_VARIABLE_DEPTH = 50
 #: 63 references left literal. A document that needs more than a megabyte of *substituted*
 #: text has to raise this, and the truncation is silent -- an unaffordable reference is
 #: indistinguishable from an undefined name, by design (no new output shape, §9.2).
+#:
+#: A `/! … !/` token is charged as its content, not its encoding (`_verbatim.budget_length`,
+#: ADR 0001 rule 7a): two digits per code point would otherwise halve the ceiling for a span.
 MAX_EXPANSION_CHARS = 1024 * 1024
 
 
@@ -481,7 +484,7 @@ def _resolve_variable(name: str, walk: _Walk) -> tuple[str, Sequence[Node] | Non
     # reference's review, spintax-js#78).
     if walk.budget.left <= 0:
         return f"%{name}%", None
-    walk.budget.left -= len(value)
+    walk.budget.left -= _verbatim.budget_length(value)
     # At the cap, stop expanding and return what we have. Lenient by contract: partial
     # output, never an exception — the plugin throws here and resolves to empty.
     if walk.depth >= MAX_VARIABLE_DEPTH or not _HAS_CONSTRUCT_RE.search(value):
@@ -531,7 +534,7 @@ def _expand_vars_fixpoint(text: str, walk: _Walk, passes: int) -> _Fixpoint:
             # Same purse as _resolve_variable: a plural slot is not a separate allowance.
             if walk.budget.left <= 0:
                 return m.group()
-            walk.budget.left -= len(value)
+            walk.budget.left -= _verbatim.budget_length(value)
             changed = True
             return value
 
@@ -951,7 +954,9 @@ def _resolve_includes(text: str, ctx: RenderCtx) -> str:
             job.out.append(job.text[cursor : match.start()])
             slot: list[str] = []
             job.out.append(slot)  # type: ignore[arg-type]
-            child = _open_include(match.group(1), job.ctx)
+            # A span in the ref reaches the host decoded (ADR 0001 rule 6), and the cycle
+            # check compares what the host was asked for.
+            child = _open_include(_verbatim.decode(match.group(1)), job.ctx)
             if child is not None:
                 pending.append(_Splice(text=child[0], ctx=child[1], out=slot))
             cursor = match.end()
@@ -997,6 +1002,7 @@ def _open_include(ref: str, ctx: RenderCtx) -> tuple[str, RenderCtx] | None:
         return None
 
     child_ctx = replace(ctx, include_stack=(*ctx.include_stack, ref))
-    # `parse_template` strips stray sentinels from the included author markup itself.
+    # `parse_template` projects the included author markup itself: its spans are encoded
+    # and its stray sentinels stripped, as the template's are.
     ast = _parser.parse_template(included)
     return _render_body(ast, child_ctx), child_ctx

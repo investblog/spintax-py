@@ -19,7 +19,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
-from . import _directives, _neutralize, _source
+from . import _directives, _verbatim
 from ._ast import (
     AST_VERSION,
     ConditionalNode,
@@ -86,11 +86,13 @@ _LASTSEP_RE = re.compile(f'{js_ci_ascii("lastsep")}{_S}*={_S}*"([^"]*)"')
 
 
 def parse_template(src: str) -> ParsedAst:
-    """Parse a full template: sanitise, strip comments, extract directives, build the tree.
+    """Parse a full template: project it (comments removed, `/! … !/` spans encoded,
+    reserved ranges stripped outside spans — see `_verbatim.project`), extract directives,
+    build the tree.
 
     **This is the one door from author source into a tree, and it sanitises.** Stray engine
-    sentinels (U+E000–U+E005) are stripped first, so a reserved-range character an author
-    typed cannot survive to be rewritten into a brace by the mandatory safety-restore — the
+    sentinels (U+E000–U+E005) outside spans are stripped, so a reserved-range character an
+    author typed cannot survive to be rewritten into a brace by the mandatory safety-restore — the
     invariant `_neutralize` documents ("only `neutralize()` may introduce a sentinel"). It
     lives here rather than at each caller because there were three callers and two of them
     (`parse()` and `analyze(str)`) forgot it, so `render(parse(src))` diverged from
@@ -105,13 +107,11 @@ def parse_template(src: str) -> ParsedAst:
     `source` keeps the ORIGINAL, unsanitised text — the raw-text checks that read it are
     unaffected by a sentinel, and a diagnostic should point at the bytes the author wrote.
     """
-    body_src = _neutralize.strip_sentinels(src)
-    # Comments are stripped WITHOUT the offset map `_source.read` builds. That map exists
-    # so the validator can point a diagnostic at the author's text; the parser feeds a
-    # renderer, which must emit the author's bytes — including line terminators the
-    # scanning view normalises away.
-    stripped = _source.COMMENT_RE.sub("", body_src)
-    directives = _directives.extract(stripped)
+    # The projection, not `_source.read`'s scanning view: the parser feeds a renderer, which
+    # must emit the author's bytes — including line terminators that view normalises away.
+    # Inside a span the sentinels are content, encoded like any other code point, and come
+    # back after the safety-restore (ADR 0001 rule 2).
+    directives = _directives.extract(_verbatim.project(src).text)
     return ParsedAst(
         source=src,
         set_defs=directives.set_defs,

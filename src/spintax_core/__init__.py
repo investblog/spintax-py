@@ -20,7 +20,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-from . import _analyze, _extract, _neutralize, _parser, _pipeline, _validator
+from . import _analyze, _extract, _neutralize, _parser, _pipeline, _validator, _verbatim
 from ._ast import Ast, require_parsed, source_of
 from ._errors import AstVersionError, IncludeResolverError, SpintaxError
 from ._render import PluralIssue
@@ -218,17 +218,41 @@ def validate(
             first_line, _ = source.position(int(data["first_offset"]))  # type: ignore[call-overload]
             data = {k: v for k, v in data.items() if k != "first_offset"}
             data["first_line"] = first_line
+        # A message or a data value quoting the projection would quote a `/! … !/` token;
+        # quote the author's text.
+        if data is not None:
+            data = {k: _verbatim.decode(v) if isinstance(v, str) else v for k, v in data.items()}
 
         out.append(
             Diagnostic(
                 severity="warning" if f.severity == "warning" else "error",
                 code=f.code,
-                message=f.message,
+                message=_verbatim.decode(f.message),
                 line=line,
                 column=column,
                 end_line=end_line,
                 end_column=end_column + 1,
                 data=data,
+            )
+        )
+
+    unclosed = source.projection.unclosed
+    if unclosed != -1:
+        # Not silent, as an unclosed comment is: what follows parses as spintax, and a
+        # markdown link there quietly becomes a permutation of one (ADR 0001 rule 9). Once:
+        # no later opener can close either. The offset is the source's own, so it is placed
+        # without the projection's map.
+        line, column = source.position_in_original(unclosed)
+        out.append(
+            Diagnostic(
+                severity="warning",
+                code="verbatim.unclosed",
+                message="Unclosed '/!' — the text after it is parsed as spintax.",
+                line=line,
+                column=column,
+                end_line=line,
+                end_column=column + 2,
+                data=None,
             )
         )
 

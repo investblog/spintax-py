@@ -41,7 +41,11 @@ from ._errors import AstVersionError
 #: does a reference or a conditional anywhere in a permutation's `<config>` header or in a
 #: per-element separator. The node SHAPE is version 3's; a handle built by 0.4.0 simply
 #: lacks `raw` exactly where the wider key puts it, and would render the old output.
-AST_VERSION = 4
+#:
+#: 5 — `/! … !/` verbatim spans (spintax-js#92, ADR 0001) are encoded into the text as
+#: tokens at parse time. The shape is version 4's, but a handle parsed by 0.7.0 carries no
+#: tokens, and would spin `/!{a|b}!/` instead of emitting it.
+AST_VERSION = 5
 
 
 class Ast:
